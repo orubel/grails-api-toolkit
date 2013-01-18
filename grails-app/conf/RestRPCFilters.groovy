@@ -12,40 +12,42 @@ class RestRPCFilters {
 	
 	def filters = {
 		restrpc(controller:'*', action:'*'){
-			after = { model ->
+			after = { Map model ->
 
-				//if(restRPCService.isApiCall()){
+				if(restRPCService.isApiCall()){
 					def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
 					def action = controller?.getClazz()?.getDeclaredMethod(actionName)
 
 					if(action){
 						if(action.isAnnotationPresent(RestRPC)){
 							def anno = action.getAnnotation(RestRPC)
+							
+							def newModel = restRPCService.formatModel(model)
+
 							switch(anno.request()) {
 								case RpcMethod.GET:
 									println("###### GET METHOD #######")
 									if(restRPCService.isRequestMatch('GET')){
 										switch(params.format){
 											case 'JSON':
-												render model as JSON
+												render text:newModel as JSON, contentType: "application/json"
 												break
 											case 'XML':
-												render model as XML
+												render text:newModel as XML, contentType: "application/xml"
 												break
 										}
 									}
 									break
 							}
+							return false
 						} else {
-							println(action)
-							println "ANNOTATION IS NOT PRESENT FOR ACTION $action.name"
+							// ANNOTATION IS NOT PRESENT FOR ACTION $action.name
 						}
 					}else{
-						println(action)
-						println "ACTION IS NOT PRESENT FOR ACTION $action.name"
+						// ACTION IS NOT PRESENT
 					}
-
-				//}
+					
+				}
 			}
 		}
 	}

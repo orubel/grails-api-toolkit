@@ -30,6 +30,7 @@ class RestRPCService{
 		json.each() { key,value ->
 			params[key] = value
 		}
+		return params
 	}
 	
 	// ERROR CODES
@@ -41,7 +42,11 @@ class RestRPCService{
 	
 	public isApiCall(){
 		def request = getRequest()
+		def params = getParams()
 		def api = "/"+grailsApplication.metadata['app.name']+"/restrpc/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
+		println(api)
+		println(request.forwardURI?.toLowerCase()+"=="+api)
+		println(request.forwardURI?.toLowerCase()+"==${api}/${params.id}")
 		return(request.forwardURI?.toLowerCase()==api || request.forwardURI?.toLowerCase()=="${api}/${params.id}")?true:false
 	}
 	
@@ -108,6 +113,18 @@ class RestRPCService{
 		}
 	}
 
+	Map formatModel(Map data){
+		def newMap = [:]
+		data.each{key, value ->
+			if(grailsApplication.domainClasses*.clazz.contains(org.hibernate.Hibernate.getClass(value))){
+				newMap[key]=formatDomainObject(value)
+			}else{
+				newMap[key]=value
+			}
+		}
+		return newMap
+	}
+	
 	Map formatDomainObject(Object data){
 	    def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
 	    def newMap = [:]
