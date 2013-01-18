@@ -16,87 +16,41 @@ Please provide feedback through the plugins [main author](https://github.com/oru
 
 ## Implementation
 
-To add a webhook to your controller, you merely add the service to your controller:
+To add RestRPC annotations to your controller, merely add the service to your controller:
 ```
 def restRPCService
 ```
 
-Then after a successful add/edit/update/delete (or other successful operation), either send the domain instance you wish via the command below:
+Then add an annotation to the method you wish to be called via an api with the request method you are going to call it through:
 ```
-webhookService.postData('<ControllerName>', <domainInstance>,'<action>')
-```
-
-... or use a Map of data in its place:
-```
-webhookService.postData('<ControllerName>', <Map>,',<action>')
+@RestRPC(request=RpcMethod.GET)
+def show(Long id) { ... }
 ```
 
-Below is an example of it used in an update:
-```
-def update = {
-    ...
-    if (!bookInstance.hasErrors() && bookInstance.save(flush: true)) {
-        webhookService.postData('Book', bookInstance,'update')
-        ...
-        redirect(action: "show", id: bookInstance.id)
-    }else{
-        ...
-    }
-}
-```
+NOTE: Do not add annotations to methods that REDIRECT as this will throw an error; Obviosly this is bad form but to avoid alot of questions in the forums, this would be why you got that error.
 
-This will :
-* send the 'service', data and 'action taken' out to all people subscribed in the format specified by them
 
-If you wish to cleanup your domain object prior to sending it out (to remove field data from the domain object), you can first format the domain object into a map using 'formatDomainObject' and then edit the map using the 'processMap' method and send the edited map to the service:
-```
-Map book = webhookService.formatDomainObject(bookInstance)
-Map bookData = webhookService.processMap(book, ['author':'W Shakespeare','user':null])
-webhookService.postData('Book', bookData,'save')
-```
-
-or you can do it manually...
-
-```
-def data = webhookService.formatDomainObject(bookInstance)
-def Author = data.find{it.key == "Author"}?.key
-data[Author] = W Shakespeare' 
-def User = data.find{it.key == "User"}?.key
-data.remove(User)
-webhookService.postData('Book', data,'update')
-```
-
-## Usage
-
-The Grails webhook plugin is a fully RESTful plugin and allows webhooks to be registered to individual users and for each specific service. Services MUST be declared in the config so that registered users can access and register for them. These controllers must then be setup with with one additional line upon successful completion to submit the data to the URL provided.
-
-You can access the interface one of two ways. Either via
-* the provided web interface at http://yourapp/webhook. This provides user a simple web interface to listtheir webhooks and add/edit and delete them
-* REST API (see below)
+With RestRPC, you can add as many GET, POST, PUT and DELETE methods as you want in your controller. As with REST, it is good form to make sure that you are matching the request method with a 'proper' function (ie DELETE request method with a 'delete' function). Naturally you can deviate from this (just as with REST) but I'm sure you have good reasons, right? :)
 
 ## API
 
-To use the REST api, you will need to use curl and replace 'username' and 'password' in the following command:
-```
-curl --data "j_username=<username>&j_password=<password>" http://localhost:8080/springSecurityApp/j_spring_security_check --cookie-jar cookies.txt
-```
-Once you have logged in, you can now access the webhook api with the following commands(naturally, once the server is live, replace localhost in the following with your domain or IP):
-
 **GET**
 ```
-curl --verbose --request GET http://localhost:8080/api/webhook/JSON/1 --cookie cookies.txt
-```
+curl --verbose --request GET http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1
+curl --verbose --request GET http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/XML/1
 **POST** (accepts formats of 'XML' or 'JSON')
 ```
-curl --verbose --request POST --header "Content-Type: application/json" -d '{url: "http://localhost:8080/",name:"my webhook",service:'node',format:'JSON'}' http://localhost:8080/api/webhook/JSON --cookie cookies.txt
+curl --verbose --request POST --header "Content-Type: application/json" -d '{fname: "Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1
+curl --verbose --request POST --header "Content-Type: application/xml" -d '{fname:"Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/XML/1
 ```
 **PUT** (accepts formats of 'XML' or 'JSON')
 ```
-curl --verbose --request PUT --header "Content-Type: application/json" -d "{id:4,name:'webhook change',url:'http://localhost:8080/test',service:'node',format:'JSON'}" http://localhost:8080/api/webhook/JSON --cookie cookies.txt
+curl --verbose --request PUT --header "Content-Type: application/json" -d '{fname: "Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1
+curl --verbose --request PUT --header "Content-Type: application/xml" -d '{fname:"Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/XML/1
 ```
 **DELETE**
 ```
-curl --verbose --request DELETE http://localhost:8080/api/webhook/none/1 --cookie cookies.txt
+curl --verbose --request DELETE http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1
 ```
 
 ## Troubleshooting
