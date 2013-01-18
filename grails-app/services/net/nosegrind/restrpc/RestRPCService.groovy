@@ -44,9 +44,6 @@ class RestRPCService{
 		def request = getRequest()
 		def params = getParams()
 		def api = "/"+grailsApplication.metadata['app.name']+"/restrpc/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
-		println(api)
-		println(request.forwardURI?.toLowerCase()+"=="+api)
-		println(request.forwardURI?.toLowerCase()+"==${api}/${params.id}")
 		return(request.forwardURI?.toLowerCase()==api || request.forwardURI?.toLowerCase()=="${api}/${params.id}")?true:false
 	}
 	
