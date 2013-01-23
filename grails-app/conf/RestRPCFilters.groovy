@@ -48,7 +48,26 @@ class RestRPCFilters {
 														return response.status
 														break
 												}
-
+										}
+										break
+									case RpcMethod.POST:
+										if(restRPCService.isRequestMatch('POST')){
+												switch(params.format){
+													case 'JSON':
+													case 'XML':
+														return response.status
+														break
+												}
+										}
+										break
+									case RpcMethod.DELETE:
+										if(restRPCService.isRequestMatch('DELETE')){
+												switch(params.format){
+													case 'JSON':
+													case 'XML':
+														return response.status
+														break
+												}
 										}
 										break
 							}
