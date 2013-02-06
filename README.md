@@ -38,16 +38,19 @@ With RestRPC, you can add as many GET, POST, PUT and DELETE methods as you want 
 ```
 curl --verbose --request GET http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1
 curl --verbose --request GET http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/XML/1
+```
 **POST** (accepts formats of 'XML' or 'JSON')
 ```
 curl --verbose --request POST --header "Content-Type: application/json" -d '{fname: "Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1
 curl --verbose --request POST --header "Content-Type: application/xml" -d '{fname:"Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/XML/1
 ```
+
 **PUT** (accepts formats of 'XML' or 'JSON')
 ```
 curl --verbose --request PUT --header "Content-Type: application/json" -d '{fname: "Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1
 curl --verbose --request PUT --header "Content-Type: application/xml" -d '{fname:"Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/XML/1
 ```
+
 **DELETE**
 ```
 curl --verbose --request DELETE http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1
