@@ -43,8 +43,14 @@ class RestRPCService{
 	public isApiCall(){
 		def request = getRequest()
 		def params = getParams()
-		def api = "/"+grailsApplication.metadata['app.name']+"/restrpc/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
-		return(request.forwardURI?.toLowerCase()==api || request.forwardURI?.toLowerCase()=="${api}/${params.id}")?true:false
+		def api = ""
+		if(grailsApplication.config.app.context=="/"){
+			api = "/"+grailsApplication.metadata['app.name']+"/restrpc/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
+		}else{
+			api = "/restrpc/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
+		}
+
+		return(request.forwardURI?.toLowerCase()==api.toLowerCase() || request.forwardURI?.toLowerCase()==("${api}/${params.id}").toLowerCase())?true:false
 	}
 	
 	public isRequestMatch(String protocol){
