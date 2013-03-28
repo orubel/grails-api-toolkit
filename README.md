@@ -67,4 +67,6 @@ curl --verbose --request DELETE http://localhost:8080/<yourapp>/restrpc/<control
 
 The most common problem is forgetting to remove 'static allowedMethods' from your Controller. If you are having problems accessing your API, make sure you have removed this from your controller.
 
+Also if you are unable to view the data and keep getting a 'view', making sure the URL does NOT have a **trailing slash**.
+
 
