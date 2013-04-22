@@ -31,45 +31,57 @@ class RestRPCFilters {
 										if(!newModel.isEmpty()){
 											switch(params.format){
 												case 'JSON':
-													render text:newModel as JSON, contentType: "application/json"
+													render(text:newModel as JSON, contentType: "application/json")
+													return false
 													break
 												case 'XML':
-													render text:newModel as XML, contentType: "application/xml"
+													render(text:newModel as XML, contentType: "application/xml")
+													return false
 													break
 											}
 										}
 									}
 									break
-									case RpcMethod.PUT:
-										if(restRPCService.isRequestMatch('PUT')){
-												switch(params.format){
-													case 'JSON':
-													case 'XML':
-														return response.status
-														break
-												}
-										}
-										break
-									case RpcMethod.POST:
-										if(restRPCService.isRequestMatch('POST')){
-												switch(params.format){
-													case 'JSON':
-													case 'XML':
-														return response.status
-														break
-												}
-										}
-										break
-									case RpcMethod.DELETE:
-										if(restRPCService.isRequestMatch('DELETE')){
-												switch(params.format){
-													case 'JSON':
-													case 'XML':
-														return response.status
-														break
-												}
-										}
-										break
+								case RpcMethod.PUT:
+									def newModel = restRPCService.formatModel(model)
+									if(restRPCService.isRequestMatch('PUT')){
+											switch(params.format){
+												case 'JSON':
+													render(text:newModel as JSON, contentType: "application/json")
+													break
+												case 'XML':
+													render(text:newModel as XML, contentType: "application/xml")
+													return false
+													break
+											}
+									}
+									break
+								case RpcMethod.POST:
+									println("POST METHOD")
+									def newModel = restRPCService.formatModel(model)
+									if(restRPCService.isRequestMatch('POST')){
+											switch(params.format){
+												case 'JSON':
+													render(text:newModel as JSON, contentType: "application/json")
+													return false
+													break
+												case 'XML':
+													render(text:newModel as XML, contentType: "application/xml")
+													return false
+													break
+											}
+									}
+									break
+								case RpcMethod.DELETE:
+									if(restRPCService.isRequestMatch('DELETE')){
+											switch(params.format){
+												case 'JSON':
+												case 'XML':
+													return response.status
+													break
+											}
+									}
+									break
 							}
 							return false
 						} else {
