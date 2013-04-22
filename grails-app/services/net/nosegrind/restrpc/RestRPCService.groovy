@@ -43,14 +43,26 @@ class RestRPCService{
 	public isApiCall(){
 		def request = getRequest()
 		def params = getParams()
-		def api = ""
+		def queryString = request.'javax.servlet.forward.query_string'
+		def uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI
+		def api
 		if(grailsApplication.config.app.context=="/"){
-			api = "/"+grailsApplication.metadata['app.name']+"/restrpc/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
+			if(queryString){
+				api = (params.id)?"/"+grailsApplication.metadata['app.name']+"/restrpc/"+params.controller+"/"+params.action+"/"+params.format+'/'+params.id+'?'+queryString:"/"+grailsApplication.metadata['app.name']+"/restrpc/"+params.controller+"/"+params.action+"/"+params.format+'?'+queryString
+			}else{
+				api = (params.id)?"/"+grailsApplication.metadata['app.name']+"/restrpc/"+params.controller+"/"+params.action+"/"+params.format+'/'+params.id:"/"+grailsApplication.metadata['app.name']+"/restrpc/"+params.controller+"/"+params.action+"/"+params.format
+			}
 		}else{
-			api = "/restrpc/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
+			if(queryString){
+				api = (params.id)?"/restrpc/"+params.controller+"/"+params.action+"/"+params.format+'/'+params.id+'?'+queryString:"/restrpc/"+params.controller+"/"+params.action+"/"+params.format+'?'+queryString
+			}else{
+				api = (params.id)?"/restrpc/"+params.controller+"/"+params.action+"/"+params.format+'/'+params.id:"/restrpc/"+params.controller+"/"+params.action+"/"+params.format
+			}
 		}
+		println("${uri}==${api}")
+		
+		return (uri==api)?true:false
 
-		return(request.forwardURI?.toLowerCase()==api.toLowerCase() || request.forwardURI?.toLowerCase()==("${api}/${params.id}").toLowerCase())?true:false
 	}
 	
 	public isRequestMatch(String protocol){
@@ -66,7 +78,12 @@ class RestRPCService{
 		protocol = protocol.toUpperCase()
 		
 		// test for API redirect- if API redirect is attempted... continue
-		def api = "/"+grailsApplication.metadata['app.name']+"/restrpc/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
+		def api = ""
+		if(grailsApplication.config.app.context=="/"){
+			api = "/"+grailsApplication.metadata['app.name']+"/restrpc/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
+		}else{
+			api = "/restrpc/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
+		}
 		if(request.forwardURI?.toLowerCase()==api || request.forwardURI?.toLowerCase()=="${api}/${params.id}"){
 			if(methods.contains(protocol)){
 					if(request.method==protocol){
@@ -165,3 +182,4 @@ class RestRPCService{
 		}
 	}
 }
+
