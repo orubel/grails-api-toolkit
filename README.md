@@ -45,10 +45,33 @@ curl --data "j_username=admin&j_password=admin" http://localhost:8080/<yourapp>/
 curl --verbose --request GET http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1 --cookie-jar cookies.txt
 curl --verbose --request GET http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/XML/1 --cookie-jar cookies.txt
 ```
+or in your code using HTTPBuilders RESTClient (as an example)...
+```
+try{
+  def restrpc = new RESTClient('http://localhost:8080/<yourapp>')
+  def path = '/restrpc/<controller>/<action>/JSON/1'
+  def resp = restrpc.get(path:path)
+  def data = restrpc.data
+}catch(HttpResponseException ex){
+  hre.printStackTrace()
+}
+```
+
 **POST** (accepts formats of 'XML' or 'JSON')
 ```
 curl --verbose --request POST --header "Content-Type: application/json" -d '{fname: "Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1 --cookies-jar cookies.txt
 curl --verbose --request POST --header "Content-Type: application/xml" -d '{fname:"Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/XML/1 --cookies-jar cookies.txt
+```
+or in your code using HTTPBuilders RESTClient (as an example)...
+```
+try{
+  def restrpc = new RESTClient('http://localhost:8080/<yourapp>')
+  def path = '/restrpc/<controller>/<action>/JSON
+  def resp = restrpc.post(path:path,body:[fname:'Richard',lname:'Mozzarella'])
+  def data = restrpc.data
+}catch(HttpResponseException ex){
+  hre.printStackTrace()
+}
 ```
 
 **PUT** (accepts formats of 'XML' or 'JSON')
@@ -56,10 +79,31 @@ curl --verbose --request POST --header "Content-Type: application/xml" -d '{fnam
 curl --verbose --request PUT --header "Content-Type: application/json" -d '{fname: "Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1 --cookies-jar cookies.txt
 curl --verbose --request PUT --header "Content-Type: application/xml" -d '{fname:"Richard",lname:"Mozzarella"}' http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/XML/1 --cookies-jar cookies.txt
 ```
-
+or in your code using HTTPBuilders RESTClient (as an example)...
+```
+try{
+  def restrpc = new RESTClient('http://localhost:8080/<yourapp>')
+  def path = '/restrpc/<controller>/<action>/JSON
+  def resp = restrpc.put(path:path,body:[fname:'Richard',lname:'Mozzarella'])
+  def data = restrpc.data
+}catch(HttpResponseException ex){
+  hre.printStackTrace()
+}
+```
 **DELETE**
 ```
 curl --verbose --request DELETE http://localhost:8080/<yourapp>/restrpc/<controller>/<action>/JSON/1 --cookies-jar cookies.txt
+```
+or in your code using HTTPBuilders RESTClient (as an example)...
+```
+try{
+  def restrpc = new RESTClient('http://localhost:8080/<yourapp>')
+  def path = '/restrpc/<controller>/<action>/JSON/1'
+  def resp = restrpc.delete(path:path)
+  def data = restrpc.data
+}catch(HttpResponseException ex){
+  hre.printStackTrace()
+}
 ```
 
 ## Troubleshooting
