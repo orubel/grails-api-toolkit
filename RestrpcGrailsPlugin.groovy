@@ -15,7 +15,7 @@ class RestrpcGrailsPlugin {
     def author = "Owen Rubel"
     def authorEmail = "orubel@gmail.com"
     def description = '''\
-REST interceptor extending the REST API allowing for ONE-TO-MANY pairing between request method and controller functions (vs traditional ONE-TO-ONE). This allows so that more than 4 methods per class can be called RESTfuly while still complying with the REST standard.
+RESTRPC is an interceptor api that allows the user to associate more than one method/function per request method while still being compliant with the REST standard thus creating a ONE-TO-MANY pairing.
 '''
 
     // URL to the plugin's documentation
