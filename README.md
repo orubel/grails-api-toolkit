@@ -2,6 +2,10 @@
 
 In traditional REST, you can one have 4 REST calls per service/class because there ARE only 4 REST requests: GET, PUT, POST, DELETE. Each of these can only be paired with ONE method in your class creating a ONE-TO-ONE relationship with the request method. RESTRPC is an interceptor api that allows the user to associate more than one method/function per request method while still being compliant with the REST standard thus creating a ONE-TO-MANY pairing.
 
+It does this by allowing you to set an annotation on each method declaring a method as GET,POST,PUT or DELETE so that when the api is called, it checks if method can be called through that REST Method and if so, will process method ain a RESTful manner.
+
+So rather than being limited to just 4 rest calls per class (or worse, having to build out that functionality to call all the methods restfully yourself), all you have to do is just attach an annotaion to each method you want to call via the api and you are done!
+
 ## Source
 
 Source code can be found at https://github.com/orubel/restrpc
