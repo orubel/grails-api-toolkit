@@ -30,7 +30,7 @@ Then add the service:
 def restRPCService
 ```
 
-Then add an annotation to the method you wish to be called via an api with the request method you are going to call it through:
+Then start adding annotations to the methods you wish to be called via an api with the request method you are going to call them through:
 ```
 @RestRPC(request=RpcMethod.GET)
 def show(Long id) { ... }
