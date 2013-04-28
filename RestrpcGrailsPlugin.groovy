@@ -14,7 +14,7 @@ class RestrpcGrailsPlugin {
     def title = "Restrpc Plugin" // Headline display name of the plugin
     def author = "Owen Rubel"
     def authorEmail = "orubel@gmail.com"
-    def description = '''\
+    def description = '''
 RESTRPC is an interceptor api that allows the user to associate more than one method/function per request method while still being compliant with the REST standard thus creating a ONE-TO-MANY pairing.
 '''
 
