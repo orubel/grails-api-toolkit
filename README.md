@@ -20,7 +20,12 @@ Please provide feedback through the plugins [main author](https://github.com/oru
 
 ## Implementation
 
-To add RestRPC annotations to your controller, merely add the service to your controller:
+To add RestRPC annotations to your controller, first import the annotations to your class...
+```
+import net.nosegrind.restrpc.*
+```
+
+Then add the service:
 ```
 def restRPCService
 ```
