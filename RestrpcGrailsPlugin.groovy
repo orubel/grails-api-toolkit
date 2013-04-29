@@ -8,7 +8,6 @@ class RestrpcGrailsPlugin {
     def documentation = "http://grails.org/plugin/restrpc"
 
     def license = "GPL2"
-
-//    def issueManagement = [ system: "JIRA", url: "http://jira.grails.org/browse/GPMYPLUGIN" ]
-//    def scm = [ url: "http://svn.codehaus.org/grails-plugins/" ]
+    def issueManagement = [system: 'GitHub', url: 'https://github.com/orubel/restrpc/issues']
+    def scm = [url: 'https://github.com/orubel/restrpc']
 }
