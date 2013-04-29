@@ -1,14 +1,17 @@
 package net.nosegrind.restrpc;
 
-
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 // @RestRPC(Method.GET, Json.Schema)
-@java.lang.annotation.Target({java.lang.annotation.ElementType.METHOD})
-@java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
-@java.lang.annotation.Inherited
-@java.lang.annotation.Documented
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Documented
 public @interface RestRPC {
     RpcMethod request();
 }
-
