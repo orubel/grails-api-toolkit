@@ -10,9 +10,9 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 class RestRPCService{
 
 	def grailsApplication
-	
+
 	static transactional = false
-	
+
 	def getRequest(){
 		return RCH.currentRequestAttributes().currentRequest
 	}
@@ -20,9 +20,9 @@ class RestRPCService{
 	def getResponse(){
 		return RCH.currentRequestAttributes().currentResponse
 	}
-	
+
 	def methods = ['GET','POST','PUT','DELETE']
-	
+
 	def getParams(){
 		def params = RCH.currentRequestAttributes().params
 		def request = getRequest()
@@ -32,15 +32,15 @@ class RestRPCService{
 		}
 		return params
 	}
-	
+
 	// ERROR CODES
 	// 200 = success
 	// 304 not modified
 	// 404 = not found
 	// 400 bad request
 	// 403 forbidden
-	
-	public isApiCall(){
+
+	boolean isApiCall(){
 		def request = getRequest()
 		def params = getParams()
 		def queryString = request.'javax.servlet.forward.query_string'
@@ -60,23 +60,22 @@ class RestRPCService{
 			}
 		}
 		println("${uri}==${api}")
-		
-		return (uri==api)?true:false
 
+		return uri==api
 	}
-	
-	public isRequestMatch(String protocol){
+
+	boolean isRequestMatch(String protocol){
 		def request = getRequest()
 		protocol = protocol.toUpperCase()
-		return (request.method==protocol)?true:false
+		return request.method==protocol
 	}
-	
-    public boolean protocolMatch(String protocol){
+
+    boolean protocolMatch(String protocol){
 		def params = RCH.requestAttributes.params
 		def request = getRequest()
-		
+
 		protocol = protocol.toUpperCase()
-		
+
 		// test for API redirect- if API redirect is attempted... continue
 		def api = ""
 		if(grailsApplication.config.app.context=="/"){
@@ -144,7 +143,7 @@ class RestRPCService{
 		}
 		return newMap
 	}
-	
+
 	Map formatDomainObject(Object data){
 	    def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
 	    def newMap = [:]
@@ -159,7 +158,7 @@ class RestRPCService{
 	    }
 		return newMap
 	}
-	
+
 	Map processMap(Map data,Map processor){
 		processor.each() { key, val ->
 			if(!val?.trim()){
@@ -171,15 +170,10 @@ class RestRPCService{
 		}
 		return data
 	}
-	
+
 	boolean validateUrl(String url){
 		String[] schemes = ["http","https"]
 		UrlValidator urlValidator = new UrlValidator(schemes)
-		if (urlValidator.isValid(url)) {
-			return true
-		}else{
-			return false
-		}
+		return urlValidator.isValid(url)
 	}
 }
-

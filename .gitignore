@@ -4,3 +4,6 @@ plugin.xml
 target
 target-eclipse
 .settings
+._.DS_Store
+.DS_Store
+web-app
