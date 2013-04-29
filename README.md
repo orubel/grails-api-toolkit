@@ -41,6 +41,21 @@ NOTE: Do not add annotations to methods that REDIRECT as this will throw an erro
 
 With RestRPC, you can add as many GET, POST, PUT and DELETE methods as you want in your controller. As with REST, it is good form to make sure that you are matching the request method with a 'proper' function (ie DELETE request method with a 'delete' function). Naturally you can deviate from this (just as with REST) but I'm sure you have good reasons, right? :)
 
+## Helper Methods
+The RestRPCService has some usefule helper methods built into it that you can call in your functions to help you as well. For example, since the methods in your controller are shared with the view, you may not want them to return the exact same data to the api as they are returning to the view. Thus, you may want to do a 'api call detect' in the controller method like so:
+```
+@RestRPC(request=RpcMethod.GET)
+def show(){
+  ...
+  if(restRPCService.isAPICall()){
+    ...
+  }else{
+    ...
+  }
+  return
+}
+```
+
 ## Authenticate
 If you need to authenticate your api from a shell for testing, use the following with your credentials:
 ```
