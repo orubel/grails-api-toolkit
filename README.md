@@ -33,7 +33,12 @@ def restRPCService
 Then start adding annotations to the methods you wish to be called via an api with the request method you are going to call them through:
 ```
 @RestRPC(request=RpcMethod.GET)
-def show(Long id) { ... }
+def show() { ... }
+```
+or
+```
+@RestRPC(request=RpcMethod.PUT)
+def updateBookAuthor() { ... }
 ```
 
 NOTE: Do not add annotations to methods that REDIRECT as this will throw an error; Obviosly this is bad form but to avoid alot of questions in the forums, this would be why you got that error.
