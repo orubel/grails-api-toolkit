@@ -25,7 +25,7 @@ To add RestRPC annotations to your controller, first import the annotations to y
 import net.nosegrind.restrpc.*
 ```
 
-Remove *static allowedMethods* and add the service:
+Remove **static allowedMethods** and add the service:
 ```
 def restRPCService
 ```
