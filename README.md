@@ -96,7 +96,7 @@ or in your code using HTTPBuilders RESTClient (as an example)...
 try{
   def restrpc = new RESTClient('http://localhost:8080/<yourapp>')
   def path = '/restrpc/<controller>/<action>/JSON
-  def resp = restrpc.post(path:path,body:[fname:'Richard',lname:'Mozzarella'])
+  def resp = restrpc.post(path:path,body:[fname:'Richard',lname:'Mozzarella'],requestContentType:URLENC )
   def data = restrpc.data
 }catch(HttpResponseException ex){
   hre.printStackTrace()
@@ -113,7 +113,7 @@ or in your code using HTTPBuilders RESTClient (as an example)...
 try{
   def restrpc = new RESTClient('http://localhost:8080/<yourapp>')
   def path = '/restrpc/<controller>/<action>/JSON
-  def resp = restrpc.put(path:path,body:[fname:'Richard',lname:'Mozzarella'])
+  def resp = restrpc.put(path:path,body:[fname:'Richard',lname:'Mozzarella'],requestContentType:URLENC )
   def data = restrpc.data
 }catch(HttpResponseException ex){
   hre.printStackTrace()
