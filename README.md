@@ -142,4 +142,4 @@ The most common problem is forgetting to remove 'static allowedMethods' from you
 
 Also if you are unable to view the data and keep getting a 'view', making sure the URL does NOT have a **trailing slash**.
 
-
+If you are retrieving the data via Javascript on the frontend, keep in mind 'not to return domain objects' in your return response. Javascript cannot handle domain objects and you will need to return all data as a map if that is you intended target. RestRPC has the ability to return Objects in maps but always keep in mind that Javascript has no idea how to handle them so make sure to convert them or send an ID so they can be used in your GSP. 
