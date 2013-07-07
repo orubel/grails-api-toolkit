@@ -24,71 +24,66 @@ class RestRPCFilters {
 				}
 
 				// IF THERE IS AN ANNOTATION ON SAID ACTION WE CONTINUE TO PROCESS
-				if (!action.isAnnotationPresent(RestRPC)) {
+				if (!action.isAnnotationPresent(GET) && !action.isAnnotationPresent(POST) && !action.isAnnotationPresent(PUT) && !action.isAnnotationPresent(DELETE)) {
 					return
 				}
 
-				def anno = action.getAnnotation(RestRPC)
+				//def anno = action.getAnnotation(RestRPC)
 				
-				switch(anno.request()) {
-					case RpcMethod.GET:
-						def newModel = restRPCService.formatModel(model)
-						if(restRPCService.isRequestMatch('GET')){
-							if(!newModel.isEmpty()){
-								switch(params.format){
-									case 'JSON':
-										render(text:newModel as JSON, contentType: "application/json")
-										return false
-										break
-									case 'XML':
-										render(text:newModel as XML, contentType: "application/xml")
-										return false
-										break
-								}
+				if(action.isAnnotationPresent(GET)){
+					def newModel = restRPCService.formatModel(model)
+					if(restRPCService.isRequestMatch('GET')){
+						if(!newModel.isEmpty()){
+							switch(params.format){
+								case 'JSON':
+									render(text:newModel as JSON, contentType: "application/json")
+									return false
+									break
+								case 'XML':
+									render(text:newModel as XML, contentType: "application/xml")
+									return false
+									break
 							}
 						}
-						break
-					case RpcMethod.PUT:
-						def newModel = restRPCService.formatModel(model)
-						if(restRPCService.isRequestMatch('PUT')){
-								switch(params.format){
-									case 'JSON':
-										render(text:newModel as JSON, contentType: "application/json")
-										break
-									case 'XML':
-										render(text:newModel as XML, contentType: "application/xml")
-										return false
-										break
-								}
-						}
-						break
-					case RpcMethod.POST:
-						println("POST METHOD")
-						def newModel = restRPCService.formatModel(model)
-						if(restRPCService.isRequestMatch('POST')){
-								switch(params.format){
-									case 'JSON':
-										render(text:newModel as JSON, contentType: "application/json")
-										return false
-										break
-									case 'XML':
-										render(text:newModel as XML, contentType: "application/xml")
-										return false
-										break
-								}
-						}
-						break
-					case RpcMethod.DELETE:
-						if(restRPCService.isRequestMatch('DELETE')){
-								switch(params.format){
-									case 'JSON':
-									case 'XML':
-										return response.status
-										break
-								}
-						}
-						break
+					}
+				}else if(action.isAnnotationPresent(PUT)){
+					def newModel = restRPCService.formatModel(model)
+					if(restRPCService.isRequestMatch('PUT')){
+							switch(params.format){
+								case 'JSON':
+									render(text:newModel as JSON, contentType: "application/json")
+									break
+								case 'XML':
+									render(text:newModel as XML, contentType: "application/xml")
+									return false
+									break
+							}
+					}
+				}else if(action.isAnnotationPresent(POST)){
+					def newModel = restRPCService.formatModel(model)
+					if(restRPCService.isRequestMatch('POST')){
+							switch(params.format){
+								case 'JSON':
+									render(text:newModel as JSON, contentType: "application/json")
+									return false
+									break
+								case 'XML':
+									render(text:newModel as XML, contentType: "application/xml")
+									return false
+									break
+							}
+					}
+				}else if(action.isAnnotationPresent(DELETE)){
+					if(restRPCService.isRequestMatch('DELETE')){
+							switch(params.format){
+								case 'JSON':
+								case 'XML':
+									return response.status
+									break
+							}
+					}
 				}
+				
 				return false
 			}
 		}
