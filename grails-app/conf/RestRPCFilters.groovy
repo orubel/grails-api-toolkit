@@ -1,8 +1,8 @@
 
 import grails.converters.JSON
 import grails.converters.XML
-import net.nosegrind.restrpc.RestRPC
-import net.nosegrind.restrpc.RpcMethod
+import net.nosegrind.restrpc.*
+
 
 class RestRPCFilters {
 	
