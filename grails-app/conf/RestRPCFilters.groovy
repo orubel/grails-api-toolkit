@@ -3,7 +3,6 @@ import grails.converters.JSON
 import grails.converters.XML
 import net.nosegrind.restrpc.*
 
-
 class RestRPCFilters {
 	
 	def restRPCService
@@ -35,12 +34,13 @@ class RestRPCFilters {
 					if(restRPCService.isRequestMatch('GET')){
 						if(!newModel.isEmpty()){
 							switch(params.format){
-								case 'JSON':
-									render(text:newModel as JSON, contentType: "application/json")
-									return false
-									break
 								case 'XML':
 									render(text:newModel as XML, contentType: "application/xml")
+									return false
+									break
+								case 'JSON':
+								default:
+									render(text:newModel as JSON, contentType: "application/json")
 									return false
 									break
 							}
@@ -50,12 +50,13 @@ class RestRPCFilters {
 					def newModel = restRPCService.formatModel(model)
 					if(restRPCService.isRequestMatch('PUT')){
 							switch(params.format){
-								case 'JSON':
-									render(text:newModel as JSON, contentType: "application/json")
-									break
 								case 'XML':
 									render(text:newModel as XML, contentType: "application/xml")
 									return false
+									break
+								case 'JSON':
+								default:
+									render(text:newModel as JSON, contentType: "application/json")
 									break
 							}
 					}
@@ -63,12 +64,13 @@ class RestRPCFilters {
 					def newModel = restRPCService.formatModel(model)
 					if(restRPCService.isRequestMatch('POST')){
 							switch(params.format){
-								case 'JSON':
-									render(text:newModel as JSON, contentType: "application/json")
-									return false
-									break
 								case 'XML':
 									render(text:newModel as XML, contentType: "application/xml")
+									return false
+									break
+								case 'JSON':
+								default:
+									render(text:newModel as JSON, contentType: "application/json")
 									return false
 									break
 							}
@@ -78,6 +80,7 @@ class RestRPCFilters {
 							switch(params.format){
 								case 'JSON':
 								case 'XML':
+								default:
 									return response.status
 									break
 							}
