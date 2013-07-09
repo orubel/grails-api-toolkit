@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-public @interface RestRPC {
-    RpcMethod request();
+public @interface Api {
+    RpcMethod method();
     String description() default "";
 }

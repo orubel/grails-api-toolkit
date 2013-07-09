@@ -6,13 +6,25 @@ class RestRpcUrlMappings {
 		String apiName = getGrailsApplication().config.apiName
 		String apiVersion = getGrailsApplication().config.apiName
 
-		"/$apiName/$apiVersion/$controller/$action" {
+		"/$apiName/$apiVersion/$controller/$action/" {
 			controller = "${controllerClass.name}"
 			action = action
 			parseRequest = true
 		}
 		
-		"/$apiName/$version/$controller/$action/$id" {
+		"/$apiName/$apiVersion/$controller/$action/$id" {
+			controller = "${controllerClass.name}"
+			action = action
+			parseRequest = true
+		}
+		
+		"/$apiName/$apiVersion/$controller/$action/$format/" {
+			controller = "${controllerClass.name}"
+			action = action
+			parseRequest = true
+		}
+		
+		"/$apiName/$version/$controller/$action/$format/$id" {
 			controller = controller
 			action = action
 			id = id
@@ -25,17 +37,5 @@ class RestRpcUrlMappings {
 			parseRequest = true
 		}
 		
-		// OLD MAPPINGS KEPY FOR BACKWARDS COMPATIBILITY
-		"/restrpc/$controller/$action/$format/$id" {
-			controller = controller
-			action = action
-			parseRequest = true
-		}
-		
-		"/restrpc/$controller/$action/$format" {
-			controller = controller
-			action = action
-			parseRequest = true
-		}
 	}
 }
