@@ -22,11 +22,9 @@ class ApidocController {
 				
 				if (action.isAnnotationPresent(Api)) {
 					def api = action.getAnnotation(Api)
-					def path = "${controllerName}/${actionName}"
-					def desc = api.description
+					def apiList = [path:"${controllerName}/${actionName}",method:api.method,description,api.description,params:[],returns:[],errors:[]]
 					
 					// Params
-					def paramList = []
 					def params = api.params
 					params.each{ p ->
 						if (p.isAnnotationPresent(Params)) {
@@ -38,7 +36,7 @@ class ApidocController {
 									list.param.add(param2)
 								}
 							}
-							paramList.add(list)
+							apiList.params.add(list)
 						}
 					}
 					
@@ -55,7 +53,7 @@ class ApidocController {
 									list.param.add(param2)
 								}
 							}
-							returnList.add(list)
+							apiList.returns.add(list)
 						}
 					}
 					
@@ -66,9 +64,10 @@ class ApidocController {
 						if (p.isAnnotationPresent(Error)) {
 							def param = p.getAnnotation(Error)
 							def list = [code:param.code,description:param.description]
-							errorList.add(list)
+							apiList.errors.add(list)
 						}
 					}
+					json.add(apiList)
 				}
 			}
 		}
