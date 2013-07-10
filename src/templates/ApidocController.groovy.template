@@ -29,22 +29,46 @@ class ApidocController {
 					def paramList = []
 					def params = api.params
 					params.each{ p ->
-						if (p.isAnnotationPresent(Variable)) {
-							def param = p.getAnnotation(Variable)
-							def list = [type:param.paramType,name:param.name,description:param.description,required:param.required,values:[]]
+						if (p.isAnnotationPresent(Params)) {
+							def param = p.getAnnotation(Params)
+							def list = [type:param.paramType,name:param.name,description:param.description,required:param.required,params:[]]
 							param.value.each{ p2 ->
 								if (p2.isAnnotationPresent(Param)) {
 									def param2 = p2.getAnnotation(Param)
+									list.param.add(param2)
 								}
 							}
+							paramList.add(list)
 						}
-
 					}
 					
-					
+					// Returns
+					def returnList = []
 					def returns = api.returns
-					def errors = api.errors
+					returns.each{ p ->
+						if (p.isAnnotationPresent(Params)) {
+							def param = p.getAnnotation(Params)
+							def list = [type:param.paramType,name:param.name,description:param.description,required:param.required,params:[]]
+							param.value.each{ p2 ->
+								if (p2.isAnnotationPresent(Param)) {
+									def param2 = p2.getAnnotation(Param)
+									list.param.add(param2)
+								}
+							}
+							returnList.add(list)
+						}
+					}
 					
+					// Errors
+					def errorList = []
+					def errors = api.errors
+					errors.each{ p ->
+						if (p.isAnnotationPresent(Error)) {
+							def param = p.getAnnotation(Error)
+							def list = [code:param.code,description:param.description]
+							errorList.add(list)
+						}
+					}
 				}
 			}
 		}

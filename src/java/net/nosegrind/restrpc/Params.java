@@ -7,7 +7,10 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ErrorCode {
-    int code();
+public @interface Params{
+    String paramType();
+    String name();
     String description();
+    boolean required();
+    Param[] value();
 }

@@ -13,8 +13,8 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Api {
     RpcMethod method();
-    String description() default "";
-    Variable[] params();
-    Return[] returns();
+    String description();
+    Params[] params();
+    Params[] returns();
     Error[] errors();
 }
