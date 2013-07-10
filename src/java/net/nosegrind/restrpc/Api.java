@@ -14,4 +14,7 @@ import java.lang.annotation.Target;
 public @interface Api {
     RpcMethod method();
     String description() default "";
+    Variable[] params();
+    Return[] returns();
+    Error[] errors();
 }

@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Errors {
-    ErrorCode[] value();
+public @interface Error {
+    int code();
+    String description();
 }
