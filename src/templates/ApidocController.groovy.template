@@ -10,7 +10,9 @@ class ApidocController {
 		redirect(action:'show')
 	}
 	
-	def show(){
+	show(){}
+	
+	def getApiDocs(){
 		grailsApplication.controllerClasses.each { controllerClass ->
 			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
 			def methods = controller?.getClazz().metaClass.methods*.name.sort().unique()
@@ -71,6 +73,7 @@ class ApidocController {
 				}
 			}
 		}
+		render(text:json as JSON, contentType: "application/json")
 	}
 
 }

@@ -14,4 +14,7 @@ import java.lang.annotation.Target;
 public @interface RestRPC {
     RpcMethod request();
     String description() default "";
+    Params[] values();
+    Params[] returns();
+    Error[] errors();
 }

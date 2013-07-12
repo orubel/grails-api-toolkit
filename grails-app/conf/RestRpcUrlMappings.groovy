@@ -1,38 +1,26 @@
 class RestRpcUrlMappings {
-	static mappings = {
-		//"/api/$format/$id" (controller:"${controller}",action:"${action}", parseRequest: true)
-		//"/api/$format" (controller:"${controller}",action:"${action}", parseRequest: true)
-		
-		String apiName = getGrailsApplication().config.apiName
-		String apiVersion = getGrailsApplication().config.apiName
 
-		"/$apiName/$apiVersion/$controller/$action/" {
-			controller = "${controllerClass.name}"
-			action = action
-			parseRequest = true
-		}
-		
-		"/$apiName/$apiVersion/$controller/$action/$id" {
-			controller = "${controllerClass.name}"
-			action = action
-			parseRequest = true
-		}
+	static grailsApplication
+
+	static mappings = {
+		String apiName = getGrailsApplication().config.restrpc.apiName
+		String apiVersion = getGrailsApplication().config.restrpc.apiVersion
 		
 		"/$apiName/$apiVersion/$controller/$action/$format/" {
-			controller = "${controllerClass.name}"
+			controller = controller
 			action = action
 			parseRequest = true
 		}
 		
-		"/$apiName/$version/$controller/$action/$format/$id" {
+		"/$apiName/$apiVersion/$controller/$action/$format/$id" {
 			controller = controller
 			action = action
 			id = id
 			parseRequest = true
 		}
 		
-		"/$apiName/$version/apidocs" {
-			controller = 'apidocs'
+		"/$apiName/$apiVersion/apidoc" {
+			controller = 'apidoc'
 			action = 'index'
 			parseRequest = true
 		}

@@ -11,10 +11,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-public @interface Api {
-    RpcMethod method();
+public @interface Api{
+	RpcMethod method();
     String description();
-    Params[] params();
-    Params[] returns();
-    Error[] errors();
+    Params[] values() default {};
+    Params[] returns() default {};
+    ErrorCode[] errors() default {};
 }

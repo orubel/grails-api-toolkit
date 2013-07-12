@@ -1,7 +1,7 @@
 
 import grails.converters.JSON
 import grails.converters.XML
-import net.nosegrind.restrpc.RestRPC
+import net.nosegrind.restrpc.Api
 import net.nosegrind.restrpc.RpcMethod
 
 class RestRPCFilters {
@@ -24,13 +24,13 @@ class RestRPCFilters {
 				}
 
 				// IF THERE IS AN ANNOTATION ON SAID ACTION WE CONTINUE TO PROCESS
-				if (!action.isAnnotationPresent(RestRPC)) {
+				if (!action.isAnnotationPresent(Api)) {
 					return
 				}
 
-				def anno = action.getAnnotation(RestRPC)
+				def anno = action.getAnnotation(Api)
 				
-				switch(anno.request()) {
+				switch(anno.method()) {
 					case RpcMethod.GET:
 						def newModel = restRPCService.formatModel(model)
 						if(restRPCService.isRequestMatch('GET')){
