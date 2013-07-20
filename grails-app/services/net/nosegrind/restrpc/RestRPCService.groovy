@@ -186,4 +186,81 @@ println("isapicall")
 		UrlValidator urlValidator = new UrlValidator(schemes)
 		return urlValidator.isValid(url)
 	}
+	
+	
+	// ERROR CODES
+	// 200 = success
+	def successResponse(String msg){
+		def response = getResponse()
+		response.status = 200
+		render "[Success] : ${msg}"
+		return
+	}
+
+	def successResponse(){
+		def response = getResponse()
+		response.status = 200
+		render "[Success]"
+		return
+	}
+
+	// 304 not modified
+	def notModifiedResponse(String msg){
+		def response = getResponse()
+		response.status = 304
+		render "[Not Modified] : ${msg}"
+		return
+	}
+
+	def notModifiedResponse(){
+		def response = getResponse()
+		response.status = 304
+		render "[Not Modified]"
+		return
+	}
+
+	// 404 not found
+	def notFoundResponse(String msg){
+		def response = getResponse()
+		response.status = 404
+		render "[Not Found] : ${msg}"
+		return
+	}
+
+	def notFoundResponse(){
+		def response = getResponse()
+		response.status = 404
+		render "[Not Found]"
+		return
+	}
+
+	// 400 bad request
+	def badRequestResponse(String msg){
+		def response = getResponse()
+		response.status = 404
+		render "[Bad Request] : ${msg}"
+		return
+	}
+
+	def badRequestResponse(){
+		def response = getResponse()
+		response.status = 404
+		render "[Bad Request]"
+		return
+	}
+
+	// 403 forbidden
+	def forbiddenResponse(String msg){
+		def response = getResponse()
+		response.status = 404
+		render "[Forbidden] : ${msg}"
+		return
+	}
+
+	def forbiddenResponse(){
+		def response = getResponse()
+		response.status = 404
+		render "[Forbidden]"
+		return
+	}
 }
