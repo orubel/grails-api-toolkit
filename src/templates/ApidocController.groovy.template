@@ -24,7 +24,7 @@ class ApidocController {
 				
 				if (action.isAnnotationPresent(Api)) {
 					def api = action.getAnnotation(Api)
-					def apiList = [path:"${controllerName}/${actionName}",method:api.method,description,api.description,params:[],returns:[],errors:[]]
+					def apiList = [path:"${controllerName}/${actionName}",method:"${api.method}",description:"${api.description}",params:[],returns:[],errors:[]]
 					
 					// Params
 					def params = api.params
