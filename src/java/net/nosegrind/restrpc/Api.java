@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Inherited
 @Documented
 public @interface Api{
-	RpcMethod method();
+	RestMethod method();
     String description();
     Params[] values() default {};
     Params[] returns() default {};

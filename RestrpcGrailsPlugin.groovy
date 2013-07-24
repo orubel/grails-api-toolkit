@@ -1,5 +1,5 @@
 class RestrpcGrailsPlugin {
-    def version = "0.9.2"
+    def version = "0.9.3"
     def grailsVersion = "2.1 > *"
     def title = "Restrpc Plugin"
     def author = "Owen Rubel"

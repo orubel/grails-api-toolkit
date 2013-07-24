@@ -2,9 +2,11 @@
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<title><g:message code="default.show.label" args="[entityName]" /></title>
+		<title>Api Docs</title>
+
 	</head>
-	<body>
+	<body style="color: #393939;font: 13px/1.4em helvetica,arial,freesans,clean,sans-serif;">
+
 		<div id="show-apidocs" class="content scaffold-show" role="main">
 			<g:if test="${flash.message}">
 			<div class="message" role="status">${flash.message}</div>
@@ -12,33 +14,28 @@
 		</div>
 		
 		<div style="margin-left: auto; margin-right: auto;width: 800px;">
-		<div id="accordion">
 
 		<g:each in="${api}" var="a">
-
+			<br>
 			<h3>${a.parent}</h3>
 
-			<div style="display: table;border: 1px solid black;">
+			
 
 			<g:each in="${a.api}" var="apiList">
-			<hr width=100%>
+			<br>
+			${apiList.description}
+			<div style="display: table;border: 1px solid #c5c5c5;">
 			 <div>
-			 	<span style="display: table-row; background-color:#769dcd;color:#fff;">
-				 	<span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Method</b></span>
-				   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Path</b></span>
-				   <span style="display: table-cell;width: 400px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
-			   </span>
-			   <span style="display: table-row; background-color:#9adb9e">
+			   <span style="display: table-row; background-color:#ddd">
 				   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">${apiList.method}</span>
 				   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">${apiList.path}</span>
-				   <span style="display: table-cell;width: 400px;padding-left: 10px;border: 1px #d7ad7b;">${apiList.description}</span>
 			 	</span>
 			 </div>
-		
-			<span style="display: table-row; background-color:#769dcd;color:#fff;">
-				<span style="display: table-cell;width: 800px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
-			</span>
-			<div>
+			</div>
+			
+			<b>Params</b>
+			<div style="display: table;border: 1px solid #c5c5c5;">
+
 				<div style="display: table-row; background-color:#b4b8be;color:#fff;">
 				   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
 				   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
@@ -55,12 +52,11 @@
 					    <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
 				    </div>
 				 </g:each>
+
 			 </div>
 		
-			<span style="display: table-row; background-color:#769dcd;color:#fff;">
-				<span style="display: table-cell;width: 800px;padding-left: 10px;border: 1px #d7ad7b;"><b>Returns</b></span>
-			</span>
-			<div>
+			<b>Returns</b>
+			<div style="display: table;border: 1px solid #c5c5c5;">
 				<div style="display: table-row; background-color:#b4b8be;color:#fff;">
 				   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
 				   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
@@ -79,10 +75,8 @@
 				 </g:each>
 			 </div>
 			 
-			<span style="display: table-row; background-color:#769dcd;color:#fff;">
-				<span style="display: table-cell;width: 800px;padding-left: 10px;border: 1px #d7ad7b;"><b>Errors</b></span>
-			</span>
-			<div>
+			<b>Errors</b>
+			<div style="display: table;border: 1px solid #c5c5c5;">
 				<div style="display: table-row; background-color:#b4b8be;color:#fff;">
 				   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Code</b></span>
 				   <span style="display: table-cell;width: 700px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
@@ -96,10 +90,9 @@
 			 </div>
 			
 			</g:each>
-			</div>
-			
+
 		</g:each>
-		</div>
+		
 		</div>
 
 	</body>

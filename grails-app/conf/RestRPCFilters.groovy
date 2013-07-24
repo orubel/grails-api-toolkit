@@ -2,7 +2,7 @@
 import grails.converters.JSON
 import grails.converters.XML
 import net.nosegrind.restrpc.Api
-import net.nosegrind.restrpc.RpcMethod
+import net.nosegrind.restrpc.RestMethod
 
 class RestRPCFilters {
 	
@@ -31,7 +31,7 @@ class RestRPCFilters {
 				def anno = action.getAnnotation(Api)
 				
 				switch(anno.method()) {
-					case RpcMethod.GET:
+					case RestMethod.GET:
 						def newModel = restRPCService.formatModel(model)
 						if(restRPCService.isRequestMatch('GET')){
 							if(!newModel.isEmpty()){
@@ -48,7 +48,7 @@ class RestRPCFilters {
 							}
 						}
 						break
-					case RpcMethod.PUT:
+					case RestMethod.PUT:
 						def newModel = restRPCService.formatModel(model)
 						if(restRPCService.isRequestMatch('PUT')){
 								switch(params.format){
@@ -62,7 +62,7 @@ class RestRPCFilters {
 								}
 						}
 						break
-					case RpcMethod.POST:
+					case RestMethod.POST:
 						def newModel = restRPCService.formatModel(model)
 						if(restRPCService.isRequestMatch('POST')){
 								switch(params.format){
@@ -77,7 +77,7 @@ class RestRPCFilters {
 								}
 						}
 						break
-					case RpcMethod.DELETE:
+					case RestMethod.DELETE:
 						if(restRPCService.isRequestMatch('DELETE')){
 								switch(params.format){
 									case 'JSON':
