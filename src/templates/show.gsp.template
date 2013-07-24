@@ -58,7 +58,7 @@
 
 			 </div>
 			 </g:if>
-
+			 
 			<b>Definitions</b>
 			<div style="display: table;border: 1px solid #c5c5c5;">
 				<div style="display: table-row; background-color:#b4b8be;color:#fff;">
@@ -66,7 +66,6 @@
 				   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
 				   <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
 				   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Required</b></span>
-				    <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
 				</div>
 				<g:each in="${api.returns}" var="rturn">
 					<div style="display: table-row">
@@ -74,7 +73,6 @@
 					   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.name}</span>
 					   <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.description}</span>
 					   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.required}</span>
-					    <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
 				    </div>
 				 </g:each>
 			 </div>
