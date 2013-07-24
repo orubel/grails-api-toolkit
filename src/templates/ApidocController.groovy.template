@@ -3,7 +3,6 @@ package net.nosegrind.restrpc
 import org.springframework.dao.DataIntegrityViolationException
 import grails.converters.JSON
 import grails.converters.XML
-import net.nosegrind.restrpc.*
 import java.lang.reflect.Method
 import org.springframework.core.annotation.AnnotationUtils
 
@@ -24,14 +23,13 @@ class ApidocController {
 
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
 				//def methods = controller?.getClazz().metaClass.methods*.name.sort().unique()
-				
 				for (Method method : controller.getClazz().getMethods()){
 						if(method.isAnnotationPresent(Api)) {
 							if(apiOutput[inc]?.parent!="${controllerClass.logicalPropertyName}"){
 								inc++
 							}
 							if(!apiOutput[inc]){
-								apiOutput[inc] = [parent:"${controllerClass.logicalPropertyName}",api:[]]
+								apiOutput[inc] = [parent:"${controllerClass.logicalPropertyName}",api:[],json:[]]
 							}
 							
 							def action = method.getName()
@@ -57,20 +55,39 @@ class ApidocController {
 								}
 							}
 							
+							
 							// Returns
 							def returns = api.returns()
+							def json = [:]
 							returns.each{ p ->
 								if (p.paramType()) {
 									def list = [type:"${p.paramType()}",name:"${p.name()}",description:"${p.description()}",required:"${p.required()}",params:[]]
+									def j = []
+									if(p?.values()){
+										j = ["${p.name()}": []]
+									}else{
+										if(p?.exampleData()){
+											j = ["${p.name()}":"${p.exampleData()}"]
+										}else{
+											j = ["${p.name()}":"${grailsApplication.config.restrpc.defaultData.(p.paramType())}"]
+										}
+									}
 									if(p?.values()){
 										def returns2 = p.values()
 										returns2.each{ p2 ->
 											if (p2.paramType()) {
 												def pm2 = [type:"${p2.paramType()}",name:"${p2.name()}",description:"${p2.description()}",required:"${p2.required()}"]
+												def j2 = ["${p2.name()}":"${grailsApplication.config.restrpc.defaultData.(p2.paramType())}"]
+												j["${p.name()}"].add(j2)
 												list.params.add(pm2)
 											}
 										}
 									}
+									j.each(){ key,val ->
+										json["${key}"]=val
+									}
+
+									//json.add(j)
 									apiList.returns.add(list)
 								}
 							}
@@ -86,19 +103,18 @@ class ApidocController {
 							}
 
 							if(apiOutput[inc].parent && !apiList.isEmpty()){
+								apiOutput[inc].json.add(json as JSON)
 								apiOutput[inc].api.add(apiList)
 							}
-
 						}
-
 				}
-				
 			}
 			
 		}
 		apiOutput.remove(null)
 
-		[api:apiOutput]
+		[apiList:apiOutput]
 	}
 
 }
+

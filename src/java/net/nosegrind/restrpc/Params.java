@@ -12,5 +12,6 @@ public @interface Params{
     String name();
     String description();
     boolean required();
+    String exampleData() default "";
     Param[] values() default {};
 }
