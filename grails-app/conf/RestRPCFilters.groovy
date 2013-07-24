@@ -15,7 +15,7 @@ class RestRPCFilters {
 				if (!restRPCService.isApiCall()) {
 					return
 				}
-
+				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
 				def action = controller?.getClazz()?.getDeclaredMethod(actionName)
 				// IF THERE IS AN ACTION, WE PROCESS ELSE WE IGNORE
@@ -27,7 +27,7 @@ class RestRPCFilters {
 				if (!action.isAnnotationPresent(Api)) {
 					return
 				}
-
+				
 				def anno = action.getAnnotation(Api)
 				
 				switch(anno.method()) {
@@ -63,7 +63,6 @@ class RestRPCFilters {
 						}
 						break
 					case RpcMethod.POST:
-						println("POST METHOD")
 						def newModel = restRPCService.formatModel(model)
 						if(restRPCService.isRequestMatch('POST')){
 								switch(params.format){

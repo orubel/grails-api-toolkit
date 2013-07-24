@@ -3,24 +3,9 @@
 	<head>
 		<meta name="layout" content="main">
 		<title><g:message code="default.show.label" args="[entityName]" /></title>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-		<script>
-			$(function() {
-			$( "#accordion" ).accordion({
-				active: false,
-	            autoheight: false,
-	            heightStyle: "content",
-	            collapsible: true,
-	            alwaysOpen: false
-			});
-			});
-		</script>
 	</head>
 	<body>
-
 		<div id="show-apidocs" class="content scaffold-show" role="main">
-			<h1><g:message code="default.show.label" args="[entityName]" /></h1>
 			<g:if test="${flash.message}">
 			<div class="message" role="status">${flash.message}</div>
 			</g:if>
@@ -28,6 +13,7 @@
 		
 		<div style="margin-left: auto; margin-right: auto;width: 800px;">
 		<div id="accordion">
+
 		<g:each in="${api}" var="a">
 
 			<h3>${a.parent}</h3>
@@ -108,7 +94,6 @@
 				    </div>
 				 </g:each>
 			 </div>
-			
 			
 			</g:each>
 			</div>

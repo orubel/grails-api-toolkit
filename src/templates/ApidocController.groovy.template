@@ -3,79 +3,102 @@ package net.nosegrind.restrpc
 import org.springframework.dao.DataIntegrityViolationException
 import grails.converters.JSON
 import grails.converters.XML
+import net.nosegrind.restrpc.*
+import java.lang.reflect.Method
+import org.springframework.core.annotation.AnnotationUtils
 
 class ApidocController {
 
 	def grailsApplication
 
-	index(){
+	def index(){
 		redirect(action:'show')
 	}
-	
-	show(){}
-	
-	def getApiDocs(){
+
+	def show(){
+		def apiOutput = []
+		def inc = 0
 		grailsApplication.controllerClasses.each { controllerClass ->
-			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
-			def methods = controller?.getClazz().metaClass.methods*.name.sort().unique()
-			
-			def json = []
-			
-			methods.each(){ method ->
-				def action = controller?.getClazz()?.getMethod(actionName)
+			String controllername = controllerClass.logicalPropertyName
+			if(controllername!='aclClass'){
+
+				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+				//def methods = controller?.getClazz().metaClass.methods*.name.sort().unique()
 				
-				if (action.isAnnotationPresent(Api)) {
-					def api = action.getAnnotation(Api)
-					def apiList = [path:"${controllerName}/${actionName}",method:"${api.method}",description:"${api.description}",params:[],returns:[],errors:[]]
-					
-					// Params
-					def params = api.params
-					params.each{ p ->
-						if (p.isAnnotationPresent(Params)) {
-							def param = p.getAnnotation(Params)
-							def list = [type:param.paramType,name:param.name,description:param.description,required:param.required,params:[]]
-							param.value.each{ p2 ->
-								if (p2.isAnnotationPresent(Param)) {
-									def param2 = p2.getAnnotation(Param)
-									list.param.add(param2)
+				for (Method method : controller.getClazz().getMethods()){
+						if(method.isAnnotationPresent(Api)) {
+							if(apiOutput[inc]?.parent!="${controllerClass.logicalPropertyName}"){
+								inc++
+							}
+							if(!apiOutput[inc]){
+								apiOutput[inc] = [parent:"${controllerClass.logicalPropertyName}",api:[]]
+							}
+							
+							def action = method.getName()
+							def api = method.getAnnotation(Api)
+
+							def apiList = [path:"${controllername}/${method.getName()}",method:"${api.method()}",description:"${api.description()}",values:[],returns:[],errors:[]]
+
+							// Params
+							def params = api.values()
+							params.each{ p ->
+								if (p.paramType()) {
+									def list = [type:"${p.paramType()}",name:"${p.name()}",description:"${p.description()}",required:"${p.required()}",values:[]]
+									if(p?.values()){
+										def params2 = p.params()
+										params2.each{ p2 ->
+											if (p2.paramType()) {
+												def pm2 = [type:"${p2.paramType()}",name:"${p2.name()}",description:"${p2.description()}",required:"${p2.required()}"]
+												list.values.add(pm2)
+											}
+										}
+									}
+									apiList.values.add(list)
 								}
 							}
-							apiList.params.add(list)
-						}
-					}
-					
-					// Returns
-					def returnList = []
-					def returns = api.returns
-					returns.each{ p ->
-						if (p.isAnnotationPresent(Params)) {
-							def param = p.getAnnotation(Params)
-							def list = [type:param.paramType,name:param.name,description:param.description,required:param.required,params:[]]
-							param.value.each{ p2 ->
-								if (p2.isAnnotationPresent(Param)) {
-									def param2 = p2.getAnnotation(Param)
-									list.param.add(param2)
+							
+							// Returns
+							def returns = api.returns()
+							returns.each{ p ->
+								if (p.paramType()) {
+									def list = [type:"${p.paramType()}",name:"${p.name()}",description:"${p.description()}",required:"${p.required()}",params:[]]
+									if(p?.values()){
+										def returns2 = p.values()
+										returns2.each{ p2 ->
+											if (p2.paramType()) {
+												def pm2 = [type:"${p2.paramType()}",name:"${p2.name()}",description:"${p2.description()}",required:"${p2.required()}"]
+												list.params.add(pm2)
+											}
+										}
+									}
+									apiList.returns.add(list)
 								}
 							}
-							apiList.returns.add(list)
+							
+							// Errors
+							def errorList = []
+							def errors = api.errors()
+							errors.each{ p ->
+								if (p.code()) {
+									def list = [code:"${p.code()}",description:"${p.description()}"]
+									apiList.errors.add(list)
+								}
+							}
+
+							if(apiOutput[inc].parent && !apiList.isEmpty()){
+								apiOutput[inc].api.add(apiList)
+							}
+
 						}
-					}
-					
-					// Errors
-					def errorList = []
-					def errors = api.errors
-					errors.each{ p ->
-						if (p.isAnnotationPresent(Error)) {
-							def param = p.getAnnotation(Error)
-							def list = [code:param.code,description:param.description]
-							apiList.errors.add(list)
-						}
-					}
-					json.add(apiList)
+
 				}
+				
 			}
+			
 		}
-		render(text:json as JSON, contentType: "application/json")
+		apiOutput.remove(null)
+
+		[api:apiOutput]
 	}
 
 }

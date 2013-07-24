@@ -33,36 +33,50 @@ class RestRPCService{
 		return params
 	}
 
-	// ERROR CODES
-	// 200 = success
-	// 304 not modified
-	// 404 = not found
-	// 400 bad request
-	// 403 forbidden
-
 	boolean isApiCall(){
-println("isapicall")
 		def request = getRequest()
 		def params = getParams()
 		def queryString = request.'javax.servlet.forward.query_string'
-		def uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI
+		
+		def uri
+		if(request.isRedirected()){
+			if(params.action=='index'){
+				uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI+'/'+params.action
+			}else{
+				uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI
+			}
+		}else{
+			uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI
+		}
 		def api
 		if(grailsApplication.config.grails.app.context=='/'){
-			api = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}/${params.format}"
+			if(params?.format){
+				api = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}/${params.format}"
+			}else{
+				api = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}"
+			}
 			if(queryString){
-				api += (params.id)?"/${params.id}?${queryString}":"?${queryString}"
+				api += (params?.id)?"/${params.id}?${queryString}":"?${queryString}"
 			}else{
 				api += (params.id)?"/${params.id}":''
 			}
 		}else if(grailsApplication.config?.grails?.app?.context){
-			api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}/${params.format}"
+			if(params?.format){
+				api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}"
+			}else{
+				api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}/${params.format}"
+			}
 			if(queryString){
 				api += (params.id)?"/${params.id}?${queryString}":"?${queryString}"
 			}else{
 				api += (params.id)?"/${params.id}":''
 			}
 		}else if(!grailsApplication.config?.grails?.app?.context){
-			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}/${params.format}"
+			if(params?.format){
+				api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}"
+			}else{
+				api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}/${params.format}"
+			}
 			if(queryString){
 				api += (params.id)?"/${params.id}?${queryString}":"?${queryString}"
 			}else{
@@ -70,7 +84,7 @@ println("isapicall")
 			}
 		}
 
-		println("${uri}==${api}")
+		//println("${uri}==${api}")
 		return uri==api
 	}
 
@@ -144,7 +158,9 @@ println("isapicall")
 
 	Map formatModel(Map data){
 		def newMap = [:]
+
 		data.each{key, value ->
+
 			if(grailsApplication.domainClasses*.clazz.contains(org.hibernate.Hibernate.getClass(value))){
 				newMap[key]=formatDomainObject(value)
 			}else{
