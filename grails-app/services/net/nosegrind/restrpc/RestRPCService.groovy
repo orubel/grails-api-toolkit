@@ -206,14 +206,14 @@ class RestRPCService{
 	
 	// ERROR CODES
 	// 200 = success
-	def successResponse(String msg){
+	def _200_SUCCESS(String msg){
 		def response = getResponse()
 		response.status = 200
 		render "[Success] : ${msg}"
 		return
 	}
 
-	def successResponse(){
+	def _200_SUCCESS(){
 		def response = getResponse()
 		response.status = 200
 		render "[Success]"
@@ -221,14 +221,14 @@ class RestRPCService{
 	}
 
 	// 304 not modified
-	def notModifiedResponse(String msg){
+	def _304_NOTMODIFIED(String msg){
 		def response = getResponse()
 		response.status = 304
 		render "[Not Modified] : ${msg}"
 		return
 	}
 
-	def notModifiedResponse(){
+	def _304_NOTMODIFIED(){
 		def response = getResponse()
 		response.status = 304
 		render "[Not Modified]"
@@ -236,14 +236,14 @@ class RestRPCService{
 	}
 
 	// 404 not found
-	def notFoundResponse(String msg){
+	def _404_NOTFOUND(String msg){
 		def response = getResponse()
 		response.status = 404
 		render "[Not Found] : ${msg}"
 		return
 	}
 
-	def notFoundResponse(){
+	def _404_NOTFOUND(){
 		def response = getResponse()
 		response.status = 404
 		render "[Not Found]"
@@ -251,14 +251,14 @@ class RestRPCService{
 	}
 
 	// 400 bad request
-	def badRequestResponse(String msg){
+	def _404_BADREQUEST(String msg){
 		def response = getResponse()
 		response.status = 404
 		render "[Bad Request] : ${msg}"
 		return
 	}
 
-	def badRequestResponse(){
+	def _404_BADREQUEST(){
 		def response = getResponse()
 		response.status = 404
 		render "[Bad Request]"
@@ -266,16 +266,16 @@ class RestRPCService{
 	}
 
 	// 403 forbidden
-	def forbiddenResponse(String msg){
+	def _403_FORBIDDEN(String msg){
 		def response = getResponse()
-		response.status = 404
+		response.status = 403
 		render "[Forbidden] : ${msg}"
 		return
 	}
 
-	def forbiddenResponse(){
+	def _403_FORBIDDEN(){
 		def response = getResponse()
-		response.status = 404
+		response.status = 403
 		render "[Forbidden]"
 		return
 	}
