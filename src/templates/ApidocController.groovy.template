@@ -64,15 +64,12 @@ class ApidocController {
 									def list = [type:"${p.paramType()}",name:"${p.name()}",description:"${p.description()}",required:"${p.required()}",params:[]]
 									def j = [:]
 									if(p?.values()){
-										println("values : ${p.values()}")
 										j["${p.name()}"]=[]
-										println("j : ${j}")
 									}else{
 										if(p?.exampleData().trim()){
 											j = ["${p.name()}":"${p.exampleData()}"]
 										}else{
 											j = ["${p.name()}":"${grailsApplication.config.restrpc.defaultData.(p.paramType())}"]
-											println("param data : ${j}")
 										}
 									}
 									if(p?.values()){
