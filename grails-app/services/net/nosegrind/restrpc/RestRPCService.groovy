@@ -203,7 +203,6 @@ class RestRPCService{
 		return urlValidator.isValid(url)
 	}
 	
-	
 	// ERROR CODES
 	// 200 = success
 	def _200_SUCCESS(String msg){

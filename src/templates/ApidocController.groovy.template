@@ -62,14 +62,17 @@ class ApidocController {
 							returns.each{ p ->
 								if (p.paramType()) {
 									def list = [type:"${p.paramType()}",name:"${p.name()}",description:"${p.description()}",required:"${p.required()}",params:[]]
-									def j = []
+									def j = [:]
 									if(p?.values()){
-										j = ["${p.name()}": []]
+										println("values : ${p.values()}")
+										j["${p.name()}"]=[]
+										println("j : ${j}")
 									}else{
-										if(p?.exampleData()){
+										if(p?.exampleData().trim()){
 											j = ["${p.name()}":"${p.exampleData()}"]
 										}else{
 											j = ["${p.name()}":"${grailsApplication.config.restrpc.defaultData.(p.paramType())}"]
+											println("param data : ${j}")
 										}
 									}
 									if(p?.values()){
@@ -78,6 +81,7 @@ class ApidocController {
 											if (p2.paramType()) {
 												def pm2 = [type:"${p2.paramType()}",name:"${p2.name()}",description:"${p2.description()}",required:"${p2.required()}"]
 												def j2 = ["${p2.name()}":"${grailsApplication.config.restrpc.defaultData.(p2.paramType())}"]
+												println(j)
 												j["${p.name()}"].add(j2)
 												list.params.add(pm2)
 											}
