@@ -81,14 +81,23 @@ class ApidocController {
 											if (p2.paramType()) {
 												def pm2 = [type:"${p2.paramType()}",name:"${p2.name()}",description:"${p2.description()}",required:"${p2.required()}"]
 												def j2 = ["${p2.name()}":"${grailsApplication.config.restrpc.defaultData.(p2.paramType())}"]
-												println(j)
 												j["${p.name()}"].add(j2)
 												list.params.add(pm2)
 											}
 										}
 									}
 									j.each(){ key,val ->
-										json["${key}"]=val
+										if(val instanceof List){
+											def child = [:]
+											val.each(){ it ->
+												it.each(){ key2,val2 ->
+													child["${key2}"] ="${val2}"
+												}
+											}
+											json["${key}"] = child
+										}else{
+											json["${key}"]=val
+										}
 									}
 
 									//json.add(j)
