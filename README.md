@@ -1,3 +1,3 @@
 # Grails RestRPC Plugin
 
-Please see http://grails.org/plugin/edit/restrpc for current documentation 
+Please see http://grails.org/plugin/restrpc for current documentation 
