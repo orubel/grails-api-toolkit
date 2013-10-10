@@ -160,11 +160,12 @@ class RestRPCService{
 		def newMap = [:]
 
 		data.each{key, value ->
-
-			if(grailsApplication.domainClasses*.clazz.contains(org.hibernate.Hibernate.getClass(value))){
-				newMap[key]=formatDomainObject(value)
-			}else{
-				newMap[key]=value
+			if(value){
+				if(grailsApplication.domainClasses*.clazz.contains(org.hibernate.Hibernate.getClass(value))){
+					newMap[key]=formatDomainObject(value)
+				}else{
+					newMap[key]=value
+				}
 			}
 		}
 		return newMap
@@ -205,77 +206,69 @@ class RestRPCService{
 	
 	// ERROR CODES
 	// 200 = success
+	// ERROR CODES
+	// 200 = success
 	def _200_SUCCESS(String msg){
 		def response = getResponse()
-		response.status = 200
-		render "[Success] : ${msg}"
+		response.setStatus(200,"[Success] : ${msg}")
 		return
 	}
 
 	def _200_SUCCESS(){
 		def response = getResponse()
-		response.status = 200
-		render "[Success]"
+		response.setStatus(200,"[Success]")
 		return
 	}
 
 	// 304 not modified
 	def _304_NOTMODIFIED(String msg){
 		def response = getResponse()
-		response.status = 304
-		render "[Not Modified] : ${msg}"
+		response.setStatus(304,"[Not Modified] : ${msg}")
 		return
 	}
 
 	def _304_NOTMODIFIED(){
 		def response = getResponse()
-		response.status = 304
-		render "[Not Modified]"
+		response.setStatus(304,"[Not Modified]")
 		return
 	}
 
 	// 404 not found
 	def _404_NOTFOUND(String msg){
 		def response = getResponse()
-		response.status = 404
-		render "[Not Found] : ${msg}"
+		response.setStatus(404,"[Not Found] : ${msg}")
 		return
 	}
 
 	def _404_NOTFOUND(){
 		def response = getResponse()
-		response.status = 404
-		render "[Not Found]"
+		response.setStatus(404,"[Not Found]")
 		return
 	}
 
 	// 400 bad request
 	def _404_BADREQUEST(String msg){
 		def response = getResponse()
-		response.status = 404
-		render "[Bad Request] : ${msg}"
+		response.setStatus(404,"[Bad Request] : ${msg}")
 		return
 	}
 
 	def _404_BADREQUEST(){
 		def response = getResponse()
-		response.status = 404
-		render "[Bad Request]"
+		response.setStatus(404,"[Bad Request]")
 		return
 	}
 
 	// 403 forbidden
 	def _403_FORBIDDEN(String msg){
 		def response = getResponse()
-		response.status = 403
-		render "[Forbidden] : ${msg}"
+		response.setStatus(403,"[Forbidden] : ${msg}")
 		return
 	}
 
 	def _403_FORBIDDEN(){
 		def response = getResponse()
-		response.status = 403
-		render "[Forbidden]"
+		response.setStatus(403,"[Forbidden]")
 		return
 	}
 }
