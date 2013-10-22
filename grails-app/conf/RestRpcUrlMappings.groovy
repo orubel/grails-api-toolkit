@@ -11,12 +11,17 @@ class RestRpcUrlMappings {
 			action = action
 			parseRequest = true
 		}
-		
 		"/$apiName/$apiVersion/$controller/$action/$format/$id" {
 			controller = controller
 			action = action
 			parseRequest = true
 		}
+		"/$apiName/$apiVersion/$controller/$action/$format/$id/$path**" {
+			controller = controller
+			action = action
+			parseRequest = true
+		}
+
 		
 		"/$apiName/$apiVersion/apidoc" {
 			controller = 'apidoc'

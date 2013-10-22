@@ -1,4 +1,6 @@
 
+import java.util.Map;
+
 import grails.converters.JSON
 import grails.converters.XML
 import net.nosegrind.restrpc.Api
@@ -16,6 +18,10 @@ class RestRPCFilters {
 					return
 				}
 				
+				if(params?.path?.trim()){
+					params.path = params.path.split("/")
+				}
+				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
 				def action = controller?.getClazz()?.getDeclaredMethod(actionName)
 				// IF THERE IS AN ACTION, WE PROCESS ELSE WE IGNORE
@@ -29,19 +35,36 @@ class RestRPCFilters {
 				}
 				
 				def anno = action.getAnnotation(Api)
+				def newModel = restRPCService.formatModel(model)
+
 				
 				switch(anno.method()) {
 					case RestMethod.GET:
-						def newModel = restRPCService.formatModel(model)
 						if(restRPCService.isRequestMatch('GET')){
 							if(!newModel.isEmpty()){
 								switch(params.format){
 									case 'JSON':
-										render(text:newModel as JSON, contentType: "application/json")
+										def map = newModel
+										if(params?.path){
+											params.path.each{
+												if(map?."${it}"){
+													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
+												}
+											}
+										}
+										render(text:map as JSON, contentType: "application/json")
 										return false
 										break
 									case 'XML':
-										render(text:newModel as XML, contentType: "application/xml")
+										def map = newModel
+										if(params?.path){
+											params.path.each{
+												if(map?."${it}"){
+													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
+												}
+											}
+										}
+										render(text:map as XML, contentType: "application/xml")
 										return false
 										break
 								}
@@ -49,29 +72,59 @@ class RestRPCFilters {
 						}
 						break
 					case RestMethod.PUT:
-						def newModel = restRPCService.formatModel(model)
 						if(restRPCService.isRequestMatch('PUT')){
 								switch(params.format){
 									case 'JSON':
-										render(text:newModel as JSON, contentType: "application/json")
+										def map = newModel
+										if(params?.path){
+											params.path.each{
+												if(map?."${it}"){
+													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
+												}
+											}
+										}
+										render(text:map as JSON, contentType: "application/json")
 										break
 									case 'XML':
-										render(text:newModel as XML, contentType: "application/xml")
+										def map = newModel
+										if(params?.path){
+											params.path.each{
+												if(map?."${it}"){
+													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
+												}
+											}
+										}
+										render(text:map as XML, contentType: "application/xml")
 										return false
 										break
 								}
 						}
 						break
 					case RestMethod.POST:
-						def newModel = restRPCService.formatModel(model)
 						if(restRPCService.isRequestMatch('POST')){
 								switch(params.format){
 									case 'JSON':
-										render(text:newModel as JSON, contentType: "application/json")
+										def map = newModel
+										if(params?.path){
+											params.path.each{
+												if(map?."${it}"){
+													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
+												}
+											}
+										}
+										render(text:map as JSON, contentType: "application/json")
 										return false
 										break
 									case 'XML':
-										render(text:newModel as XML, contentType: "application/xml")
+										def map = newModel
+										if(params?.path){
+											params.path.each{
+												if(map?."${it}"){
+													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
+												}
+											}
+										}
+										render(text:map as XML, contentType: "application/xml")
 										return false
 										break
 								}

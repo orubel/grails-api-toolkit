@@ -21,8 +21,6 @@ class RestRPCService{
 		return RCH.currentRequestAttributes().currentResponse
 	}
 
-	def methods = ['GET','POST','PUT','DELETE']
-
 	def getParams(){
 		def params = RCH.currentRequestAttributes().params
 		def request = getRequest()
@@ -56,9 +54,24 @@ class RestRPCService{
 				api = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}"
 			}
 			if(queryString){
-				api += (params?.id)?"/${params.id}?${queryString}":"?${queryString}"
+				if(params?.id){
+					if(params?.path){
+						api += "/${params.id}/${params?.path}?${queryString}"
+					}else{
+						api += "/${params.id}?${queryString}"
+					}
+				}else{
+					api += "?${queryString}"
+				}
+				
 			}else{
-				api += (params.id)?"/${params.id}":''
+				if(params?.id){
+					if(params?.path){
+						api += "/${params.id}/${params?.path}"
+					}else{
+						api += "/${params.id}"
+					}
+				}
 			}
 		}else if(grailsApplication.config?.grails?.app?.context){
 			if(params?.format){
@@ -67,9 +80,23 @@ class RestRPCService{
 				api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}/${params.format}"
 			}
 			if(queryString){
-				api += (params.id)?"/${params.id}?${queryString}":"?${queryString}"
+				if(params?.id){
+					if(params?.path){
+						api += "/${params.id}/${params?.path}?${queryString}"
+					}else{
+						api += "/${params.id}?${queryString}"
+					}
+				}else{
+					api += "?${queryString}"
+				}
 			}else{
-				api += (params.id)?"/${params.id}":''
+				if(params?.id){
+					if(params?.path){
+						api += "/${params.id}/${params?.path}"
+					}else{
+						api += "/${params.id}"
+					}
+				}
 			}
 		}else if(!grailsApplication.config?.grails?.app?.context){
 			if(params?.format){
@@ -78,9 +105,23 @@ class RestRPCService{
 				api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}/${params.format}"
 			}
 			if(queryString){
-				api += (params.id)?"/${params.id}?${queryString}":"?${queryString}"
+				if(params?.id){
+					if(params?.path){
+						api += "/${params.id}/${params?.path}?${queryString}"
+					}else{
+						api += "/${params.id}?${queryString}"
+					}
+				}else{
+					api += "?${queryString}"
+				}
 			}else{
-				api += (params.id)?"/${params.id}":''
+				if(params?.id){
+					if(params?.path){
+						api += "/${params.id}/${params?.path}"
+					}else{
+						api += "/${params.id}"
+					}
+				}
 			}
 		}
 
@@ -93,109 +134,77 @@ class RestRPCService{
 		protocol = protocol.toUpperCase()
 		return request.method==protocol
 	}
-
-    boolean protocolMatch(String protocol){
-		def params = RCH.requestAttributes.params
-		def request = getRequest()
-
-		protocol = protocol.toUpperCase()
-
-		// test for API redirect- if API redirect is attempted... continue
-		def api = ""
-		if(grailsApplication.config.app.context=="/"){
-			api = "/"+grailsApplication.metadata['app.name']+"/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
-		}else{
-			api = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/"+params.controller+"/"+params.action+"/"+params.format?.toLowerCase()
-		}
-		if(request.forwardURI?.toLowerCase()==api || request.forwardURI?.toLowerCase()=="${api}/${params.id}"){
-			if(methods.contains(protocol)){
-					if(request.method==protocol){
-						getParams()
-						return true
-					}else{
-						sendData([errorCode:'400',errorMessage:"ERROR: REQUESTED METHOD DOES NOT MATCH SERVICE PROTOCOL."],'JSON')
-						return false
-					}
-			}else{
-				sendData([errorCode:'400',errorMessage:"ERROR: UNSUPPORTED REQUEST METHOD SENT"],'JSON')
-				return false
-			}
-		}else{
-			// NO API REDIRECT
-			return false
-		}
-	}
-
-	def sendData(Map data,String format){
-		def request = getRequest()
-		def response = getResponse()
-		def json = request.JSON
-		switch(request.method){
-			case "${request.method}":
-				if(data.errorCode && data.errorCode!=200){
-					response.status = data.errorCode.toInteger()
-					return data.errorMessage
-				}else{
-					switch(format){
-						case 'xml':
-							response.status = 200
-							return data as XML
-							break
-						case 'json':
-						default:
-							response.status = 200
-							return data as JSON
-							break
-					}
-				}
-				break
-			default:
-				response.status = 400
-				return 'Bad Request'
-				break
-		}
-	}
-
-	Map formatModel(Map data){
+	
+	Map formatModel(Object data){
 		def newMap = [:]
-
-		data.each{key, value ->
-			if(value){
-				if(grailsApplication.domainClasses*.clazz.contains(org.hibernate.Hibernate.getClass(value))){
-					newMap[key]=formatDomainObject(value)
-				}else{
-					newMap[key]=value
+		if(data && (!data?.response && !data?.metaClass && !data?.params)){
+			data.each{ key, value ->
+				if(value){
+					if(grailsApplication.isDomainClass(value.getClass())){
+						if(grailsApplication.config.restrpc.fetch=='eager'){
+							newMap[key]=formatDomainObject(value)
+						}else{
+							newMap[key]=value
+						}
+					}else{
+						if(value in java.util.Collection){
+							if(grailsApplication.isDomainClass(value.getClass())){
+								if(grailsApplication.config.restrpc.fetch=='eager'){
+									newMap[key]=formatDomainObject(value)
+								}else{
+									newMap[key]=value
+								}
+							}else{
+								value = formatModel(value)
+								newMap.put key, val
+							}
+						}else{
+							newMap[key]=value.toString()
+						}
+					}
 				}
 			}
 		}
 		return newMap
 	}
-
+	
 	Map formatDomainObject(Object data){
 	    def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
-	    def newMap = [:]
+
+	    Map newMap = [:]
+		def properties =  data.getProperties()
+
 	    data.getProperties().each { key, val ->
-	        if (!nonPersistent.contains(key)) {
-				if(grailsApplication.isDomainClass(val.getClass())){
-					newMap.put key, val.id
-				}else{
-					newMap.put key, val
-				}
-	        }
+			if(key && val){
+		        if (!nonPersistent.contains(key)) {
+					val = (val in Set)?val.toArray()[0]:val
+
+					if(grailsApplication.isDomainClass(val.getClass())){
+						newMap.put key, val
+					}else{
+						if(val in java.util.Collection){
+							if(val?.size()>0){
+								if(grailsApplication.isDomainClass(val[0].getClass())){
+									val.each{
+										newMap.key.put it.id, val
+									}
+								}else{
+									if(grailsApplication.config.restrpc.fetch=='eager'){
+										val = formatModel(val)
+									}
+									newMap.put key, val
+								}
+							}
+							
+						}else{
+							newMap.put key, val.toString()
+						}
+
+					}
+		        }
+	    	}
 	    }
 		return newMap
-	}
-
-	Map processMap(Map data,Map processor){
-		processor.each() { key, val ->
-			if(!val?.trim()){
-				data.remove(key)
-			}else{
-				def matcher = "${data[key]}" =~ "${data[key]}"
-				data[key] = matcher.replaceAll(val)
-			}
-		}
-		return data
 	}
 
 	boolean validateUrl(String url){
@@ -204,10 +213,6 @@ class RestRPCService{
 		return urlValidator.isValid(url)
 	}
 	
-	// ERROR CODES
-	// 200 = success
-	// ERROR CODES
-	// 200 = success
 	def _200_SUCCESS(String msg){
 		def response = getResponse()
 		response.setStatus(200,"[Success] : ${msg}")
