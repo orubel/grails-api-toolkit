@@ -20,6 +20,7 @@ class RestRPCFilters {
 				
 				if(params?.path?.trim()){
 					params.path = params.path.split("/")
+					// object.(params.path.join('.'))
 				}
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
@@ -35,9 +36,15 @@ class RestRPCFilters {
 				}
 				
 				def anno = action.getAnnotation(Api)
-				def newModel = restRPCService.formatModel(model)
 
-				
+				def newModel
+				if(grailsApplication.isDomainClass(model.getClass())){
+					newModel = model
+				}else{
+					newModel = restRPCService.formatModel(model)
+				}
+
+				def lastKey
 				switch(anno.method()) {
 					case RestMethod.GET:
 						if(restRPCService.isRequestMatch('GET')){
@@ -45,25 +52,109 @@ class RestRPCFilters {
 								switch(params.format){
 									case 'JSON':
 										def map = newModel
+										def key
 										if(params?.path){
-											params.path.each{
-												if(map?."${it}"){
-													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
-												}
+											if(grailsApplication.isDomainClass(map.getClass())){
+												map = map.(params.path.join('.'))
+											}
+										}else{
+											if(map in Set){
+												Map newMap = [1 : map.toArray()]
+												map = [1 : map.toArray()]
 											}
 										}
+											/*
+											params.path.each{
+												if(grailsApplication.isDomainClass(it.getClass())){
+													if(map.containsKey(it)){
+														map = (map.containsKey(it))?map."${it}":[map."${it}"]
+													}else{
+														if(it.getClass()==String){
+															if(it.isNumber()){
+																if(map."${lastKey}".id == it.toLong()){
+																	key=it
+																	map = map."${lastKey}".find { id.value == it.toLong()}
+																	//key=it
+																	//map = map."${lastKey}"
+																}
+															}else{
+																if(map."${it}"){
+																	key=it
+																	map = map."${it}"
+																}
+															}
+														}
+													}
+												}else{
+													if(it.getClass()==String){
+														if(map."${it}"){
+															key=it
+															map = map."${it}"
+														}
+													}
+												}
+												if(map in Set){
+													Map newMap = [1 : map.toArray()]
+													map = [1 : map.toArray()]
+												}
+												lastKey=it
+											}
+											
+										}
+								*/
 										render(text:map as JSON, contentType: "application/json")
 										return false
 										break
 									case 'XML':
 										def map = newModel
+										def key
 										if(params?.path){
-											params.path.each{
-												if(map?."${it}"){
-													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
-												}
+											if(grailsApplication.isDomainClass(map.getClass())){
+												map = map.(params.path.join('.'))
+											}
+										}else{
+											if(map in Set){
+												Map newMap = [1 : map.toArray()]
+												map = [1 : map.toArray()]
 											}
 										}
+										/*
+										if(params?.path){
+											params.path.each{
+												if(grailsApplication.isDomainClass(it.getClass())){
+													if(map.containsKey(it)){
+														map = (map.containsKey(it))?map."${it}":[map."${it}"]
+													}else{
+														if(it.getClass()==String){
+															if(it.isNumber()){
+																if(map.getProperties("${lastKey}").getProperties('id') == it.toLong()){
+																	key=it
+																	map = map."${lastKey}".getProperties('id').get(it.toLong())
+																}
+															}else{
+																if(map."${it}"){
+																	key=it
+																	map = map."${it}"
+																}
+															}
+														}
+													}
+												}else{
+													if(it.getClass()==String){
+														if(map."${it}"){
+															key=it
+															map = map."${it}"
+														}
+													}
+												}
+												if(map in Set){
+													Map newMap = [1 : map.toArray()]
+													map = [1 : map.toArray()]
+												}
+												lastKey=it
+											}
+										}
+										*/
 										render(text:map as XML, contentType: "application/xml")
 										return false
 										break
@@ -78,8 +169,8 @@ class RestRPCFilters {
 										def map = newModel
 										if(params?.path){
 											params.path.each{
-												if(map?."${it}"){
-													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
+												if(map.containsKey("${it}")){
+													map = (map.containsKey("${it}"))?map."${it}":[map."${it}"]
 												}
 											}
 										}
@@ -89,8 +180,8 @@ class RestRPCFilters {
 										def map = newModel
 										if(params?.path){
 											params.path.each{
-												if(map?."${it}"){
-													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
+												if(map.containsKey("${it}")){
+													map = (map.containsKey("${it}"))?map."${it}":[map."${it}"]
 												}
 											}
 										}
@@ -107,8 +198,8 @@ class RestRPCFilters {
 										def map = newModel
 										if(params?.path){
 											params.path.each{
-												if(map?."${it}"){
-													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
+												if(map.containsKey("${it}")){
+													map = (map.containsKey("${it}"))?map."${it}":[map."${it}"]
 												}
 											}
 										}
@@ -119,8 +210,8 @@ class RestRPCFilters {
 										def map = newModel
 										if(params?.path){
 											params.path.each{
-												if(map?."${it}"){
-													map = (map?."${it}" in java.util.Collection)?map."${it}":[map."${it}"]
+												if(map.containsKey("${it}")){
+													map = (map.containsKey("${it}"))?map."${it}":[map."${it}"]
 												}
 											}
 										}

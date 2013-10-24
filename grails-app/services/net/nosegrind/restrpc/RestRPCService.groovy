@@ -141,22 +141,18 @@ class RestRPCService{
 			data.each{ key, value ->
 				if(value){
 					if(grailsApplication.isDomainClass(value.getClass())){
-						if(grailsApplication.config.restrpc.fetch=='eager'){
-							newMap[key]=formatDomainObject(value)
-						}else{
-							newMap[key]=value
-						}
+						newMap[key]=value
 					}else{
 						if(value in java.util.Collection){
-							if(grailsApplication.isDomainClass(value.getClass())){
-								if(grailsApplication.config.restrpc.fetch=='eager'){
-									newMap[key]=formatDomainObject(value)
+							if(val?.size()>0){
+								if(grailsApplication.isDomainClass(val[0].getClass())){
+									val.each{ k,v ->
+										newMap[key][v.id]= v
+									}
 								}else{
-									newMap[key]=value
+									value = formatModel(value)
+									newMap[key]= value
 								}
-							}else{
-								value = formatModel(value)
-								newMap.put key, val
 							}
 						}else{
 							newMap[key]=value.toString()
@@ -165,45 +161,6 @@ class RestRPCService{
 				}
 			}
 		}
-		return newMap
-	}
-	
-	Map formatDomainObject(Object data){
-	    def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
-
-	    Map newMap = [:]
-		def properties =  data.getProperties()
-
-	    data.getProperties().each { key, val ->
-			if(key && val){
-		        if (!nonPersistent.contains(key)) {
-					val = (val in Set)?val.toArray()[0]:val
-
-					if(grailsApplication.isDomainClass(val.getClass())){
-						newMap.put key, val
-					}else{
-						if(val in java.util.Collection){
-							if(val?.size()>0){
-								if(grailsApplication.isDomainClass(val[0].getClass())){
-									val.each{
-										newMap.key.put it.id, val
-									}
-								}else{
-									if(grailsApplication.config.restrpc.fetch=='eager'){
-										val = formatModel(val)
-									}
-									newMap.put key, val
-								}
-							}
-							
-						}else{
-							newMap.put key, val.toString()
-						}
-
-					}
-		        }
-	    	}
-	    }
 		return newMap
 	}
 
