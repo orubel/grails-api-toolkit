@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.converters.XML
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
+import net.nosegrind.restrpc.Api
 
 //org.springframework.web.context.request.RequestContextHolder.getRequestAttributes().getResponse()
 
@@ -30,13 +31,15 @@ class RestRPCService{
 		}
 		return params
 	}
-
+	
+	// api call now needs to detect request method and see if it matches anno request method
 	boolean isApiCall(){
 		def request = getRequest()
 		def params = getParams()
 		def queryString = request.'javax.servlet.forward.query_string'
 		
 		def uri
+
 		if(request.isRedirected()){
 			if(params.action=='index'){
 				uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI+'/'+params.action
@@ -46,84 +49,18 @@ class RestRPCService{
 		}else{
 			uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI
 		}
+		
 		def api
 		if(grailsApplication.config.grails.app.context=='/'){
-			if(params?.format){
-				api = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}/${params.format}"
-			}else{
-				api = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}"
-			}
-			if(queryString){
-				if(params?.id){
-					if(params?.path){
-						api += "/${params.id}/${params?.path}?${queryString}"
-					}else{
-						api += "/${params.id}?${queryString}"
-					}
-				}else{
-					api += "?${queryString}"
-				}
-				
-			}else{
-				if(params?.id){
-					if(params?.path){
-						api += "/${params.id}/${params?.path}"
-					}else{
-						api += "/${params.id}"
-					}
-				}
-			}
+			api = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/"
 		}else if(grailsApplication.config?.grails?.app?.context){
-			if(params?.format){
-				api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}"
-			}else{
-				api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}/${params.format}"
-			}
-			if(queryString){
-				if(params?.id){
-					if(params?.path){
-						api += "/${params.id}/${params?.path}?${queryString}"
-					}else{
-						api += "/${params.id}?${queryString}"
-					}
-				}else{
-					api += "?${queryString}"
-				}
-			}else{
-				if(params?.id){
-					if(params?.path){
-						api += "/${params.id}/${params?.path}"
-					}else{
-						api += "/${params.id}"
-					}
-				}
-			}
+			api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/"
 		}else if(!grailsApplication.config?.grails?.app?.context){
-			if(params?.format){
-				api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}"
-			}else{
-				api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.config.restrpc.apiVersion}/${params.controller}/${params.action}/${params.format}"
-			}
-			if(queryString){
-				if(params?.id){
-					if(params?.path){
-						api += "/${params.id}/${params?.path}?${queryString}"
-					}else{
-						api += "/${params.id}?${queryString}"
-					}
-				}else{
-					api += "?${queryString}"
-				}
-			}else{
-				if(params?.id){
-					if(params?.path){
-						api += "/${params.id}/${params?.path}"
-					}else{
-						api += "/${params.id}"
-					}
-				}
-			}
+			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/"
 		}
+		api += (params?.format)?"${params.format}/${params.controller}/${params.action}":"JSON/${params.controller}/${params.action}"
+		api += (params.id)?"/${params.id}":""
+		api += (queryString)?"?${queryString}":""
 
 		//println("${uri}==${api}")
 		return uri==api
@@ -131,8 +68,8 @@ class RestRPCService{
 
 	boolean isRequestMatch(String protocol){
 		def request = getRequest()
-		protocol = protocol.toUpperCase()
-		return request.method==protocol
+		println("${request.method.toString()}==${protocol.toString()}")
+		return request.method.toString()==protocol.toString()
 	}
 	
 	Map formatModel(Object data){

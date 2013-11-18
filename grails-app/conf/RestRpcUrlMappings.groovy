@@ -1,33 +1,28 @@
+
 class RestRpcUrlMappings {
 
 	static grailsApplication
 
 	static mappings = {
 		String apiName = getGrailsApplication().config.restrpc.apiName
-		String apiVersion = getGrailsApplication().config.restrpc.apiVersion
+		String apiVersion = getGrailsApplication().metadata['app.version']
 		
-		"/$apiName/$apiVersion/$controller/$action/$format/" {
+		"/$apiName/$apiVersion/$format/$controller/$action" {
 			controller = controller
 			action = action
 			parseRequest = true
 		}
-		"/$apiName/$apiVersion/$controller/$action/$format/$id" {
+		
+		"/$apiName/$apiVersion/$format/$controller/$action/$id" {
 			controller = controller
 			action = action
 			parseRequest = true
 		}
-		"/$apiName/$apiVersion/$controller/$action/$format/$id/$path**" {
-			controller = controller
-			action = action
-			parseRequest = true
-		}
-
 		
 		"/$apiName/$apiVersion/apidoc" {
 			controller = 'apidoc'
 			parseRequest = true
 		}
-		
 		"/$apiName/$apiVersion/apidoc/show" {
 			controller = 'apidoc'
 			action = 'show'

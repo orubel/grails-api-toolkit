@@ -1,5 +1,4 @@
-
-import java.util.Map;
+import java.util.Map
 
 import grails.converters.JSON
 import grails.converters.XML
@@ -12,228 +11,437 @@ class RestRPCFilters {
 	
 	def filters = {
 		restrpc(controller:'*', action:'*'){
+			before = {
+				/*
+				 * DO ANNO CHECKS BEFORE METHOD CALL SO EDIT/DELETE DOESN'T GET CALLED AND
+				 * END USER DOESN'T HAVE TO DO CHECK; CHECK IS OPTIONAL. WE ALWAYS DO CHECK
+				 * TO PROTECT DATA AND THEY CAN DO OPTIONAL CHECK TO SEND DIFFERENT DATA
+				 */
+				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
+				def action = controller?.getClazz()?.getDeclaredMethod(params.action)
+				// IF THERE IS AN ACTION, WE PROCESS ELSE WE IGNORE; COULD BE INDEX
+				// WHICH WILL REDIRECT
+				if (action) {
+					if (action.isAnnotationPresent(Api)) {
+						if (restRPCService.isApiCall()) {
+							// CHECK ANNO TO SEE IF ITS POST/PUT/DELETE
+							// IF SO, CHECK METHOD MATCH
+							def anno = action.getAnnotation(Api)
+							if(restRPCService.isRequestMatch(anno.method().toString())){
+								return true
+							}else{
+								return false
+							}
+						}else{
+							return false
+						}
+					}else{
+						return true
+					}
+				}
+			}
+			
 			after = { Map model ->
-				// IF THIS IS AN API REQUEST, WE PROCESS ELSE WE IGNORE
-				if (!restRPCService.isApiCall()) {
-					return
-				}
-				
-				if(params?.path?.trim()){
-					params.path = params.path.split("/")
-					// object.(params.path.join('.'))
-				}
-				
-				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
-				def action = controller?.getClazz()?.getDeclaredMethod(actionName)
-				// IF THERE IS AN ACTION, WE PROCESS ELSE WE IGNORE
-				if (!action) {
-					return
-				}
-
-				// IF THERE IS AN ANNOTATION ON SAID ACTION WE CONTINUE TO PROCESS
-				if (!action.isAnnotationPresent(Api)) {
-					return
-				}
-				
+				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
+				def action = controller?.getClazz()?.getDeclaredMethod(params.action)
 				def anno = action.getAnnotation(Api)
+				
+				def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:restRPCService.formatModel(model)
+			
+				String format = params.format
 
-				def newModel
-				if(grailsApplication.isDomainClass(model.getClass())){
-					newModel = model
-				}else{
-					newModel = restRPCService.formatModel(model)
-				}
+				def queryString = request.'javax.servlet.forward.query_string'
+				def path = (queryString)?queryString.split('&'):[]
 
 				def lastKey
-				switch(anno.method()) {
-					case RestMethod.GET:
-						if(restRPCService.isRequestMatch('GET')){
-							if(!newModel.isEmpty()){
-								switch(params.format){
-									case 'JSON':
-										def map = newModel
-										def key
-										if(params?.path){
-											if(grailsApplication.isDomainClass(map.getClass())){
-												map = map.(params.path.join('.'))
-											}
-										}else{
-											if(map in Set){
-												Map newMap = [1 : map.toArray()]
-												map = [1 : map.toArray()]
-											}
-										}
-											/*
-											params.path.each{
-												if(grailsApplication.isDomainClass(it.getClass())){
-													if(map.containsKey(it)){
-														map = (map.containsKey(it))?map."${it}":[map."${it}"]
-													}else{
-														if(it.getClass()==String){
-															if(it.isNumber()){
-																if(map."${lastKey}".id == it.toLong()){
-																	key=it
-																	map = map."${lastKey}".find { id.value == it.toLong()}
-																	//key=it
-																	//map = map."${lastKey}"
+				switch(anno.method().toString()) {
+					case 'GET':
+						if(!newModel.isEmpty()){
+							switch(params.format){
+								case 'JSON':
+									def map = newModel
+									def key
+
+									if(path){
+										def pathSize = path.size()
+										path.eachWithIndex(){ val,i ->
+											if(val){
+												def temp = val.split('=')
+												String pathKey = temp[0]
+												String pathVal = (temp.size()>1)?temp[1]:null
+
+												if(pathKey=='null'){
+													pathVal = pathVal.split('/').join('.')
+													if(map."${pathVal}"){
+														if(map."${pathVal}" in java.util.Collection){
+															map = map."${pathVal}"
+														}else{
+															if(map."${pathVal}".toString().isInteger()){
+																if(i==(pathSize-1)){
+																	def newMap = ["${pathVal}":map."${pathVal}"]
+																	map = newMap
+																}else{
+																	params.id = map."${pathVal}"
 																}
 															}else{
-																if(map."${it}"){
-																	key=it
-																	map = map."${it}"
-																}
+																def newMap = ["${pathVal}":map."${pathVal}"]
+																map = newMap
 															}
 														}
+													}else{
+														String msg = "Path '${pathKey}' was unable to be parsed"
+														return restRPCService._404_NOTFOUND(msg)
 													}
 												}else{
-													if(it.getClass()==String){
-														if(map."${it}"){
-															key=it
-															map = map."${it}"
-														}
-													}
+													def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+													uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+													redirect(uri: "${uri}")
 												}
-												if(map in Set){
-													Map newMap = [1 : map.toArray()]
-													map = [1 : map.toArray()]
-												}
-												lastKey=it
-											}
-											
-										}
-								*/
-										render(text:map as JSON, contentType: "application/json")
-										return false
-										break
-									case 'XML':
-										def map = newModel
-										def key
-										if(params?.path){
-											if(grailsApplication.isDomainClass(map.getClass())){
-												map = map.(params.path.join('.'))
-											}
-										}else{
-											if(map in Set){
-												Map newMap = [1 : map.toArray()]
-												map = [1 : map.toArray()]
 											}
 										}
-										/*
-										if(params?.path){
-											params.path.each{
-												if(grailsApplication.isDomainClass(it.getClass())){
-													if(map.containsKey(it)){
-														map = (map.containsKey(it))?map."${it}":[map."${it}"]
-													}else{
-														if(it.getClass()==String){
-															if(it.isNumber()){
-																if(map.getProperties("${lastKey}").getProperties('id') == it.toLong()){
-																	key=it
-																	map = map."${lastKey}".getProperties('id').get(it.toLong())
+									}
+									
+									render(text:map as JSON, contentType: "application/json")
+									//return false
+									break
+								case 'XML':
+									def map = newModel
+									def key
+
+									if(path){
+										def pathSize = path.size()
+										path.eachWithIndex(){ val,i ->
+											if(val){
+												def temp = val.split('=')
+												String pathKey = temp[0]
+												String pathVal = (temp.size()>1)?temp[1]:null
+
+												if(pathKey=='null'){
+													pathVal = pathVal.split('/').join('.')
+													if(map."${pathVal}"){
+														if(map."${pathVal}" in java.util.Collection){
+															map = map."${pathVal}"
+														}else{
+															if(map."${pathVal}".toString().isInteger()){
+																if(i==(pathSize-1)){
+																	def newMap = ["${pathVal}":map."${pathVal}"]
+																	map = newMap
+																}else{
+																	params.id = map."${pathVal}"
 																}
 															}else{
-																if(map."${it}"){
-																	key=it
-																	map = map."${it}"
-																}
+																def newMap = ["${pathVal}":map."${pathVal}"]
+																map = newMap
 															}
 														}
+													}else{
+														String msg = "Path '${pathKey}' was unable to be parsed"
+														return restRPCService._404_NOTFOUND(msg)
 													}
 												}else{
-													if(it.getClass()==String){
-														if(map."${it}"){
-															key=it
-															map = map."${it}"
-														}
-													}
+													def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+													uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+													redirect(uri: "${uri}")
 												}
-												if(map in Set){
-													Map newMap = [1 : map.toArray()]
-													map = [1 : map.toArray()]
-												}
-												lastKey=it
 											}
 										}
-										*/
-										render(text:map as XML, contentType: "application/xml")
-										return false
-										break
-								}
+									}
+
+									render(text:map as XML, contentType: "application/xml")
+									//return false
+									break
 							}
 						}
 						break
-					case RestMethod.PUT:
-						if(restRPCService.isRequestMatch('PUT')){
-								switch(params.format){
-									case 'JSON':
-										def map = newModel
-										if(params?.path){
-											params.path.each{
-												if(map.containsKey("${it}")){
-													map = (map.containsKey("${it}"))?map."${it}":[map."${it}"]
+					case 'POST':
+						switch(params.format){
+							case 'JSON':
+								def map = newModel
+								def key
+
+								if(path){
+									def pathSize = path.size()
+									path.eachWithIndex(){ val,i ->
+										if(val){
+											def temp = val.split('=')
+											String pathKey = temp[0]
+											String pathVal = (temp.size()>1)?temp[1]:null
+
+											if(pathKey=='null'){
+												pathVal = pathVal.split('/').join('.')
+												if(map."${pathVal}"){
+													if(map."${pathVal}" in java.util.Collection){
+														map = map."${pathVal}"
+													}else{
+														if(map."${pathVal}".toString().isInteger()){
+															if(i==(pathSize-1)){
+																def newMap = ["${pathVal}":map."${pathVal}"]
+																map = newMap
+															}else{
+																params.id = map."${pathVal}"
+															}
+														}else{
+															def newMap = ["${pathVal}":map."${pathVal}"]
+															map = newMap
+														}
+													}
+												}else{
+													String msg = "Path '${pathKey}' was unable to be parsed"
+													return restRPCService._404_NOTFOUND(msg)
 												}
+											}else{
+												def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+												uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+												redirect(uri: "${uri}")
 											}
 										}
-										render(text:map as JSON, contentType: "application/json")
-										break
-									case 'XML':
-										def map = newModel
-										if(params?.path){
-											params.path.each{
-												if(map.containsKey("${it}")){
-													map = (map.containsKey("${it}"))?map."${it}":[map."${it}"]
-												}
-											}
-										}
-										render(text:map as XML, contentType: "application/xml")
-										return false
-										break
+									}
 								}
+								
+								render(text:map as JSON, contentType: "application/json")
+								break
+							case 'XML':
+								def map = newModel
+								def key
+
+								if(path){
+									def pathSize = path.size()
+									path.eachWithIndex(){ val,i ->
+										if(val){
+											def temp = val.split('=')
+											String pathKey = temp[0]
+											String pathVal = (temp.size()>1)?temp[1]:null
+
+											if(pathKey=='null'){
+												pathVal = pathVal.split('/').join('.')
+												if(map."${pathVal}"){
+													if(map."${pathVal}" in java.util.Collection){
+														map = map."${pathVal}"
+													}else{
+														if(map."${pathVal}".toString().isInteger()){
+															if(i==(pathSize-1)){
+																def newMap = ["${pathVal}":map."${pathVal}"]
+																map = newMap
+															}else{
+																params.id = map."${pathVal}"
+															}
+														}else{
+															def newMap = ["${pathVal}":map."${pathVal}"]
+															map = newMap
+														}
+													}
+												}else{
+													String msg = "Path '${pathKey}' was unable to be parsed"
+													return restRPCService._404_NOTFOUND(msg)
+												}
+											}else{
+												def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+												uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+												redirect(uri: "${uri}")
+											}
+										}
+									}
+								}
+								
+								render(text:map as XML, contentType: "application/xml")
+								return false
+								break
 						}
 						break
-					case RestMethod.POST:
-						if(restRPCService.isRequestMatch('POST')){
-								switch(params.format){
-									case 'JSON':
-										def map = newModel
-										if(params?.path){
-											params.path.each{
-												if(map.containsKey("${it}")){
-													map = (map.containsKey("${it}"))?map."${it}":[map."${it}"]
+					case 'PUT':
+						switch(params.format){
+							case 'JSON':
+								def map = newModel
+								def key
+
+								if(path){
+									def pathSize = path.size()
+									path.eachWithIndex(){ val,i ->
+										if(val){
+											def temp = val.split('=')
+											String pathKey = temp[0]
+											String pathVal = (temp.size()>1)?temp[1]:null
+
+											if(pathKey=='null'){
+												pathVal = pathVal.split('/').join('.')
+												if(map."${pathVal}"){
+													if(map."${pathVal}" in java.util.Collection){
+														map = map."${pathVal}"
+													}else{
+														if(map."${pathVal}".toString().isInteger()){
+															if(i==(pathSize-1)){
+																def newMap = ["${pathVal}":map."${pathVal}"]
+																map = newMap
+															}else{
+																params.id = map."${pathVal}"
+															}
+														}else{
+															def newMap = ["${pathVal}":map."${pathVal}"]
+															map = newMap
+														}
+													}
+												}else{
+													String msg = "Path '${pathKey}' was unable to be parsed"
+													return restRPCService._404_NOTFOUND(msg)
 												}
+											}else{
+												def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+												uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+												redirect(uri: "${uri}")
 											}
 										}
-										render(text:map as JSON, contentType: "application/json")
-										return false
-										break
-									case 'XML':
-										def map = newModel
-										if(params?.path){
-											params.path.each{
-												if(map.containsKey("${it}")){
-													map = (map.containsKey("${it}"))?map."${it}":[map."${it}"]
-												}
-											}
-										}
-										render(text:map as XML, contentType: "application/xml")
-										return false
-										break
+									}
 								}
+								
+								render(text:map as JSON, contentType: "application/json")
+								return false
+								break
+							case 'XML':
+								def map = newModel
+								def key
+
+								if(path){
+									def pathSize = path.size()
+									path.eachWithIndex(){ val,i ->
+										if(val){
+											def temp = val.split('=')
+											String pathKey = temp[0]
+											String pathVal = (temp.size()>1)?temp[1]:null
+
+											if(pathKey=='null'){
+												pathVal = pathVal.split('/').join('.')
+												if(map."${pathVal}"){
+													if(map."${pathVal}" in java.util.Collection){
+														map = map."${pathVal}"
+													}else{
+														if(map."${pathVal}".toString().isInteger()){
+															if(i==(pathSize-1)){
+																def newMap = ["${pathVal}":map."${pathVal}"]
+																map = newMap
+															}else{
+																params.id = map."${pathVal}"
+															}
+														}else{
+															def newMap = ["${pathVal}":map."${pathVal}"]
+															map = newMap
+														}
+													}
+												}else{
+													String msg = "Path '${pathKey}' was unable to be parsed"
+													return restRPCService._404_NOTFOUND(msg)
+												}
+											}else{
+												def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+												uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+												redirect(uri: "${uri}")
+											}
+										}
+									}
+								}
+								
+								render(text:map as XML, contentType: "application/xml")
+								return false
+								break
 						}
 						break
-					case RestMethod.DELETE:
-						if(restRPCService.isRequestMatch('DELETE')){
-								switch(params.format){
-									case 'JSON':
-									case 'XML':
-										return response.status
-										break
+					case 'DELETE':
+						switch(params.format){
+							case 'JSON':
+								def key
+								
+								if(path){
+									def pathSize = path.size()
+									path.eachWithIndex(){ val,i ->
+										if(val){
+											def temp = val.split('=')
+											String pathKey = temp[0]
+											String pathVal = (temp.size()>1)?temp[1]:null
+
+											if(pathKey=='null'){
+												pathVal = pathVal.split('/').join('.')
+												if(map."${pathVal}"){
+													if(map."${pathVal}" in java.util.Collection){
+														map = map."${pathVal}"
+													}else{
+														if(map."${pathVal}".toString().isInteger()){
+															if(i==(pathSize-1)){
+																def newMap = ["${pathVal}":map."${pathVal}"]
+																map = newMap
+															}else{
+																params.id = map."${pathVal}"
+															}
+														}else{
+															def newMap = ["${pathVal}":map."${pathVal}"]
+															map = newMap
+														}
+													}
+												}else{
+													String msg = "Path '${pathKey}' was unable to be parsed"
+													return restRPCService._404_NOTFOUND(msg)
+												}
+											}else{
+												def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+												uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+												redirect(uri: "${uri}")
+											}
+										}
+									}
 								}
+								return response.status
+								break;
+							case 'XML':
+								def key
+								
+								if(path){
+									def pathSize = path.size()
+									path.eachWithIndex(){ val,i ->
+										if(val){
+											def temp = val.split('=')
+											String pathKey = temp[0]
+											String pathVal = (temp.size()>1)?temp[1]:null
+
+											if(pathKey=='null'){
+												pathVal = pathVal.split('/').join('.')
+												if(map."${pathVal}"){
+													if(map."${pathVal}" in java.util.Collection){
+														map = map."${pathVal}"
+													}else{
+														if(map."${pathVal}".toString().isInteger()){
+															if(i==(pathSize-1)){
+																def newMap = ["${pathVal}":map."${pathVal}"]
+																map = newMap
+															}else{
+																params.id = map."${pathVal}"
+															}
+														}else{
+															def newMap = ["${pathVal}":map."${pathVal}"]
+															map = newMap
+														}
+													}
+												}else{
+													String msg = "Path '${pathKey}' was unable to be parsed"
+													return restRPCService._404_NOTFOUND(msg)
+												}
+											}else{
+												def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+												uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+												redirect(uri: "${uri}")
+											}
+										}
+									}
+								}
+							
+								return response.status
+								break
 						}
 						break
 				}
 				return false
 			}
+			
 		}
+
 	}
+
 }
+			
