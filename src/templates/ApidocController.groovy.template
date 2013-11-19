@@ -34,24 +34,23 @@ class ApidocController {
 							
 							def action = method.getName()
 							def api = method.getAnnotation(Api)
-
-							def apiList = [path:"${controllername}/${method.getName()}",method:"${api.method()}",description:"${api.description()}",values:[],returns:[],errors:[]]
+							def apiList = [path:"${controllername}/${method.getName()}",method:"${api.method()}",description:"${api.description()}",receives:[],returns:[],errors:[]]
 
 							// Params
-							def params = api.values()
+							def params = api.receives()
 							params.each{ p ->
 								if (p.paramType()) {
-									def list = [type:"${p.paramType()}",name:"${p.name()}",description:"${p.description()}",required:"${p.required()}",values:[]]
+									def list = [type:"${p.paramType()}",name:"${p.name()}",description:"${p.description()}",required:"${p.required()}",receives:[]]
 									if(p?.values()){
 										def params2 = p.params()
 										params2.each{ p2 ->
 											if (p2.paramType()) {
 												def pm2 = [type:"${p2.paramType()}",name:"${p2.name()}",description:"${p2.description()}",required:"${p2.required()}"]
-												list.values.add(pm2)
+												list.receives.add(pm2)
 											}
 										}
 									}
-									apiList.values.add(list)
+									apiList.receives.add(list)
 								}
 							}
 							
@@ -61,16 +60,20 @@ class ApidocController {
 							def json = [:]
 							returns.each{ p ->
 								if (p.paramType()) {
+									/*
+									if(p.roles?.trim()){
+										def roles = p.roles.toUpperCase().split(',')
+										println("roles = "+roles.class)
+										def roles2 = grailsApplication.getDomainClass(lookupRoleClassName()).clazz.list().authority
+										println("roles2 = "+roles2.class)
+									}
+									*/
 									def list = [type:"${p.paramType()}",name:"${p.name()}",description:"${p.description()}",required:"${p.required()}",params:[]]
 									def j = [:]
 									if(p?.values()){
 										j["${p.name()}"]=[]
 									}else{
-										if(p?.exampleData().trim()){
-											j = ["${p.name()}":"${p.exampleData()}"]
-										}else{
-											j = ["${p.name()}":"${grailsApplication.config.restrpc.defaultData.(p.paramType())}"]
-										}
+										j = (p?.exampleData().trim())?["${p.name()}":"${p.exampleData()}"]:["${p.name()}":"${grailsApplication.config.restrpc.defaultData.(p.paramType())}"]
 									}
 									if(p?.values()){
 										def returns2 = p.values()

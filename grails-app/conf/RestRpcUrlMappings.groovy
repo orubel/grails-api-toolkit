@@ -21,6 +21,7 @@ class RestRpcUrlMappings {
 		
 		"/$apiName/$apiVersion/apidoc" {
 			controller = 'apidoc'
+			action = 'show'
 			parseRequest = true
 		}
 		"/$apiName/$apiVersion/apidoc/show" {

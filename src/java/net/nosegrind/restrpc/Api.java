@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 public @interface Api{
 	RestMethod method();
     String description();
-    Params[] values() default {};
+    Params[] receives() default {};
     Params[] returns() default {};
     ErrorCode[] errors() default {};
 }

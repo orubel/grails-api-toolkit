@@ -68,7 +68,6 @@ class RestRPCService{
 
 	boolean isRequestMatch(String protocol){
 		def request = getRequest()
-		println("${request.method.toString()}==${protocol.toString()}")
 		return request.method.toString()==protocol.toString()
 	}
 	
@@ -81,9 +80,9 @@ class RestRPCService{
 						newMap[key]=value
 					}else{
 						if(value in java.util.Collection){
-							if(val?.size()>0){
-								if(grailsApplication.isDomainClass(val[0].getClass())){
-									val.each{ k,v ->
+							if(value?.size()>0){
+								if(grailsApplication.isDomainClass(value[0].getClass())){
+									value.each{ k,v ->
 										newMap[key][v.id]= v
 									}
 								}else{

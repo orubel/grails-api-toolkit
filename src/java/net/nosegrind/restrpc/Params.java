@@ -11,7 +11,8 @@ public @interface Params{
     String paramType();
     String name();
     String description();
-    boolean required();
+    boolean required() default true;
     String exampleData() default "";
+    String roles() default "";
     Param[] values() default {};
 }
