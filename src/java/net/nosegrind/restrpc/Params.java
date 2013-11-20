@@ -11,8 +11,8 @@ public @interface Params{
     String paramType();
     String name();
     String description();
+    String[] roles() default {"ROLE_USER"};
     boolean required() default true;
-    String exampleData() default "";
-    String roles() default "";
+    String mockData() default "";
     Param[] values() default {};
 }

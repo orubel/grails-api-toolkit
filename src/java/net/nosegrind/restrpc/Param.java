@@ -12,7 +12,7 @@ public @interface Param {
     String name();
     String description();
     boolean required() default true;
-    String exampleData() default "";
-    String roles() default "";
+    String mockData() default "";
+    String[] roles() default {};
     String requiredRole() default "";
 }
