@@ -110,7 +110,10 @@ class ApidocController {
 							}
 
 							if(apiOutput[inc].parent && !apiList.isEmpty()){
-								apiOutput[inc].json.add(json as JSON)
+								json = json as JSON
+								json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
+								json = json.toString().replaceAll("}"," </div>}<br>")
+								apiOutput[inc].json.add(json)
 								apiOutput[inc].api.add(apiList)
 							}
 						}
