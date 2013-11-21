@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 public @interface Params{
     String paramType();
     String name();
+    String belongsTo() default "";
     String description();
     String[] roles() default {""};
     boolean required() default true;

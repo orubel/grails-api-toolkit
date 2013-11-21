@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 public @interface Param {
     String paramType();
     String name();
+    String belongsTo() default "";
     String description();
     boolean required() default true;
     String mockData() default "";
