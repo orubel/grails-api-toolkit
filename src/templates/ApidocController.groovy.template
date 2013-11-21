@@ -113,6 +113,7 @@ class ApidocController {
 								json = json as JSON
 								json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
 								json = json.toString().replaceAll("}"," </div>}<br>")
+								json = json.toString().replaceAll(",",",<br>")
 								apiOutput[inc].json.add(json)
 								apiOutput[inc].api.add(apiList)
 							}
