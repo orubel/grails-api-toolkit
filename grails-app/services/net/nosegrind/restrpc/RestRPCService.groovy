@@ -86,11 +86,15 @@ class RestRPCService{
 		}
 	}
 	
-	// returns Params belongsTo if key was found else throws error
-	// letting you know bad declaration and that key
-	// also create linkrels by role so people cant see links the cant access
-	String createLinkRelationships(String paramType,String name,String belongsTo){
-		
+	/*
+	 * Which annos declare this KEY as being 'received'.
+	 * Check first in own controller then walk all others
+	 */
+	String createLinkRelationships(String paramType,String name,String controller){
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+		//def methods = controller?.getClazz().metaClass.methods*.name.sort().unique()
+		for (Method method : controller.getClazz().getMethods()){
+				if(method.isAnnotationPresent(Api)) {
 	}
 	
 	Map formatModel(Object data){
