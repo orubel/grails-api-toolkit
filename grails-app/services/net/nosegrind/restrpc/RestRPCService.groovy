@@ -71,6 +71,28 @@ class RestRPCService{
 		return request.method.toString()==protocol.toString()
 	}
 	
+	// true=primary
+	// false=foreign
+	Integer getKey(String key){
+		switch(key){
+			case'FKey':
+				return 2
+				break
+			case 'PKey':
+				return 1
+				break
+			default:
+				return 0
+		}
+	}
+	
+	// returns Params belongsTo if key was found else throws error
+	// letting you know bad declaration and that key
+	// also create linkrels by role so people cant see links the cant access
+	String createLinkRelationships(String paramType,String name,String belongsTo){
+		
+	}
+	
 	Map formatModel(Object data){
 		def newMap = [:]
 		if(data && (!data?.response && !data?.metaClass && !data?.params)){

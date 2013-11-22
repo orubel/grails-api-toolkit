@@ -196,8 +196,37 @@ class RestRPCFilters {
 													}
 												}
 											}
-		
-											render(text:map as XML, contentType: "application/xml")
+											
+											def linkRels = []
+											map.each(){ k,v ->
+												def api = action.getAnnotation(Api)
+												def returns = api.returns()
+												returns.each{ p ->
+													String paramType = p.paramType().toString()
+													String name = p.name().toString()
+													String belongsTo = p.belongsTo().toString()
+													Integer paramKey = restRPCService.getKey(paramType)
+													if(paramKey>0 && name==k){
+														def temp = []
+														if(paramKey==1){
+															temp = restRPCService.createLinkRelationships(paramType,name,params.controller)
+														}else{
+															temp = restRPCService.createLinkRelationships(paramType,name,belongsTo)
+															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}/${belongsTo[0].toLowerCase()+belongsTo.substring(1)}/show/${v}"
+															map[k] = "<a href=${uri}>${v}<a>"
+														}
+														linkRels.add(temp)
+													}
+												}
+											}
+											map['linkRelationships']=linkRels
+											
+											def json = map as JSON
+											json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
+											json = json.toString().replaceAll("}"," </div>}<br>")
+											json = json.toString().replaceAll(",",",<br>")
+											
+											render(text:json)
 											//return false
 											break
 									}
