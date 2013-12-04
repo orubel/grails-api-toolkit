@@ -2,15 +2,24 @@ package net.nosegrind.restrpc
 
 import grails.converters.JSON
 import grails.converters.XML
+import java.lang.reflect.Method
+import java.util.HashSet;
+
+import grails.plugin.cache.CacheEvict
+import grails.plugin.cache.Cacheable
+import grails.plugin.cache.CachePut
+
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import net.nosegrind.restrpc.Api
+import net.nosegrind.restrpc.*
 
 //org.springframework.web.context.request.RequestContextHolder.getRequestAttributes().getResponse()
 
 class RestRPCService{
 
 	def grailsApplication
+	def springSecurityService
 
 	static transactional = false
 
@@ -90,11 +99,12 @@ class RestRPCService{
 	 * Which annos declare this KEY as being 'received'.
 	 * Check first in own controller then walk all others
 	 */
-	String createLinkRelationships(String paramType,String name,String controller){
+	String createLinkRelationships(String paramType,String name,String controllername){
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
 		//def methods = controller?.getClazz().metaClass.methods*.name.sort().unique()
 		for (Method method : controller.getClazz().getMethods()){
-				if(method.isAnnotationPresent(Api)) {
+				if(method.isAnnotationPresent(Api)) {}
+		}
 	}
 	
 	Map formatModel(Object data){
@@ -194,5 +204,141 @@ class RestRPCService{
 		def response = getResponse()
 		response.setStatus(403,"[Forbidden]")
 		return
+	}
+	
+	boolean checkAuthority(HashSet set){
+		def roles = set as List
+		if(roles.size()>0 && roles[0].trim()){
+			def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugins.springsecurity.authority.className).clazz.list().authority
+			def finalRoles
+			def userRoles
+			if (springSecurityService.isLoggedIn()){
+				userRoles = springSecurityService.getPrincipal().getAuthorities()
+			}
+			
+			if(userRoles){
+				def temp = roles2.intersect(roles as Set)
+				finalRoles = temp.intersect(userRoles)
+				if(finalRoles){
+					return true
+				}else{
+					return false
+				}
+			}else{
+				return false
+			}
+		}else{
+			return true
+		}
+	}
+	
+	def flushAllApiCache(){
+		grailsApplication.controllerClasses.each { controllerClass ->
+			String controllername = controllerClass.logicalPropertyName
+			if(controllername!='aclClass'){
+				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+				flushApiCache(controllername)
+			}
+		}
+	}
+	
+	@CacheEvict(value="ApiCache",key="#controllername")
+	def flushApiCache(String controllername){
+		// flush and reset
+		// setApiCache()
+		setApiCache(controllername)
+	}
+	
+	//@CachePut(value="ApiCache",key="#controllername")
+	def setApiCache(controllername){
+		def apiOutput = []
+		def inc = 0
+
+		if(controllername!='aclClass'){
+			
+			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+			//def methods = controller?.getClazz().metaClass.methods*.name.sort().unique()
+			for (Method method : controller.getClazz().getMethods()){
+					if(method.isAnnotationPresent(Api)) {
+						def temp = getApiCache(controllername,method)
+					}
+			}
+		}
+	}
+	
+	String getBelongsTo(String paramType, String controller, String belongsTo){
+		return (paramType=='PKey')?controller:belongsTo
+	}
+	
+	@Cacheable(value="ApiCache",key="#controllername")
+	def getApiCache(String controllername, Method method) {
+		def action = method.getName().toString()
+		def api = method.getAnnotation(Api)
+
+		def apiList = ["${controllername}":["${action}":["api":[
+						"requestMethod":"${api.method()}",
+						"description":"${api.description()}",
+						"receives":[],
+						"returns":[],
+						"errors":[]
+					]
+				]
+			]
+		]
+		
+		// RECEIVES
+		api.receives().each{ p ->
+			if (p.paramType()) {
+				def belongsTo = getBelongsTo(p.paramType().toString(), controllername, p.belongsTo().toString())
+				def list = [type:"${p.paramType()}",name:"${p.name()}",description:"${p.description()}",mockData:"${p.mockData()}",belongsTo:"${belongsTo}",roles:[],required:"${p.required()}",values:[]]
+				
+				if(p?.values()){
+					def params2 = p.values()
+					def values = []
+					params2.each{ p2 ->
+						if (p2.paramType()) {
+							def belongsTo2 = getBelongsTo(p2.paramType().toString(), controllername, p2.belongsTo().toString())
+							def pm2 = [type:"${p2.paramType()}",name:"${p2.name()}",description:"${p2.description()}",mockData:"${p2.mockData()}",belongsTo:"${belongsTo2}",roles:[],required:"${p2.required()}"]
+							values.add(pm2)
+						}
+					}
+					list.values.add(values)
+				}
+				apiList.get("${controllername}").get("${action}")["api"]["receives"].push(list)
+			}
+		}
+
+		
+		// RETURNS
+		api.returns().each{ p ->
+			if (p.paramType()) {
+				def belongsTo = getBelongsTo(p.paramType().toString(), controllername, p.belongsTo().toString())
+				def list = [type:"${p.paramType()}",name:"${p.name()}",description:"${p.description()}",mockData:"${p.mockData()}",belongsTo:"${belongsTo}",roles:[],required:"${p.required()}",values:[]]
+				
+				if(p?.values()){
+					def values = []
+					p.values().each{ p2 ->
+						if (p2.paramType()) {
+							def belongsTo2 = getBelongsTo(p2.paramType().toString(), controllername, p2.belongsTo().toString())
+							def pm2 = [type:"${p2.paramType()}",name:"${p2.name()}",description:"${p2.description()}",mockData:"${p2.mockData()}",belongsTo:"${belongsTo2}",roles:[],required:"${p2.required()}"]
+							values.add(pm2)
+						}
+					}
+					list.values.add(values)
+				}
+				apiList.get("${controllername}").get("${action}")["api"]["returns"].push(list)
+			}
+		}
+		
+		// ERRORS
+		api.errors().each{ p ->
+			if (p.code()) {
+				def list = [code:"${p.code()}",description:"${p.description()}"]
+				apiList.get("${controllername}").get("${action}")["api"]["errors"].push(list)
+			}
+		}
+
+		//println("apioutput >> ${apiList}")
+		return (apiList)?apiList:null
 	}
 }
