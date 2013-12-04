@@ -14,7 +14,6 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 import net.nosegrind.restrpc.Api
 import net.nosegrind.restrpc.*
 
-//org.springframework.web.context.request.RequestContextHolder.getRequestAttributes().getResponse()
 
 class RestRPCService{
 
@@ -48,7 +47,6 @@ class RestRPCService{
 		def queryString = request.'javax.servlet.forward.query_string'
 		
 		def uri
-
 		if(request.isRedirected()){
 			if(params.action=='index'){
 				uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI+'/'+params.action
@@ -142,6 +140,12 @@ class RestRPCService{
 		return urlValidator.isValid(url)
 	}
 	
+	
+	/*
+	 * Error messages
+	 * For complete list of messages, see http://msdn.microsoft.com/en-us/library/windowsazure/dd179357.aspx
+	 */
+	
 	def _200_SUCCESS(String msg){
 		def response = getResponse()
 		response.setStatus(200,"[Success] : ${msg}")
@@ -155,54 +159,134 @@ class RestRPCService{
 	}
 
 	// 304 not modified
-	def _304_NOTMODIFIED(String msg){
+	def _304_NOT_MODIFIED(String msg){
 		def response = getResponse()
 		response.setStatus(304,"[Not Modified] : ${msg}")
 		return
 	}
-
 	def _304_NOTMODIFIED(){
 		def response = getResponse()
 		response.setStatus(304,"[Not Modified]")
 		return
 	}
 
-	// 404 not found
-	def _404_NOTFOUND(String msg){
-		def response = getResponse()
-		response.setStatus(404,"[Not Found] : ${msg}")
-		return
-	}
-
-	def _404_NOTFOUND(){
-		def response = getResponse()
-		response.setStatus(404,"[Not Found]")
-		return
-	}
-
 	// 400 bad request
-	def _404_BADREQUEST(String msg){
+	def _400_BAD_REQUEST(String msg){
 		def response = getResponse()
 		response.setStatus(404,"[Bad Request] : ${msg}")
 		return
 	}
-
-	def _404_BADREQUEST(){
+	def _400_BAD_REQUEST(){
 		def response = getResponse()
 		response.setStatus(404,"[Bad Request]")
 		return
 	}
-
+	
 	// 403 forbidden
 	def _403_FORBIDDEN(String msg){
 		def response = getResponse()
 		response.setStatus(403,"[Forbidden] : ${msg}")
 		return
 	}
-
 	def _403_FORBIDDEN(){
 		def response = getResponse()
 		response.setStatus(403,"[Forbidden]")
+		return
+	}
+	
+	// 404 not found
+	def _404_NOT_FOUND(String msg){
+		def response = getResponse()
+		response.setStatus(404,"[Not Found] : ${msg}")
+		return
+	}
+	def _404_NOT_FOUND(){
+		def response = getResponse()
+		response.setStatus(404,"[Not Found]")
+		return
+	}
+
+	// UNSUPPORTED METHOD
+	def _405_UNSUPPORTED_METHOD(String msg){
+		def response = getResponse()
+		response.setStatus(405,"[Unsupported Method] : ${msg}")
+		return
+	}
+	def _405_UNSUPPORTED_METHOD(){
+		def response = getResponse()
+		response.setStatus(405,"[Unsupported Method]")
+		return
+	}
+	
+	// ACCOUNT CONFLICT
+	def _409_ACCOUNT_CONFLICT(String msg){
+		def response = getResponse()
+		response.setStatus(409,"[Account Conflict] : ${msg}")
+		return
+	}
+	def _409_ACCOUNT_CONFLICT(){
+		def response = getResponse()
+		response.setStatus(409,"[Account Conflict]")
+		return
+	}
+	
+	// ConditionNotMet
+	def _412_CONDITION_NOT_MET(String msg){
+		def response = getResponse()
+		response.setStatus(412,"[Condition Not Met] : ${msg}")
+		return
+	}
+	def _412_CONDITION_NOT_MET(){
+		def response = getResponse()
+		response.setStatus(412,"[Condition Not Met]")
+		return
+	}
+	
+	// RequestBodyTooLarge
+	def _413_REQUEST_BODY_TOO_LARGE(String msg){
+		def response = getResponse()
+		response.setStatus(413,"[Request Body Too Large] : ${msg}")
+		return
+	}
+	def _413_REQUEST_BODY_TOO_LARGE(){
+		def response = getResponse()
+		response.setStatus(413,"[Request Body Too Large]")
+		return
+	}
+	
+	// InvalidRange
+	def _416_INVALID_RANGE(String msg){
+		def response = getResponse()
+		response.setStatus(416,"[Invalid Range] : ${msg}")
+		return
+	}
+	def _416_INVALID_RANGE(){
+		def response = getResponse()
+		response.setStatus(416,"[Invalid Range]")
+		return
+	}
+	
+	// SERVER ERROR
+	def _500_SERVER_ERROR(String msg){
+		def response = getResponse()
+		response.setStatus(500,"[Server Error] : ${msg}")
+		return
+	}
+	def _500_SERVER_ERROR(){
+		def response = getResponse()
+		response.setStatus(500,"[Server Error]")
+		return
+	}
+	
+	// SERVICE UNAVAILABLE
+	def _503_UNAVAILABLE(String msg){
+		def response = getResponse()
+		response.setStatus(403,"[Service Unavailable] : ${msg}")
+		return
+	}
+	def _503_UNAVAILABLE(){
+		def response = getResponse()
+		response.setStatus(403,"[Service Unavailable]")
 		return
 	}
 	
