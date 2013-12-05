@@ -22,6 +22,9 @@ class RestRPCService{
 
 	static transactional = false
 
+	Long responseCode
+	String responseMessage
+	
 	def getRequest(){
 		return RCH.currentRequestAttributes().currentRequest
 	}
@@ -145,148 +148,156 @@ class RestRPCService{
 	 * Error messages
 	 * For complete list of messages, see http://msdn.microsoft.com/en-us/library/windowsazure/dd179357.aspx
 	 */
+	def send(){
+		response.setStatus(responseCode,responseMessage)
+	}
+	
+	def text(){
+		return "${responseCode} ${responseMessage}"
+	}
 	
 	def _200_SUCCESS(String msg){
 		def response = getResponse()
-		response.setStatus(200,"[Success] : ${msg}")
+		responseCode=200
+		responseMessage="[Success] : ${msg}"
 		return
 	}
 
 	def _200_SUCCESS(){
-		def response = getResponse()
-		response.setStatus(200,"[Success]")
+		responseCode=200
+		responseMessage="[Success]"
 		return
 	}
 
 	// 304 not modified
 	def _304_NOT_MODIFIED(String msg){
-		def response = getResponse()
-		response.setStatus(304,"[Not Modified] : ${msg}")
+		responseCode=304
+		responseMessage="[Not Modified] : ${msg}"
 		return
 	}
 	def _304_NOTMODIFIED(){
-		def response = getResponse()
-		response.setStatus(304,"[Not Modified]")
+		responseCode=304
+		responseMessage="[Not Modified]"
 		return
 	}
 
 	// 400 bad request
 	def _400_BAD_REQUEST(String msg){
-		def response = getResponse()
-		response.setStatus(404,"[Bad Request] : ${msg}")
+		responseCode=400
+		responseMessage="[Bad Request] : ${msg}"
 		return
 	}
 	def _400_BAD_REQUEST(){
-		def response = getResponse()
-		response.setStatus(404,"[Bad Request]")
+		responseCode=400
+		responseMessage="[Bad Request]"
 		return
 	}
 	
 	// 403 forbidden
 	def _403_FORBIDDEN(String msg){
-		def response = getResponse()
-		response.setStatus(403,"[Forbidden] : ${msg}")
+		responseCode=403
+		responseMessage="[Forbidden] : ${msg}"
 		return
 	}
 	def _403_FORBIDDEN(){
-		def response = getResponse()
-		response.setStatus(403,"[Forbidden]")
+		responseCode=403
+		responseMessage="[Forbidden]"
 		return
 	}
 	
 	// 404 not found
 	def _404_NOT_FOUND(String msg){
-		def response = getResponse()
-		response.setStatus(404,"[Not Found] : ${msg}")
+		responseCode=404
+		responseMessage="[Not Found] : ${msg}"
 		return
 	}
 	def _404_NOT_FOUND(){
-		def response = getResponse()
-		response.setStatus(404,"[Not Found]")
+		responseCode=404
+		responseMessage="[Not Found]"
 		return
 	}
 
 	// UNSUPPORTED METHOD
 	def _405_UNSUPPORTED_METHOD(String msg){
-		def response = getResponse()
-		response.setStatus(405,"[Unsupported Method] : ${msg}")
+		responseCode=405
+		responseMessage="[Unsupported Method] : ${msg}"
 		return
 	}
 	def _405_UNSUPPORTED_METHOD(){
-		def response = getResponse()
-		response.setStatus(405,"[Unsupported Method]")
+		responseCode=405
+		responseMessage="[Unsupported Method]"
 		return
 	}
 	
 	// ACCOUNT CONFLICT
 	def _409_ACCOUNT_CONFLICT(String msg){
-		def response = getResponse()
-		response.setStatus(409,"[Account Conflict] : ${msg}")
+		responseCode=409
+		responseMessage="[Account Conflict] : ${msg}"
 		return
 	}
 	def _409_ACCOUNT_CONFLICT(){
-		def response = getResponse()
-		response.setStatus(409,"[Account Conflict]")
+		responseCode=409
+		responseMessage="[Account Conflict]"
 		return
 	}
 	
 	// ConditionNotMet
 	def _412_CONDITION_NOT_MET(String msg){
-		def response = getResponse()
-		response.setStatus(412,"[Condition Not Met] : ${msg}")
+		responseCode=412
+		responseMessage="[Condition Not Met] : ${msg}"
 		return
 	}
 	def _412_CONDITION_NOT_MET(){
-		def response = getResponse()
-		response.setStatus(412,"[Condition Not Met]")
+		responseCode=412
+		responseMessage="[Condition Not Met]"
 		return
 	}
 	
 	// RequestBodyTooLarge
 	def _413_REQUEST_BODY_TOO_LARGE(String msg){
-		def response = getResponse()
-		response.setStatus(413,"[Request Body Too Large] : ${msg}")
+		responseCode=413
+		responseMessage="[Request Body Too Large] : ${msg}"
 		return
 	}
 	def _413_REQUEST_BODY_TOO_LARGE(){
-		def response = getResponse()
-		response.setStatus(413,"[Request Body Too Large]")
+		responseCode=413
+		responseMessage="[Request Body Too Large]"
 		return
 	}
 	
 	// InvalidRange
 	def _416_INVALID_RANGE(String msg){
-		def response = getResponse()
-		response.setStatus(416,"[Invalid Range] : ${msg}")
+		responseCode=416
+		responseMessage="[Invalid Range] : ${msg}"
 		return
 	}
 	def _416_INVALID_RANGE(){
-		def response = getResponse()
-		response.setStatus(416,"[Invalid Range]")
+		responseCode=416
+		responseMessage="[Invalid Range]"
 		return
 	}
 	
 	// SERVER ERROR
 	def _500_SERVER_ERROR(String msg){
-		def response = getResponse()
-		response.setStatus(500,"[Server Error] : ${msg}")
+		responseCode=500
+		responseMessage="[Server Error] : ${msg}"
 		return
 	}
 	def _500_SERVER_ERROR(){
-		def response = getResponse()
-		response.setStatus(500,"[Server Error]")
+		responseCode=500
+		responseMessage="[Server Error]"
 		return
 	}
 	
 	// SERVICE UNAVAILABLE
 	def _503_UNAVAILABLE(String msg){
-		def response = getResponse()
-		response.setStatus(403,"[Service Unavailable] : ${msg}")
+		responseCode=503
+		responseMessage="[Service Unavailable] : ${msg}"
 		return
 	}
 	def _503_UNAVAILABLE(){
-		def response = getResponse()
-		response.setStatus(403,"[Service Unavailable]")
+		responseCode=503
+		responseMessage="[Service Unavailable]"
 		return
 	}
 	
