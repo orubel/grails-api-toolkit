@@ -33,27 +33,17 @@ class ApiCacheService{
 	}
 	
 	@CacheEvict(value="ApiCache",key="#controllername")
-	def flushApiCache(String controllername){
-		// flush and reset
-		// setApiCache()
-		setApiCache(controllername)
-	} 
+	def flushApiCache(String controllername){} 
 	
-	//@CachePut(value="ApiCache",key="#controllername")
-	def setApiCache(controllername,method){
-		def apiOutput = []
-		def inc = 0
-
-		if(controllername!='aclClass'){
-			
-			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-			//def methods = controller?.getClazz().metaClass.methods*.name.sort().unique()
-			for (Method method : controller.getClazz().getMethods()){
-					if(method.isAnnotationPresent(Api)) {
-						def temp = getApiCache(controllername,method)
-					}
-			}
-		}
+	@CacheEvict(value="ApiCache",key="#controllername")
+	def resetApiCache(String controllername,String method,ApiDescriptor apidoc){
+		//setApiCache(controllername,method,apidoc)
+	}
+	
+	@CachePut(value="ApiCache",key="#controllername")
+	def setApiCache(String controllername,String method,ApiDescriptor apidoc){
+		def api = ["${method}":apidoc]
+		return api
 	}
 	
 	String getBelongsTo(String paramType, String controller, String belongsTo){

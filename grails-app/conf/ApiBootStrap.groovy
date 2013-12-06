@@ -10,7 +10,6 @@ class ApiBootStrap {
 	def apiCacheService
 	
 	def init = { servletContext ->
-		evaluate(new File("../src/groovy/net/nosegrind/restrpc/ApiDocs.groovy"))
 		//restRPCService.flushAllApiCache()
 	}
 

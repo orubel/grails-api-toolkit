@@ -40,7 +40,6 @@ class RestRPCFilters {
 			}
 			
 			after = { Map model ->
-
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				params.action = (params.action)?params.action:'index'
 				def action = controller?.getClazz()?.getDeclaredMethod(params.action)

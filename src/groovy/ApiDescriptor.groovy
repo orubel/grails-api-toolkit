@@ -10,13 +10,13 @@ class ApiDescriptor {
     String description
     ParamsDescriptor[] receives
     ParamsDescriptor[] returns
-    ErrorCode[] errors
+    ErrorCodeDescriptor[] errorcodes
 
 	static constraints = { 
 		method(nullable:false,inList: ["GET", "POST", "PUT","DELETE"])
 		description(nullable:false,maxSize:1000)
 		receives(nullable:true)
 		returns(nullable:true)
-		errors(nullable:true)
+		errorcodes(nullable:true)
 	} 
 }
