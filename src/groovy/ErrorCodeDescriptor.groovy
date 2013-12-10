@@ -1,5 +1,7 @@
 package net.nosegrind.restrpc;
 
+import grails.validation.Validateable
+
 @grails.validation.Validateable
 class ErrorCodeDescriptor {
 

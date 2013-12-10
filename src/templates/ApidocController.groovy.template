@@ -1,15 +1,11 @@
-import java.lang.annotation.Documented;
-
-import ParamsDescriptor;
-
 package net.nosegrind.restrpc
 
 import org.springframework.dao.DataIntegrityViolationException
 import grails.converters.JSON
 import grails.converters.XML
 import java.lang.reflect.Method
-import grails.validation.Validateable
-
+import net.nosegrind.restrpc.ParamsDescriptor
+import net.nosegrind.restrpc.ErrorCodeDescriptor
 
 class ApidocController {
 
@@ -21,7 +17,7 @@ class ApidocController {
 		redirect(action:'show')
 	}
 
-	Map processDocValues(Map values){
+	Map processDocValues(ParamsDescriptor values){
 		if(v.receives.roles){
 			if(!checkAuthority(v.receives.roles)){
 				def val = []
@@ -53,7 +49,7 @@ class ApidocController {
 		return val
 	}
 	
-	Map processDocErrorCodes(Map errors){
+	Map processDocErrorCodes(ErrorCodeDescriptor errors){
 		def err = []
 		errors.each{ k,v ->
 			def code = ['code':v.code,'description':"${v.description}"]
@@ -71,13 +67,15 @@ class ApidocController {
 				
 				cont.each{ k,v ->
 					
-						def doc = [("${controllername}".toString()):[
-							("${k}".toString()):[
-								"method":"${v.method}",
-								"description":"${v.description}",
-								"receives": processDocValues(v.receives),
-								"returns": processDocValues(v.returns),
-								"errorcodes": processDocErrorCodes(v.errorcodes)
+						def doc = [
+							("${controllername}".toString()):[
+								("${k}".toString()):[
+									"method":"${v.method}",
+									"description":"${v.description}",
+									"receives": processDocValues(v.receives),
+									"returns": processDocValues(v.returns),
+									"errorcodes": processDocErrorCodes(v.errorcodes)
+								]
 							]
 						]
 						if(doc["${controllername}"]["${k}"]["returns"]){
@@ -92,7 +90,7 @@ class ApidocController {
 			}
 
 		}
-
+		println(apidoc)
 		[apiList:apidoc]
 	}
 	
@@ -100,8 +98,10 @@ class ApidocController {
 	 * IF NO ROLES, RETURN TRUE. IF ROLES, CHECK IF THEY ARE IN AUTHORITIES.
 	 * THEN CHECK IF USER IS LOGGED IN AND HAS ANY OF SAID ROLES
 	 */
-	boolean checkAuthority(HashSet set){
-		def roles = set as List
+	// previously HashSet
+	boolean checkAuthority(String[] set){
+		//def roles = set as List
+		def roles = set
 		if(roles.size()>0 && roles[0].trim()){
 			def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugins.springsecurity.authority.className).clazz.list().authority
 			def finalRoles
@@ -125,5 +125,7 @@ class ApidocController {
 			return true
 		}
 	}
+
+
 }
 

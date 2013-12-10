@@ -1,6 +1,7 @@
 package net.nosegrind.restrpc;
 
 import grails.util.Holders
+import grails.validation.Validateable
 
 @grails.validation.Validateable
 class ParamsDescriptor {

@@ -2,6 +2,7 @@ package net.nosegrind.restrpc;
 
 import net.nosegrind.restrpc.ErrorCode;
 import net.nosegrind.restrpc.Params;
+import grails.validation.Validateable
 
 @grails.validation.Validateable
 class ApiDescriptor {
