@@ -14,17 +14,16 @@ if (configFile.exists()) {
 	configFile.withWriterAppend {
 		it.writeLine '\n// Added by the Restrpc plugin:'
 		it.writeLine "restrpc.apiName = 'api'"
-		it.writeLine "restrpc.apiVersion = '1.0'"
 		it.writeLine "\n"
-		it.writeLine "restrpc.defaultData.PKey = '26'"
-		it.writeLine "restrpc.defaultData.FKey = '32'"
-		it.writeLine "restrpc.defaultData.String = 'Hello World'"
-		it.writeLine "restrpc.defaultData.Boolean = 'true'"
-		it.writeLine "restrpc.defaultData.Float = '1.00'"
-		it.writeLine "restrpc.defaultData.BigDecimal = '123567828794.87'"
-		it.writeLine "restrpc.defaultData.Integer = '18'"
-		it.writeLine "restrpc.defaultData.Long = '18926'"
-		it.writeLine "restrpc.defaultData.Email = 'example@yoursite.com'"
-		it.writeLine "restrpc.defaultData.Url = 'http://www.yoursite.com'"
+		it.writeLine "restrpc.defaultData.PKEY = '26'"
+		it.writeLine "restrpc.defaultData.FKEY = '32'"
+		it.writeLine "restrpc.defaultData.INDEX = '32'
+		it.writeLine "restrpc.defaultData.STRING = 'Hello World'"
+		it.writeLine "restrpc.defaultData.BOOLEAN = 'true'"
+		it.writeLine "restrpc.defaultData.FLOAT = '1.00'"
+		it.writeLine "restrpc.defaultData.BIGDECIMAL = '123567828794.87'"
+		it.writeLine "restrpc.defaultData.LONG = '18926'"
+		it.writeLine "restrpc.defaultData.EMAIL = 'example@yoursite.com'"
+		it.writeLine "restrpc.defaultData.URL = 'http://www.yoursite.com'"
 	}
 }

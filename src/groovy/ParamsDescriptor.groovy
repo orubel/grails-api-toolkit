@@ -5,8 +5,6 @@ import grails.util.Holders
 @grails.validation.Validateable
 class ParamsDescriptor {
 
-	def grailsApplication
-	
 	String paramType
 	String name
 	String idReferences

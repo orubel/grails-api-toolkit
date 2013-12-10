@@ -26,7 +26,6 @@ class ApiCacheService{
 		grailsApplication.controllerClasses.each { controllerClass ->
 			String controllername = controllerClass.logicalPropertyName
 			if(controllername!='aclClass'){
-				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
 				flushApiCache(controllername)
 			}
 		}
