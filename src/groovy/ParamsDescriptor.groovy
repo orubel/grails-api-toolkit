@@ -10,7 +10,7 @@ class ParamsDescriptor {
 	String name
 	String idReferences
 	String description
-	String[] roles = [];
+	List roles = []
 	boolean required = true
 	String mockData = Holders.config.restrpc."${paramType}"
 	ParamsDescriptor[] values = []

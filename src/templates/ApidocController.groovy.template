@@ -58,39 +58,47 @@ class ApidocController {
 		return err
 	}
 	
+	/*
+	 * Go through all controllers/method, check for anno and
+	 * get apidocs where anno exists
+	 */
 	def show(){
 		def apidoc = []
 		grailsApplication.controllerClasses.each { controllerClass ->
 			String controllername = controllerClass.logicalPropertyName
 			if(controllername!='aclClass'){
 				def cont = apiCacheService.getApiCache(controllername)
-				
-				cont.each{ k,v ->
-					
-						def doc = [
-							("${controllername}".toString()):[
-								("${k}".toString()):[
-									"method":"${v.method}",
-									"description":"${v.description}",
-									"receives": processDocValues(v.receives),
-									"returns": processDocValues(v.returns),
-									"errorcodes": processDocErrorCodes(v.errorcodes)
+				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+				for (Method method : controller.getClazz().getMethods()){
+					if(method.isAnnotationPresent(Api)) {
+						def action = method.getName()
+						if(cont["${controllername}"]["${action}"]){
+							def doc = [
+								("${controllername}".toString()):[
+									("${k}".toString()):[
+										"method":"${v.method}",
+										"description":"${v.description}",
+										"receives": processDocValues(v.receives),
+										"returns": processDocValues(v.returns),
+										"errorcodes": processDocErrorCodes(v.errorcodes)
+									]
 								]
 							]
-						]
-						if(doc["${controllername}"]["${k}"]["returns"]){
-							json = doc["${controllername}"]["${k}"]["returns"] as JSON
-							json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
-							json = json.toString().replaceAll("}"," </div>}<br>")
-							json = json.toString().replaceAll(",",",<br>")
-							doc["${controllername}"]["${k}"]["json"] = json
+							if(doc["${controllername}"]["${k}"]["returns"]){
+								json = doc["${controllername}"]["${k}"]["returns"] as JSON
+								json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
+								json = json.toString().replaceAll("}"," </div>}<br>")
+								json = json.toString().replaceAll(",",",<br>")
+								doc["${controllername}"]["${k}"]["json"] = json
+							}
+							apidoc.add(doc)
 						}
-						apidoc.add(doc)
+					}
 				}
 			}
 
 		}
-		println(apidoc)
+		//println(apidoc)
 		[apiList:apidoc]
 	}
 	
@@ -99,9 +107,8 @@ class ApidocController {
 	 * THEN CHECK IF USER IS LOGGED IN AND HAS ANY OF SAID ROLES
 	 */
 	// previously HashSet
-	boolean checkAuthority(String[] set){
-		//def roles = set as List
-		def roles = set
+	boolean checkAuthority(HashSet role){
+		List roles = role as List
 		if(roles.size()>0 && roles[0].trim()){
 			def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugins.springsecurity.authority.className).clazz.list().authority
 			def finalRoles
