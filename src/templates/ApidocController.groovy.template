@@ -4,6 +4,7 @@ import org.springframework.dao.DataIntegrityViolationException
 import grails.converters.JSON
 import grails.converters.XML
 import java.lang.reflect.Method
+
 import net.nosegrind.restrpc.ParamsDescriptor
 import net.nosegrind.restrpc.ErrorCodeDescriptor
 
@@ -17,51 +18,46 @@ class ApidocController {
 		redirect(action:'show')
 	}
 
-	Map processDocValues(ParamsDescriptor values){
-		if(v.receives.roles){
-			if(!checkAuthority(v.receives.roles)){
-				def val = []
-			}
-		}else{
-			def val = [
-				"paramType":"${values.paramtype}",
-				"name":"${values.name}",
-				"description":"${values.description}"
-			]
-			
-			// not required; check and do after initial assign
-			if(v.receives.paramtype){
-				val["idReferences"] = "${v.receives.idReference}"
-			}
-	
-			if(v.receives.required==false){
-				val["required"] = false
-			}
-			if(v.receives.mockData){
-				val["mockData"] = "${v.receives.mockData}"
-			}
-			if(values.values){
-				val["values"] = processDocValues(values.values)
-			}
+	ArrayList processDocValues(HashSet value){
+		def values = value as List
+		values.each{ v ->
+			if((v.roles && checkAuthority(v.roles)) || (!v.roles)){
+				Map val = [
+					"paramType":"${v.paramType}",
+					"name":"${v.name}",
+					"description":"${v.description}"
+				]
+				
+				if(v.paramType=='PKEY' || v.paramType=='FKEY'){
+					val["idReferences"] = "${v.idReferences}"
+				}
 		
+				if(v.required==false){
+					val["required"] = false
+				}
+				if(v.mockData){
+					val["mockData"] = "${v.mockData}"
+				}
+				if(v.values){
+					val["values"] = processDocValues(v.values)
+				}
+				value.add(val)
+			}
 		}
-
-		return val
+		return value
 	}
 	
-	Map processDocErrorCodes(ErrorCodeDescriptor errors){
+	ArrayList processDocErrorCodes(HashSet error){
+		def errors = error as List
 		def err = []
-		errors.each{ k,v ->
+		errors.each{ v ->
 			def code = ['code':v.code,'description':"${v.description}"]
 			err.add(code)
 		}
 		return err
 	}
 	
-	/*
-	 * Go through all controllers/method, check for anno and
-	 * get apidocs where anno exists
-	 */
+
 	def show(){
 		def apidoc = []
 		grailsApplication.controllerClasses.each { controllerClass ->
@@ -72,26 +68,32 @@ class ApidocController {
 				for (Method method : controller.getClazz().getMethods()){
 					if(method.isAnnotationPresent(Api)) {
 						def action = method.getName()
-						if(cont["${controllername}"]["${action}"]){
-							def doc = [
-								("${controllername}".toString()):[
-									("${k}".toString()):[
-										"method":"${v.method}",
-										"description":"${v.description}",
-										"receives": processDocValues(v.receives),
-										"returns": processDocValues(v.returns),
-										"errorcodes": processDocErrorCodes(v.errorcodes)
-									]
-								]
-							]
-							if(doc["${controllername}"]["${k}"]["returns"]){
-								json = doc["${controllername}"]["${k}"]["returns"] as JSON
-								json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
-								json = json.toString().replaceAll("}"," </div>}<br>")
-								json = json.toString().replaceAll(",",",<br>")
-								doc["${controllername}"]["${k}"]["json"] = json
+						if(cont){
+							if(cont[("${action}".toString())]){
+								def doc = [("${controllername}".toString()):[("${action}".toString()):["method":cont["${action}"]["method"],"description":cont["${action}"]["description"]]]]
+								
+								if(cont["${action}"]["receives"]){
+									println(cont["${action}"]["receives"])
+									doc[("${controllername}".toString())][("${action}".toString())]["receives"] = processDocValues(cont["${action}"]["receives"] as HashSet)
+								}
+								
+								if(cont["${action}"]["returns"]){
+									doc[("${controllername}".toString())][("${action}".toString())]["returns"] =processDocValues(cont["${action}"]["returns"] as HashSet)
+								}
+								
+								if(cont["${action}"]["errorcodes"]){
+									doc[("${controllername}".toString())][("${action}".toString())]["errorcodes"] = processDocErrorCodes(cont["${action}"]["errorcodes"] as HashSet)
+								}
+
+								if(doc["${controllername}"]["${action}"]["returns"]){
+									def json = doc["${controllername}"]["${action}"]["returns"] as JSON
+									json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
+									json = json.toString().replaceAll("}"," </div>}<br>")
+									json = json.toString().replaceAll(",",",<br>")
+									doc["${controllername}"]["${action}"]["json"] = json
+								}
+								apidoc.add(doc)
 							}
-							apidoc.add(doc)
 						}
 					}
 				}
