@@ -20,9 +20,11 @@ class ApidocController {
 
 	ArrayList processDocValues(HashSet value){
 		def values = value as List
+		List val2 = []
 		values.each{ v ->
-			if((v.roles && checkAuthority(v.roles)) || (!v.roles)){
-				Map val = [
+			Map val = [:]
+			if((v.roles && checkAuthority(v.roles)) || !v.roles){
+				val = [
 					"paramType":"${v.paramType}",
 					"name":"${v.name}",
 					"description":"${v.description}"
@@ -41,10 +43,10 @@ class ApidocController {
 				if(v.values){
 					val["values"] = processDocValues(v.values)
 				}
-				value.add(val)
+				val2.add(val)
 			}
 		}
-		return value
+		return val2
 	}
 	
 	ArrayList processDocErrorCodes(HashSet error){
@@ -64,7 +66,7 @@ class ApidocController {
 			if(p?.values){
 				j["${p.name}"]=[]
 			}else{
-				j = (p?.mockData.trim())?["${p.name}":"${p.mockData}"]:["${p.name}":"${grailsApplication.config.restrpc.defaultData.(p.paramType)}"]
+				j = (p?.mockData?.trim())?["${p.name}":"${p.mockData}"]:["${p.name}":"${grailsApplication.config.restrpc.defaultData.(p.paramType)}"]
 			}
 			j.each(){ key,val ->
 				if(val instanceof List){
@@ -96,12 +98,15 @@ class ApidocController {
 						def action = method.getName()
 						if(cont){
 							if(cont[("${action}".toString())]){
+								String path = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/JSON/${controllername}/${action}"
 								doc[("${controllername}".toString())] = [("${action}".toString()):"${action}"]
-								doc[("${controllername}".toString())][("${action}".toString())] = ["path":"###############","method":cont[("${action}".toString())]["method"],"description":cont[("${action}".toString())]["description"]]
+								doc[("${controllername}".toString())][("${action}".toString())] = ["path":"${path}","method":cont[("${action}".toString())]["method"],"description":cont[("${action}".toString())]["description"]]
 								
 								if(cont["${action}"]["receives"]){
 									doc[("${controllername}".toString())][("${action}".toString())]["receives"] = processDocValues(cont[("${action}".toString())]["receives"] as HashSet)
 								}
+								
+								
 								
 								if(cont["${action}"]["returns"]){
 									doc[("${controllername}".toString())][("${action}".toString())]["returns"] = processDocValues(cont[("${action}".toString())]["returns"] as HashSet)
@@ -125,7 +130,7 @@ class ApidocController {
 				}
 			}
 		}
-		println(doc.getClass())
+
 		[apiList:doc as HashMap]
 	}
 	
@@ -134,7 +139,7 @@ class ApidocController {
 	 * THEN CHECK IF USER IS LOGGED IN AND HAS ANY OF SAID ROLES
 	 */
 	// previously HashSet
-	boolean checkAuthority(HashSet role){
+	boolean checkAuthority(ArrayList role){
 		List roles = role as List
 		if(roles.size()>0 && roles[0].trim()){
 			def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugins.springsecurity.authority.className).clazz.list().authority
