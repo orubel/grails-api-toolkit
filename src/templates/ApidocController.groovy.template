@@ -57,9 +57,35 @@ class ApidocController {
 		return err
 	}
 	
-
+	Map processJson(ArrayList returns){
+		def json = [:]
+		returns.each{ p ->
+			def j = [:]
+			if(p?.values){
+				j["${p.name}"]=[]
+			}else{
+				j = (p?.mockData.trim())?["${p.name}":"${p.mockData}"]:["${p.name}":"${grailsApplication.config.restrpc.defaultData.(p.paramType)}"]
+			}
+			j.each(){ key,val ->
+				if(val instanceof List){
+					def child = [:]
+					val.each(){ it ->
+						it.each(){ key2,val2 ->
+							child["${key2}"] ="${val2}"
+						}
+					}
+					json["${key}"] = child
+				}else{
+					json["${key}"]=val
+				}
+			}
+		}
+		return json
+	}
+	
 	def show(){
-		def apidoc = []
+		Map doc = [:]
+		
 		grailsApplication.controllerClasses.each { controllerClass ->
 			String controllername = controllerClass.logicalPropertyName
 			if(controllername!='aclClass'){
@@ -70,38 +96,37 @@ class ApidocController {
 						def action = method.getName()
 						if(cont){
 							if(cont[("${action}".toString())]){
-								def doc = [("${controllername}".toString()):[("${action}".toString()):["method":cont["${action}"]["method"],"description":cont["${action}"]["description"]]]]
+								doc[("${controllername}".toString())] = [("${action}".toString()):"${action}"]
+								doc[("${controllername}".toString())][("${action}".toString())] = ["path":"###############","method":cont[("${action}".toString())]["method"],"description":cont[("${action}".toString())]["description"]]
 								
 								if(cont["${action}"]["receives"]){
-									println(cont["${action}"]["receives"])
-									doc[("${controllername}".toString())][("${action}".toString())]["receives"] = processDocValues(cont["${action}"]["receives"] as HashSet)
+									doc[("${controllername}".toString())][("${action}".toString())]["receives"] = processDocValues(cont[("${action}".toString())]["receives"] as HashSet)
 								}
 								
 								if(cont["${action}"]["returns"]){
-									doc[("${controllername}".toString())][("${action}".toString())]["returns"] =processDocValues(cont["${action}"]["returns"] as HashSet)
+									doc[("${controllername}".toString())][("${action}".toString())]["returns"] = processDocValues(cont[("${action}".toString())]["returns"] as HashSet)
+									doc[("${controllername}".toString())][("${action}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${action}".toString())]["returns"])
 								}
 								
 								if(cont["${action}"]["errorcodes"]){
-									doc[("${controllername}".toString())][("${action}".toString())]["errorcodes"] = processDocErrorCodes(cont["${action}"]["errorcodes"] as HashSet)
+									doc[("${controllername}".toString())][("${action}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${action}".toString())]["errorcodes"] as HashSet)
 								}
 
-								if(doc["${controllername}"]["${action}"]["returns"]){
-									def json = doc["${controllername}"]["${action}"]["returns"] as JSON
+								if(doc[("${controllername}".toString())][("${action}".toString())]["json"]){
+									def json = doc[("${controllername}".toString())][("${action}".toString())]["json"] as JSON
 									json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
 									json = json.toString().replaceAll("}"," </div>}<br>")
 									json = json.toString().replaceAll(",",",<br>")
-									doc["${controllername}"]["${action}"]["json"] = json
+									doc[("${controllername}".toString())][("${action}".toString())]["json"] = json
 								}
-								apidoc.add(doc)
 							}
 						}
 					}
 				}
 			}
-
 		}
-		//println(apidoc)
-		[apiList:apidoc]
+		println(doc.getClass())
+		[apiList:doc as HashMap]
 	}
 	
 	/*
