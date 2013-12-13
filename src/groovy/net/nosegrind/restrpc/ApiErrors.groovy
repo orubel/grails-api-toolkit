@@ -13,6 +13,12 @@ class ApiErrors{
 
 	ErrorCodeDescriptor error
 	
+	private static final INSTANCE = new ApiErrors()
+	
+	static getInstance(){ return INSTANCE }
+	
+	private ApiErrors() {}
+	
 	def getResponse(){
 		return RCH.currentRequestAttributes().currentResponse
 	}
@@ -34,12 +40,12 @@ class ApiErrors{
 
 	def _200_SUCCESS(String msg){
 		this.error = new ErrorCodeDescriptor(code:200,description:"[Success] : ${msg}")
-		return
+		return this
 	}
 
 	def _200_SUCCESS(){
 		this.error = new ErrorCodeDescriptor(code:200,description:"[Success]")
-		return
+		return this
 	}
 
 	// 304 not modified
@@ -55,27 +61,27 @@ class ApiErrors{
 	// 400 bad request
 	def _400_BAD_REQUEST(String msg){
 		error = new ErrorCodeDescriptor(code:400,description:"[Bad Request] : ${msg}")
-		return
+		return this
 	}
 	def _400_BAD_REQUEST(){
 		error = new ErrorCodeDescriptor(code:400,description:"[Bad Request]")
-		return
+		return this
 	}
 	
 	// 403 forbidden
 	def _403_FORBIDDEN(String msg){
 		error = new ErrorCodeDescriptor(code:403,description:"[Forbidden] : ${msg}")
-		return
+		return this
 	}
 	def _403_FORBIDDEN(){
 		error = new ErrorCodeDescriptor(code:403,description:"[Forbidden]")
-		return
+		return this
 	}
 	
 	// 404 not found
 	def _404_NOT_FOUND(String msg){
 		error = new ErrorCodeDescriptor(code:404,description:"[Not Found] : ${msg}")
-		return
+		return this
 	}
 	def _404_NOT_FOUND(){
 		error = new ErrorCodeDescriptor(code:404,description:"[Not Found]")
@@ -85,17 +91,17 @@ class ApiErrors{
 	// UNSUPPORTED METHOD
 	def _405_UNSUPPORTED_METHOD(String msg){
 		error = new ErrorCodeDescriptor(code:405,description:"[Unsupported Method] : ${msg}")
-		return
+		return this
 	}
 	def _405_UNSUPPORTED_METHOD(){
 		error = new ErrorCodeDescriptor(code:405,description:"[Unsupported Method]")
-		return
+		return this
 	}
 	
 	// ACCOUNT CONFLICT
 	def _409_ACCOUNT_CONFLICT(String msg){
 		error = new ErrorCodeDescriptor(code:409,description:"[Account Conflict] : ${msg}")
-		return
+		return this
 	}
 	def _409_ACCOUNT_CONFLICT(){
 		error = new ErrorCodeDescriptor(code:409,description:"[Account Conflict]")
@@ -105,21 +111,21 @@ class ApiErrors{
 	// ConditionNotMet
 	def _412_CONDITION_NOT_MET(String msg){
 		error = new ErrorCodeDescriptor(code:412,description:"[Condition Not Met] : ${msg}")
-		return
+		return this
 	}
 	def _412_CONDITION_NOT_MET(){
 		error = new ErrorCodeDescriptor(code:412,description:"[Condition Not Met] ")
-		return
+		return this
 	}
 	
 	// RequestBodyTooLarge
 	def _413_REQUEST_BODY_TOO_LARGE(String msg){
 		error = new ErrorCodeDescriptor(code:413,description:"[Request Body Too Large] : ${msg}")
-		return
+		return this
 	}
 	def _413_REQUEST_BODY_TOO_LARGE(){
 		error = new ErrorCodeDescriptor(code:413,description:"[Request Body Too Large]")
-		return
+		return this
 	}
 	
 	// InvalidRange
@@ -129,27 +135,27 @@ class ApiErrors{
 	}
 	def _416_INVALID_RANGE(){
 		error = new ErrorCodeDescriptor(code:416,description:"[Invalid Range]")
-		return
+		return this
 	}
 	
 	// SERVER ERROR
 	def _500_SERVER_ERROR(String msg){
 		error = new ErrorCodeDescriptor(code:500,description:"[Server Error] : ${msg}")
-		return
+		return this
 	}
 	def _500_SERVER_ERROR(){
 		error = new ErrorCodeDescriptor(code:500,description:"[Server Error]")
-		return
+		return this
 	}
 	
 	// SERVICE UNAVAILABLE
 	def _503_UNAVAILABLE(String msg){
 		error = new ErrorCodeDescriptor(code:503,description:"[Service Unavailable] : ${msg}")
-		return
+		return this
 	}
 	def _503_UNAVAILABLE(){
 		error = new ErrorCodeDescriptor(code:503,description:"[Service Unavailable]")
-		return
+		return this
 	}
 
 }
