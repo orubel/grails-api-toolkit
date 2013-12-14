@@ -1,4 +1,4 @@
-package net.nosegrind.restrpc;
+package net.nosegrind.apitoolkit;
 
 import grails.validation.Validateable
 

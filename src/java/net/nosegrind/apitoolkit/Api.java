@@ -1,4 +1,4 @@
-package net.nosegrind.restrpc;
+package net.nosegrind.apitoolkit;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

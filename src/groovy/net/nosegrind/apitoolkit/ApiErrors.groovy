@@ -1,6 +1,6 @@
-package net.nosegrind.restrpc
+package net.nosegrind.apitoolkit
 
-import net.nosegrind.restrpc.ErrorCodeDescriptor
+import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
 
 import org.springframework.web.context.request.RequestContextHolder as RCH
 

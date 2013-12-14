@@ -1,6 +1,6 @@
-import net.nosegrind.restrpc.ApiDescriptor;
-import net.nosegrind.restrpc.ParamsDescriptor;
-import net.nosegrind.restrpc.ErrorCodeDescriptor;
+import net.nosegrind.apitoolkit.ApiDescriptor;
+import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
+import net.nosegrind.apitoolkit.ParamsDescriptor;
 
 class ApiBootStrap {
 	

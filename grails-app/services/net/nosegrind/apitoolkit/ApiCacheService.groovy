@@ -1,4 +1,4 @@
-package net.nosegrind.restrpc
+package net.nosegrind.apitoolkit
 
 import grails.converters.JSON
 import grails.converters.XML
@@ -11,9 +11,9 @@ import grails.plugin.cache.CachePut
 
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
-import net.nosegrind.restrpc.Api
+
+import net.nosegrind.apitoolkit.ApiDescriptor;
 import net.nosegrind.restrpc.*
-import net.nosegrind.restrpc.ApiDescriptor;
 
 class ApiCacheService{
 

@@ -1,5 +1,5 @@
 
-class RestRpcUrlMappings {
+class ApiToolkitUrlMappings {
 
 	static grailsApplication
 

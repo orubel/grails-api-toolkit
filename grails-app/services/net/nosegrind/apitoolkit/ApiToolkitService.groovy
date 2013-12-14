@@ -1,4 +1,4 @@
-package net.nosegrind.restrpc
+package net.nosegrind.apitoolkit
 
 import grails.converters.JSON
 import grails.converters.XML
@@ -11,11 +11,12 @@ import grails.plugin.cache.CachePut
 
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
-import net.nosegrind.restrpc.Api
+
+import net.nosegrind.apitoolkit.Api;
 import net.nosegrind.restrpc.*
 
 
-class RestRPCService{
+class ApiToolkitService{
 
 	def grailsApplication
 	def springSecurityService

@@ -2,12 +2,12 @@ import java.util.Map
 
 import grails.converters.JSON
 import grails.converters.XML
-import net.nosegrind.restrpc.Api
-import net.nosegrind.restrpc.RestMethod
+import net.nosegrind.apitoolkit.Api;
+import net.nosegrind.apitoolkit.RestMethod;
 
-class RestRPCFilters {
+class ApiToolkitFilters {
 	
-	def restRPCService
+	def apiToolkitService
 	
 	def filters = {
 		restrpc(controller:'*', action:'*'){
@@ -25,11 +25,11 @@ class RestRPCFilters {
 				// WHICH WILL REDIRECT
 				if (action) {
 					if (action.isAnnotationPresent(Api)) {
-						if (restRPCService.isApiCall()) {
+						if (apiToolkitService.isApiCall()) {
 							// CHECK ANNO TO SEE IF ITS POST/PUT/DELETE
 							// IF SO, CHECK METHOD MATCH
 							def anno = action.getAnnotation(Api)
-							if(!restRPCService.isRequestMatch(anno.method().toString())){
+							if(!apiToolkitService.isRequestMatch(anno.method().toString())){
 								return false
 							}
 						}else{
@@ -45,13 +45,13 @@ class RestRPCFilters {
 				def action = controller?.getClazz()?.getDeclaredMethod(params.action)
 				if (action) {
 					if (action.isAnnotationPresent(Api)) {
-						if (restRPCService.isApiCall()) {
+						if (apiToolkitService.isApiCall()) {
 							def anno = action.getAnnotation(Api)
 							if(!anno){
 								render(controller:params.controller,action:params.action, model:model)
 							}
 							
-							def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:restRPCService.formatModel(model)
+							def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 							
 							String format = params.format
 			
@@ -95,7 +95,7 @@ class RestRPCFilters {
 																	}
 																}else{
 																	String msg = "Path '${pathKey}' was unable to be parsed"
-																	return restRPCService._404_NOTFOUND(msg)
+																	return apiToolkitService._404_NOTFOUND(msg)
 																}
 															}else{
 																def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
@@ -141,7 +141,7 @@ class RestRPCFilters {
 																	}
 																}else{
 																	String msg = "Path '${pathKey}' was unable to be parsed"
-																	return restRPCService._404_NOTFOUND(msg)
+																	return apiToolkitService._404_NOTFOUND(msg)
 																}
 															}else{
 																def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
@@ -187,7 +187,7 @@ class RestRPCFilters {
 																	}
 																}else{
 																	String msg = "Path '${pathKey}' was unable to be parsed"
-																	return restRPCService._404_NOTFOUND(msg)
+																	return apiToolkitService._404_NOTFOUND(msg)
 																}
 															}else{
 																def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
@@ -206,13 +206,13 @@ class RestRPCFilters {
 														String paramType = p.paramType().toString()
 														String name = p.name().toString()
 														String belongsTo = p.belongsTo().toString()
-														Integer paramKey = restRPCService.getKey(paramType)
+														Integer paramKey = apiToolkitService.getKey(paramType)
 														if(paramKey>0 && name==k){
 															def temp = []
 															if(paramKey==1){
-																temp = restRPCService.createLinkRelationships(paramType,name,params.controller)
+																temp = apiToolkitService.createLinkRelationships(paramType,name,params.controller)
 															}else{
-																temp = restRPCService.createLinkRelationships(paramType,name,belongsTo)
+																temp = apiToolkitService.createLinkRelationships(paramType,name,belongsTo)
 																def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}/${belongsTo[0].toLowerCase()+belongsTo.substring(1)}/show/${v}"
 																map[k] = "<a href=${uri}>${v}<a>"
 															}
@@ -267,7 +267,7 @@ class RestRPCFilters {
 																}
 															}else{
 																String msg = "Path '${pathKey}' was unable to be parsed"
-																return restRPCService._404_NOTFOUND(msg)
+																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
 															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
@@ -312,7 +312,7 @@ class RestRPCFilters {
 																}
 															}else{
 																String msg = "Path '${pathKey}' was unable to be parsed"
-																return restRPCService._404_NOTFOUND(msg)
+																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
 															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
@@ -362,7 +362,7 @@ class RestRPCFilters {
 																}
 															}else{
 																String msg = "Path '${pathKey}' was unable to be parsed"
-																return restRPCService._404_NOTFOUND(msg)
+																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
 															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
@@ -408,7 +408,7 @@ class RestRPCFilters {
 																}
 															}else{
 																String msg = "Path '${pathKey}' was unable to be parsed"
-																return restRPCService._404_NOTFOUND(msg)
+																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
 															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
@@ -457,7 +457,7 @@ class RestRPCFilters {
 																}
 															}else{
 																String msg = "Path '${pathKey}' was unable to be parsed"
-																return restRPCService._404_NOTFOUND(msg)
+																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
 															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
@@ -500,7 +500,7 @@ class RestRPCFilters {
 																}
 															}else{
 																String msg = "Path '${pathKey}' was unable to be parsed"
-																return restRPCService._404_NOTFOUND(msg)
+																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
 															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
@@ -533,4 +533,4 @@ class RestRPCFilters {
 	}
 
 }
-			
+		

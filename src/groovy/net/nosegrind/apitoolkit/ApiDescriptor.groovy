@@ -1,7 +1,7 @@
-package net.nosegrind.restrpc;
+package net.nosegrind.apitoolkit;
 
-import net.nosegrind.restrpc.ErrorCodeDescriptor;
-import net.nosegrind.restrpc.ParamsDescriptor;
+import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
+import net.nosegrind.apitoolkit.ParamsDescriptor;
 import grails.validation.Validateable
 
 //@grails.validation.Validateable

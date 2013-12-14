@@ -1,6 +1,6 @@
-package net.nosegrind.restrpc
+package net.nosegrind.apitoolkit
 
-import net.nosegrind.restrpc.ParamsDescriptor
+import net.nosegrind.apitoolkit.ParamsDescriptor;
 
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
