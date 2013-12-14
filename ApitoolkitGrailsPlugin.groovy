@@ -1,4 +1,4 @@
-class RestrpcGrailsPlugin {
+class ApitoolkitGrailsPlugin {
     def version = "0.9"
     def grailsVersion = "2.1 > *"
     def title = "API Toolkit - Core"

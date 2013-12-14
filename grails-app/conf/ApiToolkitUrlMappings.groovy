@@ -4,7 +4,7 @@ class ApiToolkitUrlMappings {
 	static grailsApplication
 
 	static mappings = {
-		String apiName = getGrailsApplication().config.restrpc.apiName
+		String apiName = getGrailsApplication().config.apitoolkit.apiName
 		String apiVersion = getGrailsApplication().metadata['app.version']
 		
 		"/$apiName/$apiVersion/$format/$controller/$action" {
