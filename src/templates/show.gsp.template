@@ -26,7 +26,7 @@
 				<g:if test="${api.key=='description'}"><g:set var="description" value="${api.value}"/></g:if>
 				<g:if test="${api.key=='receives'}"><g:set var="receives" value="${api.value}"/></g:if> 
 				<g:if test="${api.key=='returns'}"><g:set var="returns" value="${api.value}"/></g:if> 
-				<g:if test="${api.key=='errors'}"><g:set var="errors" value="${api.value}"/></g:if> 
+				<g:if test="${api.key=='errorcodes'}"><g:set var="errors" value="${api.value}"/></g:if> 
 			</g:each>
 			<br>
 			<div style="background-color: #f7f7f7;padding:5px;">
@@ -41,7 +41,7 @@
 				</div>
 				${description}
 				<br><br>
-				<b>JSON</b>
+				<b>RETURN EXAMPLE</b>
 				<div>${json}</div>
 				<br>
 				

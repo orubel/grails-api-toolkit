@@ -53,7 +53,8 @@ class ApiErrors{
 		this.error = new ErrorCodeDescriptor(code:304,description:"[Not Modified] : ${msg}")
 		return this
 	}
-	def _304_NOTMODIFIED(){
+	
+	def _304_NOT_MODIFIED(){
 		this.error = new ErrorCodeDescriptor(code:304,description:"[Not Modified]")
 		return this
 	}
@@ -63,6 +64,7 @@ class ApiErrors{
 		error = new ErrorCodeDescriptor(code:400,description:"[Bad Request] : ${msg}")
 		return this
 	}
+	
 	def _400_BAD_REQUEST(){
 		error = new ErrorCodeDescriptor(code:400,description:"[Bad Request]")
 		return this

@@ -18,7 +18,7 @@ class ApiParams{
 	private ApiParams() {}
 
 	def toObject(){
-		return this
+		return this.param
 	}
 
 	def hasRoles(List roles){
@@ -47,75 +47,52 @@ class ApiParams{
 	}
 
 	def _PKEY(String name,String description,String idReference){
-		this.param.paramType = 'PKEY'
-		this.param.name = name
-		this.param.description = description
-		this.param.idReferences = idReference
+		this.param = new ParamsDescriptor(paramType:"PKEY",name:"${name}",description:"${description}",idReferences:"${idReference}")
 		return this
 	}
 	
 	def _FKEY(String name,String description,String idReference){
-		this.param.paramType = 'FKEY'
-		this.param.name = name
-		this.param.description = description
-		this.param.idReferences = idReference
+		this.param = new ParamsDescriptor(paramType:"FKEY",name:"${name}",description:"${description}",idReferences:"${idReference}")
 		return this
 	}
 
 	def _INDEX(String name,String description,String idReference){
-		this.param.paramType = 'INDEX'
-		this.param.name = name
-		this.param.description = description
-		this.param.idReferences = idReference
+		this.param = new ParamsDescriptor(paramType:"INDEX",name:"${name}",description:"${description}",idReferences:"${idReference}")
 		return this
 	}
 	
 	def _STRING(String name,String description){
-		this.param.paramType = 'STRING'
-		this.param.name = name
-		this.param.description = description
+		this.param = new ParamsDescriptor(paramType:"STRING",name:"${name}",description:"${description}")
 		return this
 	}
 
 	def _BOOLEAN(String name,String description){
-		this.param.paramType = 'BOOLEAN'
-		this.param.name = name
-		this.param.description = description
+		this.param = new ParamsDescriptor(paramType:"BOOLEAN",name:"${name}",description:"${description}")
 		return this
 	}
 	
 	def _FLOAT(String name,String description){
-		this.param.paramType = 'FLOAT'
-		this.param.name = name
-		this.param.description = description
+		this.param = new ParamsDescriptor(paramType:"FLOAT",name:"${name}",description:"${description}")
 		return this
 	}
 	
 	def _BIGDECIMAL(String name,String description){
-		this.param.paramType = 'BIGDECIMAL'
-		this.param.name = name
-		this.param.description = description
+		this.param = new ParamsDescriptor(paramType:"BIGDECIMAL",name:"${name}",description:"${description}")
 		return this
 	}
 	
 	def _LONG(String name,String description){
-		this.param.paramType = 'LONG'
-		this.param.name = name
-		this.param.description = description
+		this.param = new ParamsDescriptor(paramType:"LONG",name:"${name}",description:"${description}")
 		return this
 	}
 	
 	def _EMAIL(String name,String description){
-		this.param.paramType = 'EMAIL'
-		this.param.name = name
-		this.param.description = description
+		this.param = new ParamsDescriptor(paramType:"EMAIL",name:"${name}",description:"${description}")
 		return this
 	}
 	
 	def _URL(String name,String description){
-		this.param.paramType = 'URL'
-		this.param.name = name
-		this.param.description = description
+		this.param = new ParamsDescriptor(paramType:"URL",name:"${name}",description:"${description}")
 		return this
 	}
 }
