@@ -10,7 +10,7 @@ class ApiToolkitFilters {
 	def apiToolkitService
 	
 	def filters = {
-		restrpc(controller:'*', action:'*'){
+		apitoolkit(controller:'*', action:'*'){
 			before = {
 				/*
 				 * DO ANNO CHECKS BEFORE METHOD CALL SO EDIT/DELETE DOESN'T GET CALLED AND
@@ -98,7 +98,7 @@ class ApiToolkitFilters {
 																	return apiToolkitService._404_NOTFOUND(msg)
 																}
 															}else{
-																def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+																def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}"
 																uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																redirect(uri: "${uri}")
 															}
@@ -144,7 +144,7 @@ class ApiToolkitFilters {
 																	return apiToolkitService._404_NOTFOUND(msg)
 																}
 															}else{
-																def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+																def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}"
 																uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																redirect(uri: "${uri}")
 															}
@@ -190,7 +190,7 @@ class ApiToolkitFilters {
 																	return apiToolkitService._404_NOTFOUND(msg)
 																}
 															}else{
-																def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+																def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}"
 																uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																redirect(uri: "${uri}")
 															}
@@ -213,7 +213,7 @@ class ApiToolkitFilters {
 																temp = apiToolkitService.createLinkRelationships(paramType,name,params.controller)
 															}else{
 																temp = apiToolkitService.createLinkRelationships(paramType,name,belongsTo)
-																def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}/${belongsTo[0].toLowerCase()+belongsTo.substring(1)}/show/${v}"
+																def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}/${belongsTo[0].toLowerCase()+belongsTo.substring(1)}/show/${v}"
 																map[k] = "<a href=${uri}>${v}<a>"
 															}
 															linkRels.add(temp)
@@ -270,7 +270,7 @@ class ApiToolkitFilters {
 																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
-															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+															def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}"
 															uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 															redirect(uri: "${uri}")
 														}
@@ -315,7 +315,7 @@ class ApiToolkitFilters {
 																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
-															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+															def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}"
 															uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 															redirect(uri: "${uri}")
 														}
@@ -365,7 +365,7 @@ class ApiToolkitFilters {
 																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
-															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+															def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}"
 															uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 															redirect(uri: "${uri}")
 														}
@@ -411,7 +411,7 @@ class ApiToolkitFilters {
 																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
-															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+															def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}"
 															uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 															redirect(uri: "${uri}")
 														}
@@ -460,7 +460,7 @@ class ApiToolkitFilters {
 																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
-															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+															def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}"
 															uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 															redirect(uri: "${uri}")
 														}
@@ -503,7 +503,7 @@ class ApiToolkitFilters {
 																return apiToolkitService._404_NOTFOUND(msg)
 															}
 														}else{
-															def uri = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/${format}"
+															def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}"
 															uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 															redirect(uri: "${uri}")
 														}

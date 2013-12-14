@@ -13,7 +13,7 @@ import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
 import net.nosegrind.apitoolkit.Api;
-import net.nosegrind.restrpc.*
+import net.nosegrind.apitoolkit.*
 
 
 class ApiToolkitService{
@@ -63,11 +63,11 @@ class ApiToolkitService{
 		
 		def api
 		if(grailsApplication.config.grails.app.context=='/'){
-			api = "/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/"
+			api = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/"
 		}else if(grailsApplication.config?.grails?.app?.context){
-			api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/"
+			api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/"
 		}else if(!grailsApplication.config?.grails?.app?.context){
-			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.restrpc.apiName}/${grailsApplication.metadata['app.version']}/"
+			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/"
 		}
 		api += (params?.format)?"${params.format}/${params.controller}/${params.action}":"JSON/${params.controller}/${params.action}"
 		api += (params.id)?"/${params.id}":""

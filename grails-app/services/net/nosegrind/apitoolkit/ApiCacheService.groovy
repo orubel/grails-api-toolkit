@@ -13,7 +13,7 @@ import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
 import net.nosegrind.apitoolkit.ApiDescriptor;
-import net.nosegrind.restrpc.*
+import net.nosegrind.apitoolkit.*
 
 class ApiCacheService{
 
