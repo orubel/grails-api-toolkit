@@ -1,7 +1,7 @@
 package net.nosegrind.apitoolkit;
 
 
-public enum RestMethod {
+public enum Method {
 	GET("GET"),
 	POST("POST"),
 	PUT("PUT"),
@@ -9,7 +9,7 @@ public enum RestMethod {
 
     private String value;
 
-    RestMethod(String value) {
+    Method(String value) {
         this.value = value;
     }
 
@@ -26,10 +26,10 @@ public enum RestMethod {
         return this.getValue();
     }
 
-    public static RestMethod getEnum(String value) {
+    public static Method getEnum(String value) {
         if(value == null)
             throw new IllegalArgumentException();
-        for(RestMethod v : values())
+        for(Method v : values())
             if(value.equalsIgnoreCase(v.getValue())) return v;
         throw new IllegalArgumentException();
     }

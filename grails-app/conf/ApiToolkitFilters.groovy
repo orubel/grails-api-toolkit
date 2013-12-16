@@ -3,7 +3,7 @@ import java.util.Map
 import grails.converters.JSON
 import grails.converters.XML
 import net.nosegrind.apitoolkit.Api;
-import net.nosegrind.apitoolkit.RestMethod;
+import net.nosegrind.apitoolkit.Method;
 
 class ApiToolkitFilters {
 	

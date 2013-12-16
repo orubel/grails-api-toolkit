@@ -3,6 +3,7 @@ package net.nosegrind.apitoolkit
 import grails.converters.JSON
 import grails.converters.XML
 import java.lang.reflect.Method
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import grails.plugin.cache.CacheEvict
@@ -12,7 +13,6 @@ import grails.plugin.cache.CachePut
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
-import net.nosegrind.apitoolkit.Api;
 import net.nosegrind.apitoolkit.*
 
 
@@ -142,5 +142,31 @@ class ApiToolkitService{
 		String[] schemes = ["http","https"]
 		UrlValidator urlValidator = new UrlValidator(schemes)
 		return urlValidator.isValid(url)
+	}
+	
+	boolean checkAuthority(ArrayList role){
+		List roles = role as List
+		if(roles.size()>0 && roles[0].trim()){
+			def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugins.springsecurity.authority.className).clazz.list().authority
+			def finalRoles
+			def userRoles
+			if (springSecurityService.isLoggedIn()){
+				userRoles = springSecurityService.getPrincipal().getAuthorities()
+			}
+			
+			if(userRoles){
+				def temp = roles2.intersect(roles as Set)
+				finalRoles = temp.intersect(userRoles)
+				if(finalRoles){
+					return true
+				}else{
+					return false
+				}
+			}else{
+				return false
+			}
+		}else{
+			return false
+		}
 	}
 }

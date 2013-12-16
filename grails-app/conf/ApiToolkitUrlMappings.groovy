@@ -19,15 +19,12 @@ class ApiToolkitUrlMappings {
 			parseRequest = true
 		}
 		
-		"/$apiName/$apiVersion/apidoc" {
-			controller = 'apidoc'
-			action = 'show'
-			parseRequest = true
-		}
-		"/$apiName/$apiVersion/apidoc/show" {
-			controller = 'apidoc'
-			action = 'show'
-			parseRequest = true
-		}
+		"/$apiName/$apiVersion/apidoc"(controller:'apidoc',action:'show',parseRequest:true)
+		"/$apiName/$apiVersion/apidoc/show"(controller:'apidoc',action:'show',parseRequest:true)
+		
+		"/$apiName/$apiVersion/$format/webhook/api/${id}" (controller:'webhook',action:'api', parseRequest: true)
+		"/$apiName/$apiVersion/$format/webhook/api" (controller:'webhook',action:'api', parseRequest: true)
+		"/$apiName/$apiVersion/$format/webhook/${id}" (controller:'webhook',action:'api', parseRequest: true)
+		"/$apiName/$apiVersion/$format/webhook" (controller:'webhook',action:'api', parseRequest: true)
 	}
 }

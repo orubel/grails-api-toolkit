@@ -11,8 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-public @interface Api{
+public @interface Hook{
 	Method method();
-	String[] apiRoles() default {""};
-	String[] hookRoles() default {""};
+	String[] roles() default {""};
 }

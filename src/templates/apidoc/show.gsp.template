@@ -32,7 +32,7 @@
 			<div style="background-color: #f7f7f7;padding:5px;">
 				<div style="display: table;border: 1px solid #c5c5c5;">
 				 <div>
-				   <span style="display: table-row; background-color:#ddd;">
+				   <span style="display: table-row; background-color:#b4b8be;color:#fff;">
 					   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>${action.key}</b></span>
 					   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>${path}</b></span>
 					   <span style="display: table-cell;width: 400px;padding-left: 10px;border: 1px #d7ad7b;"><b>&nbsp;</b></span>

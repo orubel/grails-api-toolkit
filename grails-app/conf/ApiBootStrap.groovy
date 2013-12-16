@@ -10,7 +10,7 @@ class ApiBootStrap {
 	def apiCacheService
 	
 	def init = { servletContext ->
-		//restRPCService.flushAllApiCache()
+		// bootstrap hooks
 	}
 
     def destroy = {}

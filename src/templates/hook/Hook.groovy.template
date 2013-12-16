@@ -1,0 +1,23 @@
+package ${packageName}
+
+import java.util.Date
+
+class Hook {
+	${userClassName} user
+	String name
+	String url
+	String format = 'JSON'
+	String service
+	Long attempts = 0
+	Date dateCreated
+	Date lastModified = new Date()
+
+	static constraints = {
+		user()
+		name()
+		url()
+		format()
+		service()
+		attempts()
+	}
+}
