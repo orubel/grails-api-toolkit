@@ -8,8 +8,8 @@ includeTargets << new File("$springSecurityCorePluginDir/scripts/_S2Common.groov
 USAGE = """
 Usage: grails apitoolkit-init <domain-class-package> <user-class-name> <role-class-name>
 
-Takes two arguments of package name and the spring-security user classname
-and creates webhook domain, controller and views.
+Takes three arguments of package name, user classname and authorities class name
+and creates hook domain, controller and views.
 
 Example: grails apitoolkit-init com.yourapp User Role
 """
@@ -19,7 +19,7 @@ userClassName = ''
 templateDir = "$apitoolkitPluginDir/src/templates"
 appDir = "$basedir/grails-app"
 
-target(apitoolkitInit: 'Creates artifacts for the Webhook plugin') {
+target(apitoolkitInit: 'Creates artifacts for the Api Hooks') {
 	if (!configure()) {
 		return 1
 	}
@@ -62,8 +62,8 @@ private void createDomains() {
 }
 
 private void copyControllersAndViews() {
-	ant.mkdir dir: "$appDir/views/webhook"
-	// add default views for webhooks administration
+	ant.mkdir dir: "$appDir/views/hook"
+	// add default views for hooks administration
 	copyFile "$templateDir/hook/create.gsp.template", "$appDir/views/hook/create.gsp"
 	copyFile "$templateDir/hook/edit.gsp.template", "$appDir/views/hook/edit.gsp"
 	copyFile "$templateDir/hook/list.gsp.template", "$appDir/views/hook/list.gsp"
@@ -84,12 +84,6 @@ private void updateConfig() {
 			it.writeLine "apitoolkit.services = []"
 			it.writeLine "apitoolkit.domain = '${packageName}.Hook'"
 			it.writeLine "apitoolkit.controller = '${packageName}.HookController'"
-			
-			it.writeLine "webhook.attempts = 5"
-			it.writeLine "webhook.authorities = ['ROLE_ROOT','ROLE_ADMIN']"
-			it.writeLine "webhook.services = []"
-			it.writeLine "webhook.domain = '${packageName}.Webhook'"
-			it.writeLine "webhook.controller = '${packageName}.WebhookController'"
 		}
 	}
 }
@@ -97,7 +91,7 @@ private void updateConfig() {
 private parseArgs() {
 	def args = argsMap.params
 
-	if (2 == args.size()) {
+	if (3 == args.size()) {
 		printMessage "Creating classes in package ${args[0]}..."
 		return args
 	}
@@ -106,4 +100,4 @@ private parseArgs() {
 	null
 }
 
-setDefaultTarget('webhookInit')
+setDefaultTarget('apitoolkitInit')

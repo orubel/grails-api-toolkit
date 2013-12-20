@@ -1,13 +1,16 @@
-package ${packageName}
+package net.nosegrind.apitoolkit
 
+import org.springframework.security.access.annotation.Secured
 import org.springframework.dao.DataIntegrityViolationException
 import net.nosegrind.apitoolkit.*
 
+@Secured('permitAll')
 class HookController {
 
 	def springSecurityService
 	def hookService
 
+	@Secured('permitAll')
 	def api(){
 		switch(request.method){
 			case "POST":
@@ -120,7 +123,7 @@ class HookController {
 			return
 		}
 
-		Hook webhookInstance = Hook.findByIdAnd${userClassName}(params.id, user)
+		Hook webhookInstance = Hook.findByIdAndPerson(params.id, user)
 		if(!webhookInstance){
 			flash.message = "WEBHOOK NOT FOUND: NO WEBHOOK WITH THAT ID FOUND BELONGING TO CURRENT USER."
 			render(view:"create",model:[params:params])
@@ -142,6 +145,7 @@ class HookController {
 		render(view:"create",model:[params:params])
 	}
 
+	@Secured('permitAll')
 	def show() {
 		def user = loggedInUser()
 		if(!user){
@@ -149,7 +153,7 @@ class HookController {
 			return
 		}
 
-		def webhookInstance = isSuperuser() ? Hook.get(params.id) : Hook.findBy${userClassName}AndId(user,params.id.toLong())
+		def webhookInstance = isSuperuser() ? Hook.get(params.id) : Hook.findByPersonAndId(user,params.id.toLong())
 
 		if (webhookInstance) {
 			render(view:"show",model:[webhookInstance: webhookInstance])
@@ -167,7 +171,7 @@ class HookController {
 			return
 		}
 
-		def webhookInstance = isSuperuser() ? Hook.get(params.id) : Hook.findBy${userClassName}AndId(user,params.id.toLong())
+		def webhookInstance = isSuperuser() ? Hook.get(params.id) : Hook.findByPersonAndId(user,params.id.toLong())
 
 		if (!webhookInstance) {
 			flash.message = message(code: 'default.not.found.message', args: [message(code: 'webhook.label', default: 'Hook'), params.id])
@@ -209,7 +213,7 @@ class HookController {
 	}
 
 	protected loggedInUser() {
-		springSecurityService.isLoggedIn() ? ${userClassName}.load(springSecurityService.principal.id) : null
+		springSecurityService.isLoggedIn() ? Person.load(springSecurityService.principal.id) : null
 	}
 
 	protected boolean isSuperuser() {

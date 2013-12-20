@@ -147,7 +147,7 @@ class ApiToolkitService{
 	boolean checkAuthority(ArrayList role){
 		List roles = role as List
 		if(roles.size()>0 && roles[0].trim()){
-			def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugins.springsecurity.authority.className).clazz.list().authority
+			def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugin.springsecurity.authority.className).clazz.list().authority
 			def finalRoles
 			def userRoles
 			if (springSecurityService.isLoggedIn()){
