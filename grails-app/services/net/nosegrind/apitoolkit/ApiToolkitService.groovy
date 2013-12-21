@@ -20,6 +20,7 @@ class ApiToolkitService{
 
 	def grailsApplication
 	def springSecurityService
+	def apiCacheService
 
 	static transactional = false
 
