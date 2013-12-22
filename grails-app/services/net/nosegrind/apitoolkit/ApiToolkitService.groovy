@@ -74,7 +74,7 @@ class ApiToolkitService{
 		api += (params.id)?"/${params.id}":""
 		api += (queryString)?"?${queryString}":""
 
-		println("${uri}==${api}")
+		//println("${uri}==${api}")
 		return uri==api
 	}
 

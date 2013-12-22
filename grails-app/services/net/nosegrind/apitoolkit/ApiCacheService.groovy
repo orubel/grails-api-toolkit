@@ -40,9 +40,20 @@ class ApiCacheService{
 	}
 	
 	@CachePut(value="ApiCache",key="#controllername")
-	def setApiCache(String controllername,String method,ApiDescriptor apidoc){
-		Map api = [("${method}".toString()):apidoc]
-		return api
+	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc){
+		Map output
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+		for (Method method : controller.getClazz().getDeclaredMethod(methodname)){
+			if(method.isAnnotationPresent(Api)) {
+				def api = method.getAnnotation(Api)
+				apidoc['apiRoles'] = api.apiRoles()
+				if(api.hookRoles()){
+					apidoc['hookRoles'] = api.hookRoles()
+				}
+				output = [("${methodname}".toString()):apidoc]
+			}
+		}
+		return output
 	}
 	
 	@Cacheable(value="ApiCache",key="#controllername")

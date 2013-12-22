@@ -11,6 +11,14 @@ class ApiToolkitFilters {
 	def apiToolkitService
 	
 	def filters = {
+		hook(controller:'hook', action:'*'){
+			after = { Map model ->
+				if(params.url){
+					println(prams.url)
+					//params.url = params.url.split('/r/n')
+				}
+			}
+		}
 		apitoolkit(controller:'*', action:'*'){
 			before = {
 				/*

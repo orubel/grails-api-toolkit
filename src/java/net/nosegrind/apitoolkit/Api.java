@@ -13,6 +13,6 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Api{
 	Method method();
-	String[] apiRoles() default {""};
+	String[] apiRoles();
 	String[] hookRoles() default {""};
 }
