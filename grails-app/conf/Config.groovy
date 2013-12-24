@@ -21,6 +21,5 @@ grails.cache.config = {
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/JSON/**" : ['permitAll'],
 	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/XML/**" : ['permitAll'],
-	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/hook/JSON/**" : ['permitAll'],
-	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/hook/XML/**" : ['permitAll']
+	"/hook/**" : ['permitAll'],
 ]

@@ -3,12 +3,16 @@ package net.nosegrind.apitoolkit
 import org.springframework.security.access.annotation.Secured
 import org.springframework.dao.DataIntegrityViolationException
 import net.nosegrind.apitoolkit.*
+import java.lang.reflect.Method
+
+import net.nosegrind.apitoolkit.Hook
 
 @Secured('permitAll')
 class HookController {
 
 	def springSecurityService
 	def hookService
+	def apiCacheService
 
 	@Secured('permitAll')
 	def api(){
@@ -59,10 +63,32 @@ class HookController {
 			redirect(uri: "/")
 			return
 		}
+		
+		def services = []
+		
+		grailsApplication.controllerClasses.each { controllerClass ->
+			String controllername = controllerClass.logicalPropertyName
+			if(controllername!='aclClass'){
+				def cont = apiCacheService.getApiCache(controllername)
+				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+				for (Method method : controller.getClazz().getMethods()){
+					if(method.isAnnotationPresent(Api)) {
+						def api = method.getAnnotation(Api)
+						def action = method.getName()
+						if(cont){
+							if(api.hookRoles()){
+								def temp = ['controller':controllername,'action':action,'roles':api.hookRoles()]
+								services.add(temp)
+							}
+						}
+					}
+				}
+			}
+		}
 
-		def webhookList = isSuperuser() ? Hook.list(params) : Hook.findAllByUser(user, [max:params.max, sort:params.sort, order:params.order, offset:params.offset] )
-		params.max = Math.min(params.max ? params.int('max') : 10, 100)
-		[webhookInstanceList: webhookList, webhookInstanceTotal: webhookList.size(),params:params]
+		//def webhookList = isSuperuser() ? Hook.list(params) : Hook.findAllByUser(user, [max:params.max, sort:params.sort, order:params.order, offset:params.offset] )
+		//params.max = Math.min(params.max ? params.int('max') : 10, 100)
+		[webhookInstanceList: services,params:params,user:user]
 	}
 
 	def create() {
@@ -71,7 +97,14 @@ class HookController {
 			return
 		}
 		def formats = ['JSON','XML']
-		[webhookInstance: new Hook(params),service:grailsApplication.config.apitoolkit.services,format:formats]
+		
+		def service = []
+		// loop through cache
+		if(userRoles.intersect(hookRoles)){
+			// set service value
+		}
+
+		[service:grailsApplication.config.apitoolkit.services,format:formats]
 	}
 
 	def save() {
@@ -94,7 +127,6 @@ class HookController {
 			return
 		}
 
-		webhookInstance = new Hook(params)
 		webhookInstance.user=user
 
 		if (webhookInstance.save(flush: true)) {

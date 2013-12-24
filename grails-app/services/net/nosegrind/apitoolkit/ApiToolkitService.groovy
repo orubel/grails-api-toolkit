@@ -139,10 +139,25 @@ class ApiToolkitService{
 		return newMap
 	}
 
+
+	
 	boolean validateUrl(String url){
 		String[] schemes = ["http","https"]
 		UrlValidator urlValidator = new UrlValidator(schemes)
 		return urlValidator.isValid(url)
+	}
+	
+	Boolean checkHookAuthority(ArrayList roles){
+		if (springSecurityService.isLoggedIn()){
+			def userRoles = springSecurityService.getPrincipal().getAuthorities()
+			if(userRoles){
+				def hookRoles = api.hookRoles()
+				if(userRoles.intersect(hookRoles)){
+					return true
+				}
+			}
+		}
+		return false
 	}
 	
 	boolean checkAuthority(ArrayList role){

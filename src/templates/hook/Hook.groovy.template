@@ -4,6 +4,10 @@ import java.io.Serializable
 import java.util.Date
 
 class Hook implements Serializable {
+
+	static transactional = true
+	static hasMany = [roles:HookRole]
+	
 	${userClassName} user
 	String name
 	String url

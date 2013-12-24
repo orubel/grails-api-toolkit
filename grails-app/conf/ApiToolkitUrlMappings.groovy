@@ -22,9 +22,7 @@ class ApiToolkitUrlMappings {
 		
 		"/$apiName/$apiVersion/apidoc"(controller:'apidoc',action:'show',parseRequest:true)
 		"/$apiName/$apiVersion/apidoc/show"(controller:'apidoc',action:'show',parseRequest:true)
-		
-		"/$apiName/$apiVersion/$format/hook/api/$id" (controller:'hook',action:'api', parseRequest: true)
-		"/$apiName/$apiVersion/$format/hook/api" (controller:'hook',action:'api', parseRequest: true)
-		"/$apiName/$apiVersion/$format/hook" (controller:'hook',action:'list', parseRequest: true)
+
+		"/hook" (controller:'hook',action:'list', parseRequest: true)
 	}
 }

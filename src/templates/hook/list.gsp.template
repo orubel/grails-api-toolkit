@@ -1,3 +1,4 @@
+<%@ page import="net.nosegrind.apitoolkit.Hook" %>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -21,40 +22,50 @@
 			<table>
 				<thead>
 					<tr>
-						<g:sortableColumn property="id" title="${message(code: 'webhook.id.label', default: 'Id')}"/>
-						<g:sortableColumn property="user" title="${message(code: 'webhook.user.label', default: 'User')}" titleKey="webhookInstance.user.username"/>
-						<g:sortableColumn property="name" title="${message(code: 'webhook.name.label', default: 'Name')}" />
-						<g:sortableColumn property="url" title="${message(code: 'webhook.url.label', default: 'Url')}" />
-						<g:sortableColumn property="format" title="${message(code: 'webhook.format.label', default: 'Format')}" />
-						<g:sortableColumn property="service" title="${message(code: 'webhook.service.label', default: 'Service')}" />
-						<g:sortableColumn property="attempts" title="${message(code: 'webhook.attempts.label', default: 'Attempts')}" />
+						<th>Service</th>
+						<th>Subscribed</th>
 						<th>&nbsp;</th>
 					</tr>
 				</thead>
 				<tbody>
 				<g:each in="${webhookInstanceList}" status="i" var="webhookInstance">
+					<api:checkHookRole roles="${webhookInstance.roles}">
 					<tr class="${(i % 2) == 0 ? 'even' : 'odd'}">
-						<td><g:link action="show" id="${webhookInstance.id}">${fieldValue(bean: webhookInstance, field: "id")}</g:link></td>
-						<td>${webhookInstance.user.username}</td>
-						<td>${fieldValue(bean: webhookInstance, field: "name")}</td>
-						<td>${fieldValue(bean: webhookInstance, field: "url")}</td>
-						<td>${fieldValue(bean: webhookInstance, field: "format")}</td>
-						<td>${fieldValue(bean: webhookInstance, field: "service")}</td>
-						<td>${fieldValue(bean: webhookInstance, field: "attempts")}</td>
+						<g:set var="service" value="${webhookInstance.controller}/${webhookInstance.action}" />
+						<g:set var="userHook" value="${Hook.findByServiceAndUser(service,user)}" />
+						<td>${service}</td>
+						
+
+						<g:if test="${userHook}">
+							<td>
+								<g:if test="${userHook.id}">
+									<g:form action="edit" id="${userHook.id}">
+									<span class="button"><g:actionSubmit class='edit' value='edit' action="edit"/></span>
+									</g:form>
+								</g:if>
+
+							</td>
+							<td>
+								<g:if test="${userHook.attempts>=5}">
+								<g:form action="reset" id="${userHook.id}">
+								<span class="button"><g:actionSubmit class='save' value='reset' action="reset"/></span>
+								</g:form>
+								</g:if>
+							</td>
+						</g:if>
+						<g:else>
 						<td>
-							<g:if test="${webhookInstance.attempts>=5}">
-							<g:form action="reset" id="${webhookInstance.id}">
-							<span class="button"><g:actionSubmit class='save' value='reset' action="reset"/></span>
+							<g:form action="create" id="${service}">
+							<span class="button"><g:actionSubmit class='create' value='create' action="create"/></span>
 							</g:form>
-							</g:if>
 						</td>
+						<td></td>
+						</g:else>
 					</tr>
+					</api:checkHookRole>
 				</g:each>
 				</tbody>
 			</table>
-			<div class="pagination">
-				<g:paginate total="${webhookInstanceTotal}" />
-			</div>
 		</div>
 	</body>
 </html>
