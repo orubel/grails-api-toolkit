@@ -7,12 +7,10 @@ class ApiTagLib {
 	def grailsApplication
 	def apitoolkitService
 	
-	// <api:checkHookRole controller="${controllerName}" method="${action}"/>
-	def checkHookRole = { attrs,body ->
+	// <api:checkRole role="['ROLE_ADMIN','ROLE_USER']"/>
+	def checkRole = { attrs,body ->
 		if(attrs.roles){
-			println("has roles")
 			if(apitoolkitService.checkHookAuthority(attrs.roles)){
-				println("has authority")
 				out << body()
 				//return true
 			}else{

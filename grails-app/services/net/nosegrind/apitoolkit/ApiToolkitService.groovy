@@ -151,8 +151,7 @@ class ApiToolkitService{
 		if (springSecurityService.isLoggedIn()){
 			def userRoles = springSecurityService.getPrincipal().getAuthorities()
 			if(userRoles){
-				def hookRoles = api.hookRoles()
-				if(userRoles.intersect(hookRoles)){
+				if(userRoles.intersect(roles)){
 					return true
 				}
 			}

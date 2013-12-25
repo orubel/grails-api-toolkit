@@ -9,8 +9,7 @@ class Hook implements Serializable {
 	static hasMany = [roles:HookRole]
 	
 	${userClassName} user
-	String name
-	String url
+	String callback
 	String format = 'JSON'
 	String service
 	Long attempts = 0
@@ -19,8 +18,7 @@ class Hook implements Serializable {
 
 	static constraints = {
 		user()
-		name()
-		url()
+		callback()
 		format()
 		service()
 		attempts()

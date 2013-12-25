@@ -18,6 +18,17 @@ grails.cache.config = {
 	}
  }
 
+apitoolkit.defaultData.PKEY = '26'
+apitoolkit.defaultData.FKEY = '32'
+apitoolkit.defaultData.INDEX = '26'
+apitoolkit.defaultData.STRING = 'Hello World'
+apitoolkit.defaultData.BOOLEAN = 'true'
+apitoolkit.defaultData.FLOAT = '1.00'
+apitoolkit.defaultData.BIGDECIMAL = '123567828794.87'
+apitoolkit.defaultData.LONG = '18926'
+apitoolkit.defaultData.EMAIL = 'example@yoursite.com'
+apitoolkit.defaultData.URL = 'http://www.yoursite.com'
+
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/JSON/**" : ['permitAll'],
 	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/XML/**" : ['permitAll'],
