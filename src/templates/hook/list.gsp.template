@@ -8,12 +8,7 @@
 	</head>
 	<body>
 		<a href="#list-webhook" class="skip" tabindex="-1"><g:message code="default.link.skip.label" default="Skip to content&hellip;"/></a>
-		<div class="nav" role="navigation">
-			<ul>
-				<li><a class="home" href="${createLink(uri: '/')}"><g:message code="default.home.label"/></a></li>
-				<li><g:link class="create" action="create"><g:message code="default.new.label" args="[entityName]" /></g:link></li>
-			</ul>
-		</div>
+
 		<div id="list-webhook" class="content scaffold-list" role="main">
 			<h1><g:message code="default.list.label" args="[entityName]" /></h1>
 			<g:if test="${flash.message}">
@@ -23,7 +18,6 @@
 				<thead>
 					<tr>
 						<th>Service</th>
-						<th>Subscribed</th>
 						<th>&nbsp;</th>
 					</tr>
 				</thead>
@@ -35,31 +29,39 @@
 						<g:set var="userHook" value="${Hook.findByServiceAndUser(service,user)}" />
 						<td>${service}</td>
 						
-
 						<g:if test="${userHook}">
 							<td>
-								<g:if test="${userHook.id}">
-									<g:form action="edit" id="${userHook.id}">
-									<span class="button"><g:actionSubmit class='edit' value='edit' action="edit"/></span>
-									</g:form>
-								</g:if>
+								<div style="float: left;">
+								<g:form action="edit" id="${userHook.id}" method="post">
+								<g:hiddenField name='service' value="${service}"/>
+								<span class="button"><g:actionSubmit class='edit' value='edit' action="edit"/></span>
+								</g:form>
+								</div>
 
-							</td>
-							<td>
+								<div style="float: left;">
+								<g:form action="edit" id="${userHook.id}" method="post">
+								<g:hiddenField name='service' value="${service}"/>
+								<span class="button"><g:actionSubmit class='delete' value='delete' action="delete"/></span>
+								</g:form>
+								</div>
+
 								<g:if test="${userHook.attempts>=5}">
+								<div style="float: left;">
 								<g:form action="reset" id="${userHook.id}">
+								<g:hiddenField name='service' value="${service}"/>
 								<span class="button"><g:actionSubmit class='save' value='reset' action="reset"/></span>
 								</g:form>
+								</div>
 								</g:if>
 							</td>
 						</g:if>
 						<g:else>
 						<td>
-							<g:form action="create" id="${service}">
+							<g:form action="create" method="post">
+							<g:hiddenField name='service' value="${service}"/>
 							<span class="button"><g:actionSubmit class='create' value='create' action="create"/></span>
 							</g:form>
 						</td>
-						<td></td>
 						</g:else>
 					</tr>
 					</api:checkHookRole>

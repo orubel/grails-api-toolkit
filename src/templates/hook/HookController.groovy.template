@@ -77,9 +77,12 @@ class HookController {
 						def api = method.getAnnotation(Api)
 						def action = method.getName()
 						if(cont){
-							if(api.hookRoles()){
-								def temp = ['controller':controllername,'action':action,'roles':api.hookRoles()]
-								services.add(temp)
+							println(cont["${action}"]["hookRoles"].getClass())
+							if(cont["${action}"]["hookRoles"].getClass()){
+								if(apiToolkitService.checkHookAuthority(cont["${action}"]["hookRoles"])){
+									def temp = ['controller':controllername,'action':action,'roles':cont["${action}"]["hookRoles"]]
+									services.add(temp)
+								}
 							}
 						}
 					}
@@ -87,7 +90,8 @@ class HookController {
 			}
 		}
 
-
+		//def webhookList = isSuperuser() ? Hook.list(params) : Hook.findAllByUser(user, [max:params.max, sort:params.sort, order:params.order, offset:params.offset] )
+		//params.max = Math.min(params.max ? params.int('max') : 10, 100)
 		[webhookInstanceList: services,params:params,user:user]
 	}
 
@@ -97,30 +101,30 @@ class HookController {
 			redirect(uri: "/")
 			return
 		}
-		
-		def temp = params.service.split('/')
+
 		def formats = ['JSON','XML']
 		
-		Hook service
-		def cont = apiCacheService.getApiCache(controllername)
-		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-		for (Method method : controller.getClazz().getMethods()){
-			if(method.isAnnotationPresent(Api)) {
-				def api = method.getAnnotation(Api)
-				def action = method.getName()
-				if(cont){
-					if(api.hookRoles()){
-						if(apiToolkitService.checkHookAuthority(api.hookRoles()){
-							services = Hook.findByServiceAndUser(params.service,user)
-						}else{
-							render([error: 'access denied'])
-						}
+		def temp = params.service.split('/')
+		def cont = apiCacheService.getApiCache(temp[0])
+		if(cont){
+			if(cont["${temp[1]}"]["hookRoles"]){
+				if(apiToolkitService.checkHookAuthority(cont["${temp[1]}"]["hookRoles"])){
+					Hook service = Hook.findByServiceAndUser(params.service,user)
+					if(service){
+						flash.message = "You are already subscribed to this service. Please edit it instead."
+						render(view:"edit",model:[id:service.id,params:params,format:formats])
 					}
+				}else{
+					render([error: 'access denied'])
 				}
+			}else{
+				render([error: 'access denied'])
 			}
+		}else{
+			render([error: 'access denied'])
 		}
 
-		[service:service,format:formats]
+		[format:formats,params:params]
 	}
 
 	def save() {
@@ -130,29 +134,47 @@ class HookController {
 			return
 		}
 		def formats = ['JSON','XML']
-		Hook webhookInstance = Hook.findByUrlAndService(params.url,params.service)
-		if(webhookInstance){
-			flash.message = "URL EXISTS: PLEASE CHECK YOUR REGISTERED WEBHOOKS TO MAKE SURE THIS IS NOT A DUPLICATE."
-			render(view:"create",model:[params:params])
-			return
+		params.callback = params.callback.split('\n')
+		def temp = params.service.split('/')
+		def cont = apiCacheService.getApiCache(temp[0])
+		if(cont){
+			if(cont["${temp[1]}"]["hookRoles"]){
+				if(apiToolkitService.checkHookAuthority(cont["${temp[1]}"]["hookRoles"])){
+					Hook hook = Hook.findByServiceAndUser(params.service,user)
+					if(hook){
+						flash.message = "You are already subscribed to this service. Please edit it instead."
+						render(view:"edit",model:[id:hook.id,params:params,format:formats])
+					}else{
+						params.callback.each{ url ->
+							if(!hookService.validateUrl(url)){
+								flash.message = "BAD PROTOCOL: URL '${url}'MUST BE FULLY QUALIFIED DOMAIN NAME (OR IP ADDRESS) FORMATTED WITH HTTP/HTTPS. PLEASE TRY AGAIN."
+								render(view:"create",model:[params:params,service:params.service,format:formats])
+								return
+							}
+						}
+						hook = new Hook()
+						hook.callback=params.callback.join(',')
+						hook.service=params.service
+						hook.user=user
+				
+						if (hook.save(flush: true)) {
+							flash.message = message(code: 'default.created.message', args: [message(code: 'hook.label', default: 'Hook'), hook.id])
+							redirect(action:"list")
+							return
+						}
+						
+						flash.message = "INVALID/MALFORMED DATA: PLEASE SEE DOCS FOR 'JSON' FORMED STRING AND PLEASE TRY AGAIN."
+						render(view:"create",model:[params:params,service:params.service,format:formats])
+					}
+				}else{
+					render([error: 'access denied'])
+				}
+			}else{
+				render([error: 'access denied'])
+			}
+		}else{
+			render([error: 'access denied'])
 		}
-
-		if(!HookService.validateUrl(params.url)){
-			flash.message = "BAD PROTOCOL: URL MUST BE FULLY QUALIFIED DOMAIN NAME (OR IP ADDRESS) FORMATTED WITH HTTP/HTTPS. PLEASE TRY AGAIN."
-			render(view:"create",model:[params:params,service:grailsApplication.config.apitoolkit.services,format:formats])
-			return
-		}
-
-		webhookInstance.user=user
-
-		if (webhookInstance.save(flush: true)) {
-			flash.message = message(code: 'default.created.message', args: [message(code: 'webhook.label', default: 'Hook'), webhookInstance.id])
-			redirect(action:"show", id: webhookInstance.id)
-			return
-		}
-
-		flash.message = "INVALID/MALFORMED DATA: PLEASE SEE DOCS FOR 'JSON' FORMED STRING AND PLEASE TRY AGAIN."
-		render(view:"create",model:[params:params,service:grailsApplication.config.apitoolkit.services,format:formats])
 	}
 
 	def edit() {
@@ -161,7 +183,11 @@ class HookController {
 			return
 		}
 		def formats = ['JSON','XML']
-		[webhookInstance: Hook.get(params.id),service:grailsApplication.config.apitoolkit.services,format:formats]
+		Hook hook = Hook.get(params.id)
+
+		def callback = hook.callback.replace(',','\n')
+
+		[webhookInstance: hook,callback:callback,service:grailsApplication.config.apitoolkit.services,format:formats]
 	}
 
 	def update() {
@@ -171,45 +197,50 @@ class HookController {
 			return
 		}
 
-		Hook webhookInstance = Hook.findByIdAndPerson(params.id, user)
-		if(!webhookInstance){
-			flash.message = "WEBHOOK NOT FOUND: NO WEBHOOK WITH THAT ID FOUND BELONGING TO CURRENT USER."
-			render(view:"create",model:[params:params])
-			return
+		def callback = params.callback.split('\n')
+		def temp = params.service.split('/')
+		def cont = apiCacheService.getApiCache(temp[0])
+		if(cont){
+			if(cont["${temp[1]}"]["hookRoles"]){
+				if(apiToolkitService.checkHookAuthority(cont["${temp[1]}"]["hookRoles"])){
+					Hook hook = Hook.findByServiceAndUser(params.service,user)
+					if(hook){
+						// continue editing service
+						callback.each{ url ->
+							if(!hookService.validateUrl(url)){
+								flash.message = "BAD PROTOCOL: URL '${url}' MUST BE FULLY QUALIFIED DOMAIN NAME (OR IP ADDRESS) FORMATTED WITH HTTP/HTTPS. PLEASE TRY AGAIN."
+								render(view:"edit",model:[params:params,service:params.service,format:formats])
+								return
+							}
+						}
+						
+						hook.callback = callback.join(',')
+						hook.format = params.format
+						hook.service = params.service
+						
+						if (webhookInstance.save(flush: true)) {
+							flash.message = message(code: 'default.updated.message', args: [message(code: 'webhook.label', default: 'Hook'), webhookInstance.id])
+							redirect(action:"show", id: webhookInstance.id)
+							return
+						}
+				
+						flash.message = "INVALID/MALFORMED DATA: PLEASE SEE DOCS FOR 'JSON' FORMED STRING AND PLEASE TRY AGAIN."
+						render(view:"create",model:[params:params])
+					}else{
+						flash.message = "WEBHOOK NOT FOUND: NO WEBHOOK WITH THAT ID FOUND BELONGING TO CURRENT USER."
+						render(view:"create",model:[params:params])
+						return
+					}
+				}else{
+					render([error: 'access denied'])
+				}
+			}else{
+				render([error: 'access denied'])
+			}
+		}else{
+			render([error: 'access denied'])
 		}
 
-		webhookInstance.name = params.name
-		webhookInstance.url = params.url
-		webhookInstance.format = params.format
-		webhookInstance.service = params.service
-
-		if (webhookInstance.save(flush: true)) {
-			flash.message = message(code: 'default.updated.message', args: [message(code: 'webhook.label', default: 'Hook'), webhookInstance.id])
-			redirect(action:"show", id: webhookInstance.id)
-			return
-		}
-
-		flash.message = "INVALID/MALFORMED DATA: PLEASE SEE DOCS FOR 'JSON' FORMED STRING AND PLEASE TRY AGAIN."
-		render(view:"create",model:[params:params])
-	}
-
-	@Secured('permitAll')
-	def show() {
-		def user = loggedInUser()
-		if(!user){
-			redirect(uri: "/")
-			return
-		}
-
-		def webhookInstance = isSuperuser() ? Hook.get(params.id) : Hook.findByPersonAndId(user,params.id.toLong())
-
-		if (webhookInstance) {
-			render(view:"show",model:[webhookInstance: webhookInstance])
-			return
-		}
-
-		flash.message = message(code: 'default.not.found.message', args: [message(code: 'webhook.label', default: 'Hook'), params.id])
-		redirect(action: "list")
 	}
 
 	def delete() {

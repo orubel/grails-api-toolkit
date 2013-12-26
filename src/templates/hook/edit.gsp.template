@@ -11,7 +11,6 @@
 			<ul>
 				<li><a class="home" href="${createLink(uri: '/')}"><g:message code="default.home.label"/></a></li>
 				<li><g:link class="list" action="list"><g:message code="default.list.label" args="[entityName]" /></g:link></li>
-				<li><g:link class="create" action="create"><g:message code="default.new.label" args="[entityName]" /></g:link></li>
 			</ul>
 		</div>
 		<div id="edit-webhook" class="content scaffold-edit" role="main">
@@ -31,18 +30,11 @@
 				<g:hiddenField name="version" value="${webhookInstance?.version}" />
 				<fieldset class="form">
 
-					<div class="fieldcontain ${hasErrors(bean: webhookInstance, field: 'name', 'error')} ">
-						<label for="name">
-							<g:message code="webhook.name.label" default="Name" />
-						</label>
-						<g:textField name="name" value="${webhookInstance?.name}"/>
-					</div>
-
-					<div class="fieldcontain ${hasErrors(bean: webhookInstance, field: 'url', 'error')} ">
+					<div class="fieldcontain ${hasErrors(bean: webhookInstance, field: 'callback', 'error')} ">
 						<label for="url">
-							<g:message code="webhook.url.label" default="Url" />
+							<g:message code="webhook.callback.label" default="Callback" />
 						</label>
-						<g:textField name="url" value="${webhookInstance?.url}"/>
+						<textarea cols="50" id="callback" name="callback" rows="4">${callback}</textarea>
 					</div>
 
 					<div class="fieldcontain ${hasErrors(bean: webhookInstance, field: 'format', 'error')} ">
@@ -50,13 +42,6 @@
 							<g:message code="webhook.format.label" default="Format" />
 						</label>
 						<span class="styled-select"><g:select name="format" from="${format}" value="${webhookInstance?.format}"/></span>
-					</div>
-
-					<div class="fieldcontain ${hasErrors(bean: webhookInstance, field: 'service', 'error')} ">
-						<label for="service">
-							<g:message code="webhook.service.label" default="Service" />
-						</label>
-						<span class="styled-select"><g:select name="service" from="${service}" value="${webhookInstance?.service}"/></span>
 					</div>
 
 				</fieldset>
