@@ -5,7 +5,9 @@ import org.springframework.dao.DataIntegrityViolationException
 import net.nosegrind.apitoolkit.*
 import java.lang.reflect.Method
 
-import net.nosegrind.apitoolkit.Hook
+
+//import net.nosegrind.apitoolkit.Hook
+import net.nosegrind.apitoolkit.*
 
 @Secured('permitAll')
 class HookController {
@@ -153,7 +155,7 @@ class HookController {
 							}
 						}
 						hook = new Hook()
-						hook.callback=params.callback.join(',')
+						hook.callback=(params.callback instanceof String)?params.callback:params.callback.join(',')
 						hook.service=params.service
 						hook.user=user
 				
@@ -178,18 +180,41 @@ class HookController {
 	}
 
 	def edit() {
-		if(!springSecurityService.isLoggedIn()){
+		def user = loggedInUser()
+		if(!user){
 			redirect(uri: "/")
 			return
 		}
 		def formats = ['JSON','XML']
 		Hook hook = Hook.get(params.id)
+		String callback
+		def temp = params.service.split('/')
+		def cont = apiCacheService.getApiCache(temp[0])
+		if(cont){
+			if(cont["${temp[1]}"]["hookRoles"]){
+				if(apiToolkitService.checkHookAuthority(cont["${temp[1]}"]["hookRoles"])){
+					Hook service = Hook.findByServiceAndUser(params.service,user)
+					if(hook){
+						callback = hook.callback.replace(',','\n')
+					}else{
+						flash.message = "WEBHOOK NOT FOUND: NO WEBHOOK WITH THAT ID FOUND BELONGING TO CURRENT USER."
+						render(view:"create",model:[params:params])
+						return
+					}
+				}else{
+					render([error: 'access denied'])
+				}
+			}else{
+				render([error: 'access denied'])
+			}
+		}else{
+			render([error: 'access denied'])
+		}
 
-		def callback = hook.callback.replace(',','\n')
-
-		[webhookInstance: hook,callback:callback,service:grailsApplication.config.apitoolkit.services,format:formats]
+		[webhookInstance: hook,callback:callback,params:params,format:formats]
 	}
 
+	@Api(method=net.nosegrind.apitoolkit.Method.PUT,apiRoles=['ROLE_ADMIN','ROLE_USER'],hookRoles=['ROLE_ADMIN','ROLE_USER'])
 	def update() {
 		def user = loggedInUser()
 		if(!user){
@@ -214,13 +239,13 @@ class HookController {
 							}
 						}
 						
-						hook.callback = callback.join(',')
+						hook.callback = (callback instanceof String)?callback:callback.join(',')
 						hook.format = params.format
 						hook.service = params.service
 						
-						if (webhookInstance.save(flush: true)) {
-							flash.message = message(code: 'default.updated.message', args: [message(code: 'webhook.label', default: 'Hook'), webhookInstance.id])
-							redirect(action:"show", id: webhookInstance.id)
+						if (hook.save(flush: true)) {
+							flash.message = message(code: 'default.updated.message', args: [message(code: 'webhook.label', default: 'Hook'), hook.id])
+							redirect(action:"list")
 							return
 						}
 				
@@ -264,7 +289,7 @@ class HookController {
 			redirect(action: "list")
 		}catch (DataIntegrityViolationException e) {
 			flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'webhook.label', default: 'Hook'), params.id])
-			redirect(action: "show", id: params.id)
+			redirect(action: "list")
 		}
 	}
 

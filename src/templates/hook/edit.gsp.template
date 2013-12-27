@@ -26,6 +26,7 @@
 			</ul>
 			</g:hasErrors>
 			<g:form method="post" >
+				<g:hiddenField name='service' value="${params.service}"/>
 				<g:hiddenField name="id" value="${webhookInstance?.id}" />
 				<g:hiddenField name="version" value="${webhookInstance?.version}" />
 				<fieldset class="form">

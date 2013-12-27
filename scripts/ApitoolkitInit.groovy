@@ -79,9 +79,6 @@ private void updateConfig() {
 	if (configFile.exists()) {
 		configFile.withWriterAppend {
 			it.writeLine '\n// Added by the Api Toolkit plugin:'
-			it.writeLine "apitoolkit.attempts = 5"
-			it.writeLine "apitoolkit.roles = ['ROLE_ROOT','ROLE_ADMIN']"
-			it.writeLine "apitoolkit.services = []"
 			it.writeLine "apitoolkit.domain = '${packageName}.Hook'"
 			it.writeLine "apitoolkit.controller = '${packageName}.HookController'"
 		}
