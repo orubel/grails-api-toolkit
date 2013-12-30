@@ -5,120 +5,80 @@ import grails.converters.JSON
 import grails.converters.XML
 import net.nosegrind.apitoolkit.Api;
 import net.nosegrind.apitoolkit.Method;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+//import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 class ApiToolkitFilters {
 	
 	def apiToolkitService
+	def grailsApplication
+	def apiCacheService
 	
 	def filters = {
-		hook(controller:'hook', action:'*'){
-			after = { Map model ->
-				if(params.url){
-					println(params.url)
-					//params.url = params.url.split('/r/n')
-				}
-			}
-		}
 		apitoolkit(controller:'*', action:'*'){
-			before = {
-/*
- * get controller
- * get cache
- * check cache...
- * is api?
- * is hook?
- *  if not, do not continue
- *  
- */
-				println("BEFORE : "+params)
-				if(params.controller){
-					def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
-					params.action = (params.action)?params.action:'index'
-					List actionNames = []
-					if(controller){
-			            controller.uris?.each { actionString -> 
-			                    if(actionString.indexOf("/**") == -1) { 
-			                            // Before assigning need to check for empty String also 
-			                            def name = actionString.substring(actionString.lastIndexOf('/') + 1) 
-										if(name.trim()){
-											actionNames += name
-										}
-			                    } 
-			            }
-					}
-
-					if(actionNames.contains(params.action)){
-						def action = controller?.getClazz()?.getDeclaredMethod(params.action)
-						// IF THERE IS AN ACTION, WE PROCESS ELSE WE IGNORE; COULD BE INDEX
-						// WHICH WILL REDIRECT
-						if (action) {
-							if (action.isAnnotationPresent(Api)) {
-println("API ANNO IS PRESENT - BEFORE")
-								if (apiToolkitService.isApiCall()) {
-									def anno = action.getAnnotation(Api)
-									// USER HAS ACCESS?
-									if(!apiToolkitService.checkAuthority(anno.apiRoles() as ArrayList)){
-										return false
-									}
-									// DOES METHOD MATCH?
-									if(!apiToolkitService.isRequestMatch(anno.method().toString())){
-										return false
-									}
-								}else{
-									return false
-								}
-							}
-						}
-					}
-				}
-			}
-			
-			after = { Map model ->
+			before = { Map model ->
+				//if(request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null){
+				/*
 				if(request.isRedirected()){
 					def uri = grailsAttributes.getControllerActionUri(request)
 					def temp = uri[1..(uri.size()-1)].split('/')
 					params.controller = temp[0]
 					params.action = temp[1]
 				}
-				println("AFTER : "+params)
+				*/
+
+				params.action = (params.action)?params.action:'index'
+				
+				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
+				def cache = apiCacheService.getApiCache(params.controller)
+				if(cache){
+					if(cache["${params.action}"]){
+						if (apiToolkitService.isApiCall()) {
+							// USER HAS ACCESS?
+							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['apiRoles'])){
+								return false
+							}
+							// DOES METHOD MATCH?
+							if(!apiToolkitService.isRequestMatch(cache["${params.action}"]['method'])){
+								return false
+							}
+						}else{
+							return false
+						}
+					}
+				}
+			}
+			
+			/*
+			 * get controller
+			 * get cache
+			 * check cache...
+			 * is api?
+			 * is hook?
+			 *  if not, do not continue
+			 *
+			 */
+			after = { Map model ->
+
+				//if(request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null){
+				/*
+				if(request.isRedirected()){
+					def uri = grailsAttributes.getControllerActionUri(request)
+					def temp = uri[1..(uri.size()-1)].split('/')
+					params.controller = temp[0]
+					params.action = temp[1]
+				}
+				*/
+				params.action = (params.action)?params.action:'index'
+				
+				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
+				def cache = apiCacheService.getApiCache(params.controller)
+
 				def meths = ['POST','PUT','DELETE']
 				def newModel
-				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
-				params.action = (params.action)?params.action:'index'
 
-				List actionNames = []
-				if(controller){
-		            controller.uris?.each { actionString -> 
-		                    if(actionString.indexOf("/**") == -1) { 
-		                            // Before assigning need to check for empty String also 
-		                            def name = actionString.substring(actionString.lastIndexOf('/') + 1) 
-									if(name.trim()){
-										actionNames += name
-									}
-		                    } 
-		            }
-				}
-				
-				println("METHODS : ${actionNames}")
-				println("ACTION : ${params.action}")
-				if(actionNames.contains(params.action)){
-					
-					println("MADE IT!")
-					def action = controller?.getClazz()?.getDeclaredMethod(params.action)
-					if (action) {
-						println("ACTION PRESENT")
-						//if (action.isAnnotationPresent(net.nosegrind.apitoolkit.Api)) {
-
-						def anno = action.getAnnotation(Api)
-						//if(!anno){
-						//	render (view:params.action,model:model)
-						//}
-						if(anno){
-							println("API ANNO IS PRESENT - AFTER")
-							// check for hook
-							if(anno.hookRoles() && meths.contains(anno.method().toString())){
-								println(anno.method().toString())
+				if(cache){
+					if(cache["${params.action}"]){
+							if(cache["${params.action}"]['hookRoles'] && meths.contains(cache["${params.action}"]['method'])){
 								newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 								String service = "${params.controller}/${params.action}"
 								apiToolkitService.postData(service,newModel,"${params.action}")
@@ -130,26 +90,17 @@ println("API ANNO IS PRESENT - BEFORE")
 							// get hooks and update
 							
 							if (apiToolkitService.isApiCall()) {
-								
-	
-								
-	
-								
-								
-	println("newModel : "+newModel)
-								
+						
+								newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 								String format = params.format
 				
 								def queryString = request.'javax.servlet.forward.query_string'
 								def path = (queryString)?queryString.split('&'):[]
 				
 								def lastKey
-	println(anno.method().toString())
-	
-								switch(anno.method().toString()) {
+								switch(cache["${params.action}"]['method']) {
 									case 'GET':
 										if(!newModel.isEmpty()){
-											println("format :"+params.format)
 											switch(params.format){
 												case 'JSON':
 													def map = newModel
@@ -321,7 +272,6 @@ println("API ANNO IS PRESENT - BEFORE")
 										}
 										break
 									case 'POST':
-									println("POST")
 										switch(params.format){
 											case 'JSON':
 												def map = newModel
@@ -417,7 +367,6 @@ println("API ANNO IS PRESENT - BEFORE")
 										}
 										break
 									case 'PUT':
-										println("PUT")
 										switch(params.format){
 											case 'JSON':
 												def map = newModel
@@ -617,8 +566,6 @@ println("API ANNO IS PRESENT - BEFORE")
 					}
 				}
 			}
-			
-		}
 
 	}
 

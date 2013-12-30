@@ -115,7 +115,6 @@ class ApiToolkitService{
 		if(data && (!data?.response && !data?.metaClass && !data?.params)){
 			data.each{ key, value ->
 				if(value){
-					println(value)
 					if(grailsApplication.isDomainClass(value.getClass())){
 						newMap[key]=value
 					}else{
@@ -135,14 +134,27 @@ class ApiToolkitService{
 						}
 					}
 				}else{
-					println("no value")
+					//println("no value")
 				}
 			}
 		}
 		return newMap
 	}
 
-
+	Map formatDomainObject(Object data){
+		def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
+		def newMap = [:]
+		data.getProperties().each { key, val ->
+			if (!nonPersistent.contains(key)) {
+				if(grailsApplication.isDomainClass(val.getClass())){
+					newMap.put key, val.id
+				}else{
+					newMap.put key, val
+				}
+			}
+		}
+		return newMap
+	}
 	
 	boolean validateUrl(String url){
 		String[] schemes = ["http","https"]
@@ -188,18 +200,17 @@ class ApiToolkitService{
 		}
 	}
 	
-	void postData(String service, Map data, String state) {
+	void callHook(String service, Map data, String state) {
 		send(data, state, service)
 	}
 	
-	void postData(String service, Object data, String state) {
+	void callHook(String service, Object data, String state) {
 		data = formatDomainObject(data)
 		send(data, state, service)
 	}
 	
 	private boolean send(Map data, String state, String service) {
-println("send : ${data}")
-		def hooks = grailsApplication.getClassForName(grailsApplication.config.apitoolkit.domain).findAll("from Hook where service='${service}'")
+		def hooks = grailsApplication.getClassForName(grailsApplication.config.apitoolkit.domain).findAll("from Hook where service='${service}/${state}'")
 
 		hooks.each { hook ->
 			String format = hook.format.toLowerCase()
@@ -207,9 +218,9 @@ println("send : ${data}")
 				data = 	[message:'Number of attempts exceeded. Please reset hook via web interface']
 			}
 			String hookData
-			
+
 			try{
-				def conn = hook.url.toURL().openConnection()
+				def conn = hook.callback.toURL().openConnection()
 				conn.setRequestMethod("POST")
 				conn.doOutput = true
 				def queryString = []
@@ -221,7 +232,6 @@ println("send : ${data}")
 					case 'json':
 					default:
 						hookData = (data as JSON).toString()
-println("hookdata :${hookData}")
 						queryString << "state=${state}&json=${hookData}"
 						break
 				}

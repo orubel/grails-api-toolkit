@@ -13,7 +13,6 @@ import net.nosegrind.apitoolkit.*
 class HookController {
 
 	def springSecurityService
-	def hookService
 	def apiCacheService
 	def apiToolkitService
 
@@ -79,7 +78,6 @@ class HookController {
 						def api = method.getAnnotation(Api)
 						def action = method.getName()
 						if(cont){
-							println(cont["${action}"]["hookRoles"].getClass())
 							if(cont["${action}"]["hookRoles"].getClass()){
 								if(apiToolkitService.checkHookAuthority(cont["${action}"]["hookRoles"])){
 									def temp = ['controller':controllername,'action':action,'roles':cont["${action}"]["hookRoles"]]
@@ -129,6 +127,7 @@ class HookController {
 		[format:formats,params:params]
 	}
 
+
 	def save() {
 		def user = loggedInUser()
 		if(!user){
@@ -148,7 +147,7 @@ class HookController {
 						render(view:"edit",model:[id:hook.id,params:params,format:formats])
 					}else{
 						params.callback.each{ url ->
-							if(!hookService.validateUrl(url)){
+							if(!apiToolkitService.validateUrl(url)){
 								flash.message = "BAD PROTOCOL: URL '${url}'MUST BE FULLY QUALIFIED DOMAIN NAME (OR IP ADDRESS) FORMATTED WITH HTTP/HTTPS. PLEASE TRY AGAIN."
 								render(view:"create",model:[params:params,service:params.service,format:formats])
 								return
@@ -160,8 +159,10 @@ class HookController {
 						hook.user=user
 				
 						if (hook.save(flush: true)) {
+							apiToolkitService.callHook(temp[0],hook,temp[1])
 							flash.message = message(code: 'default.created.message', args: [message(code: 'hook.label', default: 'Hook'), hook.id])
-							redirect(action:"list")
+							render(view:"list", model:[params:params])
+							//chain(action:"list",model:data, params:params)
 							return
 						}
 						
@@ -232,7 +233,7 @@ class HookController {
 					if(hook){
 						// continue editing service
 						callback.each{ url ->
-							if(!hookService.validateUrl(url)){
+							if(!apiToolkitService.validateUrl(url)){
 								flash.message = "BAD PROTOCOL: URL '${url}' MUST BE FULLY QUALIFIED DOMAIN NAME (OR IP ADDRESS) FORMATTED WITH HTTP/HTTPS. PLEASE TRY AGAIN."
 								render(view:"edit",model:[params:params,service:params.service,format:formats])
 								return
@@ -244,10 +245,14 @@ class HookController {
 						hook.service = params.service
 						
 						if (hook.save(flush: true)) {
+							apiToolkitService.callHook(temp[0],hook,temp[1])
 							flash.message = message(code: 'default.updated.message', args: [message(code: 'webhook.label', default: 'Hook'), hook.id])
-							redirect(action:"list")
+							render(view:"list", model:[params:params])
+							//chain(action:"list",model:data, params:params)
 							return
 						}
+						
+						
 				
 						flash.message = "INVALID/MALFORMED DATA: PLEASE SEE DOCS FOR 'JSON' FORMED STRING AND PLEASE TRY AGAIN."
 						render(view:"create",model:[params:params])
