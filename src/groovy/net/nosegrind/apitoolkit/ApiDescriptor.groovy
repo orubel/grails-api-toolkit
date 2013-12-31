@@ -18,8 +18,8 @@ class ApiDescriptor {
 
 	static constraints = { 
 		method(nullable:false,inList: ["GET", "POST", "PUT","DELETE"])
-		apiRoles(nullable:false)
-		description(nullable:false,maxSize:1000)
+		apiRoles(nullable:true)
+		description(nullable:true,maxSize:1000)
 		receives(nullable:true)
 		returns(nullable:true)
 		errorcodes(nullable:true)
