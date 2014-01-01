@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map
 
 import grails.converters.JSON
@@ -74,20 +75,17 @@ class ApiToolkitFilters {
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				def cache = apiCacheService.getApiCache(params.controller)
 
-				def meths = ['POST','PUT','DELETE']
-				def optionalMethods = ['OPTIONS','HEAD']
-				def requiredMethods = ['GET','POST','PUT','DELETE','TRACE']
 				def newModel
 
 				if(cache){
 					if(cache["${params.action}"]){
-							def method = cache["${params.action}"]['method']
-							if(cache["${params.action}"]['hookRoles'] && meths.contains(Method["${method}"])){
-								newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
-								String service = "${params.controller}/${params.action}"
-								apiToolkitService.postData(service,newModel,"${params.action}")
-							}else{
-								// ERROR: cannot use hook on GET method; no update occurs on GET.
+
+							if(apiToolkitService.methodCheck(cache["${params.action}"]['method'])){
+								if(cache["${params.action}"]['hookRoles']){
+									newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
+									String service = "${params.controller}/${params.action}"
+									apiToolkitService.postData(service,newModel,"${params.action}")
+								}
 							}
 							
 							

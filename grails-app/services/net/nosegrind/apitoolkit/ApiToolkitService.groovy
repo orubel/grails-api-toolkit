@@ -162,7 +162,7 @@ class ApiToolkitService{
 		return urlValidator.isValid(url)
 	}
 	
-	Boolean checkHookAuthority(ArrayList roles){
+	boolean checkHookAuthority(ArrayList roles){
 		if (springSecurityService.isLoggedIn()){
 			def userRoles = springSecurityService.getPrincipal().getAuthorities()
 			if(userRoles){
@@ -207,6 +207,23 @@ class ApiToolkitService{
 	void callHook(String service, Object data, String state) {
 		data = formatDomainObject(data)
 		send(data, state, service)
+	}
+	
+	boolean methodCheck(List roles){
+		def optionalMethods = ['OPTIONS','HEAD']
+		def requiredMethods = ['GET','POST','PUT','DELETE','TRACE']
+		
+		def temp = roles.removeAll(optionalMethods)
+		if(requiredMethods.contains(temp)){
+			if(temp.size()>1){
+				// ERROR: too many non-optional methods; only one is permitted
+				return false
+			}
+		}else{
+			// ERROR: unrecognized method
+			return false
+		}
+		return true
 	}
 	
 	private boolean send(Map data, String state, String service) {
