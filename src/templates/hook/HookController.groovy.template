@@ -4,7 +4,7 @@ import org.springframework.security.access.annotation.Secured
 import org.springframework.dao.DataIntegrityViolationException
 import net.nosegrind.apitoolkit.*
 import java.lang.reflect.Method
-
+import net.nosegrind.apitoolkit.Hook
 
 //import net.nosegrind.apitoolkit.Hook
 import net.nosegrind.apitoolkit.*
@@ -77,14 +77,13 @@ class HookController {
 					if(method.isAnnotationPresent(Api)) {
 						def api = method.getAnnotation(Api)
 						def action = method.getName()
-						if(cont){
-							if(cont["${action}"]["hookRoles"].getClass()){
-								if(apiToolkitService.checkHookAuthority(cont["${action}"]["hookRoles"])){
-									def temp = ['controller':controllername,'action':action,'roles':cont["${action}"]["hookRoles"]]
-									services.add(temp)
-								}
+						if(cont["${action}"]["hookRoles"].getClass()){
+							if(apiToolkitService.checkHookAuthority(cont["${action}"]["hookRoles"])){
+								def temp = ['controller':controllername,'action':action,'roles':cont["${action}"]["hookRoles"]]
+								services.add(temp)
 							}
 						}
+
 					}
 				}
 			}
@@ -215,7 +214,7 @@ class HookController {
 		[webhookInstance: hook,callback:callback,params:params,format:formats]
 	}
 
-	@Api(method=net.nosegrind.apitoolkit.Method.PUT,apiRoles=['ROLE_ADMIN','ROLE_USER'],hookRoles=['ROLE_ADMIN','ROLE_USER'])
+	@Api(method=['PUT'],apiRoles=['ROLE_ADMIN','ROLE_USER'],hookRoles=['ROLE_ADMIN','ROLE_USER'])
 	def update() {
 		def user = loggedInUser()
 		if(!user){

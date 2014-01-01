@@ -1,24 +1,27 @@
 package net.nosegrind.apitoolkit;
 
 /*
- * Method	Idempotent	Safe
- * OPTIONS	yes			yes
- * GET		yes			yes
- * HEAD		yes			yes
- * PUT		yes			no
- * POST		no			no
- * DELETE	yes			no
- * PATCH	no			no - See more at: http://restcookbook.com/HTTP%20Methods/idempotency/#sthash.90mexIwP.dpuf
+ * Method		Idempotent	Safe
+ * OPTIONS		yes			yes
+ * HEAD			yes			yes
+ * 
+ * GET			yes			yes
+ * PUT			yes			no
+ * POST			no			no
+ * DELETE		yes			no
+ * PATCH		no			no
+ * TRACE		no			yes
  */
 
 public enum Method {
 	OPTIONS("OPTIONS"),
-	GET("GET"),
 	HEAD("HEAD"),
+	GET("GET"),
 	POST("POST"),
 	PUT("PUT"),
 	DELETE("DELETE"),
-	PATCH("PATCH");
+	PATCH("PATCH"),
+	TRACE("TRACE");
 
     private String value;
 

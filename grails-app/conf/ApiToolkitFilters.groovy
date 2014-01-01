@@ -38,7 +38,8 @@ class ApiToolkitFilters {
 								return false
 							}
 							// DOES METHOD MATCH?
-							if(!apiToolkitService.isRequestMatch(cache["${params.action}"]['method'])){
+							def method = cache["${params.action}"]['method']
+							if(!apiToolkitService.isRequestMatch(Method["${method}"])){
 								return false
 							}
 						}else{
@@ -74,11 +75,14 @@ class ApiToolkitFilters {
 				def cache = apiCacheService.getApiCache(params.controller)
 
 				def meths = ['POST','PUT','DELETE']
+				def optionalMethods = ['OPTIONS','HEAD']
+				def requiredMethods = ['GET','POST','PUT','DELETE','TRACE']
 				def newModel
 
 				if(cache){
 					if(cache["${params.action}"]){
-							if(cache["${params.action}"]['hookRoles'] && meths.contains(cache["${params.action}"]['method'])){
+							def method = cache["${params.action}"]['method']
+							if(cache["${params.action}"]['hookRoles'] && meths.contains(Method["${method}"])){
 								newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 								String service = "${params.controller}/${params.action}"
 								apiToolkitService.postData(service,newModel,"${params.action}")
