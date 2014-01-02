@@ -11,7 +11,9 @@ import java.util.Map;
 
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
+import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
 
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 import net.nosegrind.apitoolkit.*
 
@@ -83,8 +85,6 @@ class ApiToolkitService{
 		return request.method.toString()==protocol.toString()
 	}
 	
-	// true=primary
-	// false=foreign
 	Integer getKey(String key){
 		switch(key){
 			case'FKEY':
@@ -232,9 +232,13 @@ class ApiToolkitService{
 		
 		hooks.each { hook ->
 			// get cache and check each users authority for hook
-			def userRoles = hook.user.getAuthorities()
-			def temp = cache["${state}"]['hookRoles'].intersect(userRoles)
-			
+			def userRoles = []
+			def authorities = hook.user.getAuthorities()
+			authorities.each{
+				userRoles += it.authority
+			}
+			def roles= cache["${state}"]['hookRoles']
+			def temp = roles.intersect(userRoles)
 			if(temp.size()>0){
 				String format = hook.format.toLowerCase()
 				if(hook.attempts>=grailsApplication.config.apitoolkit.attempts){
@@ -268,7 +272,7 @@ class ApiToolkitService{
 					if(conn.content.text!='connected'){
 						hook.attempts+=1
 						hook.save(flush: true)
-						log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : No Url ${hook.url} found")
+						log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : Could not connect to ${hook.url}")
 					}
 				}catch(Exception e){
 					hook.attempts+=1
@@ -276,8 +280,32 @@ class ApiToolkitService{
 					log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : " + e)
 				}
 			}else{
-				hook.delete(flush.true)
+				hook.delete(flush:true)
 			}
 		}
+	}
+	
+	/*
+	 * called on detection of apicall; default headers for api calls
+	 * regardless of success or failure
+	 */
+	void setApiHeaders(){
+		
+	}
+	
+	boolean isRequestRedirected(){
+		if(request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null){
+			return true
+		}else{
+			return false
+		}
+	}
+	
+	List getRedirectParams(){
+		// params.controller = temp[0]
+		// params.action = temp[1]
+		def uri = SCH.servletContext.getControllerActionUri(request)
+		return uri[1..(uri.size()-1)].split('/')
+
 	}
 }
