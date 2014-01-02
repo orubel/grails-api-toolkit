@@ -80,7 +80,10 @@ class ApiToolkitFilters {
 				if(cache){
 					if(cache["${params.action}"]){
 
-							if(apiToolkitService.methodCheck(cache["${params.action}"]['method'])){
+							/*
+							 * ifSend api data to hooks
+							 */
+							if(['POST','PUT','DELETE'].contains(cache["${params.action}"]['method'])){
 								if(cache["${params.action}"]['hookRoles']){
 									newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 									String service = "${params.controller}/${params.action}"
@@ -88,23 +91,23 @@ class ApiToolkitFilters {
 								}
 							}
 							
-							response.setHeader('Allow', cache["${params.action}"]['apiRoles'])
-							switch(params.format){
-								case 'JSON':
-									response.setHeader('Content-Type', 'application/json;charset=UTF-8')
-									break;
-								case 'XML':
-									response.setHeader('Content-Type', 'application/xml;charset=UTF-8')
-									break;
-								case 'HTML':
-									response.setHeader('Content-Type', 'application/html;charset=UTF-8')
-									break;
-							}
-								
-							// get hooks and update
-							
+							/*
+							 * if api call, send api data
+							 */
 							if (apiToolkitService.isApiCall()) {
-						
+								response.setHeader('Allow', cache["${params.action}"]['apiRoles'])
+								switch(params.format){
+									case 'JSON':
+										response.setHeader('Content-Type', 'application/json;charset=UTF-8')
+										break;
+									case 'XML':
+										response.setHeader('Content-Type', 'application/xml;charset=UTF-8')
+										break;
+									case 'HTML':
+										response.setHeader('Content-Type', 'application/html;charset=UTF-8')
+										break;
+								}
+								
 								newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 								String format = params.format
 				
@@ -113,6 +116,10 @@ class ApiToolkitFilters {
 				
 								def lastKey
 								switch(cache["${params.action}"]['method']) {
+									case 'HEAD':
+										break;
+									case 'OPTIONS':
+										break;
 									case 'GET':
 										if(!newModel.isEmpty()){
 											switch(params.format){

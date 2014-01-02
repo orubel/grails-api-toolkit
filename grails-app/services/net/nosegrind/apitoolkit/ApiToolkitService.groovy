@@ -228,46 +228,55 @@ class ApiToolkitService{
 	
 	private boolean send(Map data, String state, String service) {
 		def hooks = grailsApplication.getClassForName(grailsApplication.config.apitoolkit.domain).findAll("from Hook where service='${service}/${state}'")
-
+		def cache = apiCacheService.getApiCache(service)
+		
 		hooks.each { hook ->
-			String format = hook.format.toLowerCase()
-			if(hook.attempts>=grailsApplication.config.apitoolkit.attempts){
-				data = 	[message:'Number of attempts exceeded. Please reset hook via web interface']
-			}
-			String hookData
-
-			try{
-				def conn = hook.callback.toURL().openConnection()
-				conn.setRequestMethod("POST")
-				conn.doOutput = true
-				def queryString = []
-				switch(format){
-					case 'xml':
-						conn.setRequestProperty("Content-Type", "application/xml;charset=UTF-8")
-						hookData = (data as XML).toString()
-						queryString << "state=${state}&xml=${hookData}"
-						break
-					case 'json':
-					default:
-						conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
-						hookData = (data as JSON).toString()
-						queryString << "state=${state}&json=${hookData}"
-						break
+			// get cache and check each users authority for hook
+			def userRoles = hook.user.getAuthorities()
+			def temp = cache["${state}"]['hookRoles'].intersect(userRoles)
+			
+			if(temp.size()>0){
+				String format = hook.format.toLowerCase()
+				if(hook.attempts>=grailsApplication.config.apitoolkit.attempts){
+					data = 	[message:'Number of attempts exceeded. Please reset hook via web interface']
 				}
-				def writer = new OutputStreamWriter(conn.outputStream)
-				writer.write(queryString)
-				writer.flush()
-				writer.close()
-				conn.connect()
-				if(conn.content.text!='connected'){
+				String hookData
+	
+				try{
+					def conn = hook.callback.toURL().openConnection()
+					conn.setRequestMethod("POST")
+					conn.doOutput = true
+					def queryString = []
+					switch(format){
+						case 'xml':
+							conn.setRequestProperty("Content-Type", "application/xml;charset=UTF-8")
+							hookData = (data as XML).toString()
+							queryString << "state=${state}&xml=${hookData}"
+							break
+						case 'json':
+						default:
+							conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
+							hookData = (data as JSON).toString()
+							queryString << "state=${state}&json=${hookData}"
+							break
+					}
+					def writer = new OutputStreamWriter(conn.outputStream)
+					writer.write(queryString)
+					writer.flush()
+					writer.close()
+					conn.connect()
+					if(conn.content.text!='connected'){
+						hook.attempts+=1
+						hook.save(flush: true)
+						log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : No Url ${hook.url} found")
+					}
+				}catch(Exception e){
 					hook.attempts+=1
 					hook.save(flush: true)
-					log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : No Url ${hook.url} found")
+					log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : " + e)
 				}
-			}catch(Exception e){
-				hook.attempts+=1
-				hook.save(flush: true)
-				log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : " + e)
+			}else{
+				hook.delete(flush.true)
 			}
 		}
 	}
