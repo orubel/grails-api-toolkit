@@ -262,12 +262,12 @@ class ApiToolkitService{
 				if(conn.content.text!='connected'){
 					hook.attempts+=1
 					hook.save(flush: true)
-					log.info("[Hook] HookService : No Url ${hook.url} found")
+					log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : No Url ${hook.url} found")
 				}
 			}catch(Exception e){
 				hook.attempts+=1
 				hook.save(flush: true)
-				log.info("[Hook] HookService : " + e)
+				log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : " + e)
 			}
 		}
 	}
