@@ -6,8 +6,7 @@ import net.nosegrind.apitoolkit.*
 import java.lang.reflect.Method
 import net.nosegrind.apitoolkit.Hook
 
-//import net.nosegrind.apitoolkit.Hook
-import net.nosegrind.apitoolkit.*
+
 
 @Secured('permitAll')
 class HookController {
@@ -88,7 +87,6 @@ class HookController {
 				}
 			}
 		}
-
 		//def webhookList = isSuperuser() ? Hook.list(params) : Hook.findAllByUser(user, [max:params.max, sort:params.sort, order:params.order, offset:params.offset] )
 		//params.max = Math.min(params.max ? params.int('max') : 10, 100)
 		[webhookInstanceList: services,params:params,user:user]

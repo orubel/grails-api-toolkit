@@ -211,7 +211,7 @@ class ApiToolkitService{
 	
 	boolean methodCheck(List roles){
 		def optionalMethods = ['OPTIONS','HEAD']
-		def requiredMethods = ['GET','POST','PUT','DELETE','TRACE']
+		def requiredMethods = ['GET','POST','PUT','DELETE','PATCH','TRACE']
 		
 		def temp = roles.removeAll(optionalMethods)
 		if(requiredMethods.contains(temp)){
@@ -243,11 +243,13 @@ class ApiToolkitService{
 				def queryString = []
 				switch(format){
 					case 'xml':
+						conn.setRequestProperty("Content-Type", "application/xml;charset=UTF-8")
 						hookData = (data as XML).toString()
 						queryString << "state=${state}&xml=${hookData}"
 						break
 					case 'json':
 					default:
+						conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
 						hookData = (data as JSON).toString()
 						queryString << "state=${state}&json=${hookData}"
 						break

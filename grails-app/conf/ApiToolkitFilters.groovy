@@ -88,7 +88,19 @@ class ApiToolkitFilters {
 								}
 							}
 							
-							
+							response.setHeader('Allow', cache["${params.action}"]['apiRoles'])
+							switch(params.format){
+								case 'JSON':
+									response.setHeader('Content-Type', 'application/json;charset=UTF-8')
+									break;
+								case 'XML':
+									response.setHeader('Content-Type', 'application/xml;charset=UTF-8')
+									break;
+								case 'HTML':
+									response.setHeader('Content-Type', 'application/html;charset=UTF-8')
+									break;
+							}
+								
 							// get hooks and update
 							
 							if (apiToolkitService.isApiCall()) {
