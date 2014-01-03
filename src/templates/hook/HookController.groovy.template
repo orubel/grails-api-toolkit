@@ -1,4 +1,4 @@
-package net.nosegrind.apitoolkit
+package ${packageName}
 
 import org.springframework.security.access.annotation.Secured
 import org.springframework.dao.DataIntegrityViolationException
@@ -15,48 +15,7 @@ class HookController {
 	def apiCacheService
 	def apiToolkitService
 
-	@Secured('permitAll')
-	def api(){
-		switch(request.method){
-			case "POST":
-				def json = request.JSON
-				save()
-				break
-			case "GET":
-				def json = request.JSON
-				if(params.id>0 && params.id){
-			        show()
-				}else{
-					response.status = 400 //Bad Request
-					render "SHOW request must include the id"
-				}
-				break
-			case "PUT":
-				def json = request.JSON
-				update()
-				break
-			case "DELETE":
-				def json = request.JSON
-				if(params.id){
-					def hook = Hook.get(params.id)
-					if(hook){
-					  hook.delete()
-					  response.status = 200
-					  render "Successfully Deleted."
-					}else{
-					  response.status = 404 //Not Found
-					  render "Id not found."
-					}
-				}else{
-					response.status = 400 //Bad Request
-					render "DELETE request must include the id"
-				}
-				break
-		  }
-	}
-
 	static defaultAction = 'list'
-
 
 	def list() {
 		def user = loggedInUser()

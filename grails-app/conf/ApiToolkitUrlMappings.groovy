@@ -13,16 +13,8 @@ class ApiToolkitUrlMappings {
 			action = a
 			parseRequest = true
 		}
-		/*
-		"/$apiName/$apiVersion/apidoc?/show" {
-			controller = 'apidoc'
-			action = 'show'
-			parseRequest = true
-		}
-		"/apidoc?/show"(uri: "/$apiName/$apiVersion/apidoc/show.dispatch")
-		*/
 		
-		"/hook/" (controller:'hook',action:'list', parseRequest: true)
+		"/hook" (controller:'hook',action:'list', parseRequest: true)
 
 	}
 }

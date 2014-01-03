@@ -299,13 +299,12 @@ class ApiToolkitService{
 					writer.write(queryString)
 					writer.flush()
 					writer.close()
-					//conn.connect()
-					if(conn.content.text!='connected'){
-						hook.attempts+=1
-						hook.save()
-						log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : Could not connect to ${hook.url}")
-					}
+					conn.connect()
+					String output = conn.content.text
+					conn.close()
 				}catch(Exception e){
+					hook.attempts+=1
+					hook.save()
 					log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : " + e)
 				}
 			}else{

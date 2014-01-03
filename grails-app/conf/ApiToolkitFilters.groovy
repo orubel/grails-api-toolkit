@@ -43,15 +43,6 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 
-				//if(request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null){
-				/*
-				if(request.isRedirected()){
-					def uri = grailsAttributes.getControllerActionUri(request)
-					def temp = uri[1..(uri.size()-1)].split('/')
-					params.controller = temp[0]
-					params.action = temp[1]
-				}
-				*/
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
