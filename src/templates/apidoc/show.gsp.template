@@ -31,19 +31,22 @@
 			<br>
 			<div style="background-color: #f7f7f7;padding:5px;">
 				<div style="display: table;border: 1px solid #c5c5c5;">
-				 <div>
-				   <span style="display: table-row; background-color:#b4b8be;color:#fff;">
+				 <div style="display: table-row; background-color:#b4b8be;color:#fff;">
 					   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>${action.key}</b></span>
 					   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>${path}</b></span>
 					   <span style="display: table-cell;width: 400px;padding-left: 10px;border: 1px #d7ad7b;"><b>&nbsp;</b></span>
-				 	</span>
 				 </div>
 				</div>
 				${description}
 				<br><br>
+				
+				<g:if test="${json}">
 				<b>RETURN EXAMPLE</b>
 				<div>${json}</div>
 				<br>
+				</g:if>
+
+				
 				
 				<b>Receives</b>
 				<div style="display: table;border: 1px solid #c5c5c5;">
@@ -55,7 +58,7 @@
 					    <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
 					</div>
 					<g:each in="${receives}" var="value">
-						<div style="display: table-row">
+						<div style="display: table-row;background-color:#fff;">
 						   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${value.paramType}</span>
 						   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${value.name}</span>
 						   <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;">${value.description}</span>

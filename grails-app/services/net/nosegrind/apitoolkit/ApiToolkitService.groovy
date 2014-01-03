@@ -16,7 +16,11 @@ import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 import net.nosegrind.apitoolkit.*
-
+import net.nosegrind.apitoolkit.ApiDescriptor;
+import net.nosegrind.apitoolkit.ParamsDescriptor;
+import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
+import net.nosegrind.apitoolkit.ApiErrors;
+import net.nosegrind.apitoolkit.ApiParams;
 
 class ApiToolkitService{
 
@@ -200,6 +204,32 @@ class ApiToolkitService{
 		}
 	}
 	
+	private boolean checkDocAuthority(HashSet role){
+		List roles = role as List
+		if(roles.size()>0 && roles[0].trim()){
+			def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugins.springsecurity.authority.className).clazz.list().authority
+			def finalRoles
+			def userRoles
+			if (springSecurityService.isLoggedIn()){
+				userRoles = springSecurityService.getPrincipal().getAuthorities()
+			}
+			
+			if(userRoles){
+				def temp = roles2.intersect(roles as Set)
+				finalRoles = temp.intersect(userRoles)
+				if(finalRoles){
+					return true
+				}else{
+					return false
+				}
+			}else{
+				return false
+			}
+		}else{
+			return true
+		}
+	}
+	
 	void callHook(String service, Map data, String state) {
 		send(data, state, service)
 	}
@@ -306,5 +336,118 @@ class ApiToolkitService{
 		def uri = SCH.servletContext.getControllerActionUri(request)
 		return uri[1..(uri.size()-1)].split('/')
 
+	}
+	
+	private ArrayList processDocValues(HashSet value){
+		def values = value as List
+		List val2 = []
+		values.each{ v ->
+			Map val = [:]
+			if((v.roles && checkDocAuthority(v.roles)) || !v.roles){
+				val = [
+					"paramType":"${v.paramType}",
+					"name":"${v.name}",
+					"description":"${v.description}"
+				]
+				
+				if(v.paramType=='PKEY' || v.paramType=='FKEY'){
+					val["idReferences"] = "${v.idReferences}"
+				}
+		
+				if(v.required==false){
+					val["required"] = false
+				}
+				if(v.mockData){
+					val["mockData"] = "${v.mockData}"
+				}
+				if(v.values){
+					val["values"] = processDocValues(v.values)
+				}
+				val2.add(val)
+			}
+		}
+		return val2
+	}
+	
+	private ArrayList processDocErrorCodes(HashSet error){
+		def errors = error as List
+		def err = []
+		errors.each{ v ->
+			def code = ['code':v.code,'description':"${v.description}"]
+			err.add(code)
+		}
+		return err
+	}
+	
+	private Map processJson(ArrayList returns){
+		def json = [:]
+		returns.each{ p ->
+			def j = [:]
+			if(p?.values){
+				j["${p.name}"]=[]
+			}else{
+				j = (p?.mockData?.trim())?["${p.name}":"${p.mockData}"]:["${p.name}":"${grailsApplication.config.apitoolkit.defaultData.(p.paramType)}"]
+			}
+			j.each(){ key,val ->
+				if(val instanceof List){
+					def child = [:]
+					val.each(){ it ->
+						it.each(){ key2,val2 ->
+							child["${key2}"] ="${val2}"
+						}
+					}
+					json["${key}"] = child
+				}else{
+					json["${key}"]=val
+				}
+			}
+		}
+		return json
+	}
+	
+	Map generateApiDoc(){
+		Map doc = [:]
+		
+		grailsApplication.controllerClasses.each { controllerClass ->
+			String controllername = controllerClass.logicalPropertyName
+			if(controllername!='aclClass'){
+				def cont = apiCacheService.getApiCache(controllername)
+				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+				for (Method method : controller.getClazz().getMethods()){
+					if(method.isAnnotationPresent(Api)) {
+						def action = method.getName()
+						if(cont){
+							if(cont[("${action}".toString())]){
+								String path = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/JSON/${controllername}/${action}"
+								doc[("${controllername}".toString())] = [("${action}".toString()):"${action}"]
+								doc[("${controllername}".toString())][("${action}".toString())] = ["path":"${path}","method":cont[("${action}".toString())]["method"],"description":cont[("${action}".toString())]["description"]]
+								
+								if(cont["${action}"]["receives"]){
+									doc[("${controllername}".toString())][("${action}".toString())]["receives"] = processDocValues(cont[("${action}".toString())]["receives"] as HashSet)
+								}
+								
+								if(cont["${action}"]["returns"]){
+									doc[("${controllername}".toString())][("${action}".toString())]["returns"] = processDocValues(cont[("${action}".toString())]["returns"] as HashSet)
+									doc[("${controllername}".toString())][("${action}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${action}".toString())]["returns"])
+								}
+								
+								if(cont["${action}"]["errorcodes"]){
+									doc[("${controllername}".toString())][("${action}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${action}".toString())]["errorcodes"] as HashSet)
+								}
+
+								if(doc[("${controllername}".toString())][("${action}".toString())]["json"]){
+									def json = doc[("${controllername}".toString())][("${action}".toString())]["json"] as JSON
+									json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
+									json = json.toString().replaceAll("}"," </div>}<br>")
+									json = json.toString().replaceAll(",",",<br>")
+									doc[("${controllername}".toString())][("${action}".toString())]["json"] = json
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return doc
 	}
 }
