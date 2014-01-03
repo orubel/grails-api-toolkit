@@ -17,13 +17,11 @@ class ApiToolkitFilters {
 	def filters = {
 		apitoolkit(controller:'*', action:'*'){
 			before = { Map model ->
-				
-
 
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
-				def cache = apiCacheService.getApiCache(params.controller)
+				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 				if(cache){
 					if(cache["${params.action}"]){
 						if (apiToolkitService.isApiCall()) {
@@ -57,23 +55,12 @@ class ApiToolkitFilters {
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
-				def cache = apiCacheService.getApiCache(params.controller)
-
+				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
+				
 				def newModel
 
 				if(cache){
 					if(cache["${params.action}"]){
-
-							/*
-							 * ifSend api data to hooks
-							 */
-							if(['POST','PUT','DELETE'].contains(cache["${params.action}"]['method'])){
-								if(cache["${params.action}"]['hookRoles']){
-									newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
-									String service = "${params.controller}/${params.action}"
-									apiToolkitService.postData(service,newModel,"${params.action}")
-								}
-							}
 							
 							/*
 							 * if api call, send api data
@@ -108,6 +95,7 @@ class ApiToolkitFilters {
 											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
 											break;
 										case 'GET':
+											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
 											if(!newModel.isEmpty()){
 												switch(params.format){
 													case 'JSON':
@@ -243,7 +231,7 @@ class ApiToolkitFilters {
 																}
 															}
 														}
-														
+														/*
 														def linkRels = []
 														map.each(){ k,v ->
 															def api = action.getAnnotation(Api)
@@ -276,10 +264,12 @@ class ApiToolkitFilters {
 														render(text:json)
 														//return false
 														break
+														*/
 												}
 											}
 											break
 										case 'POST':
+											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
 											switch(params.format){
 												case 'JSON':
 													def map = newModel
@@ -375,6 +365,7 @@ class ApiToolkitFilters {
 											}
 											break
 										case 'PUT':
+											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
 											switch(params.format){
 												case 'JSON':
 													def map = newModel
@@ -413,6 +404,7 @@ class ApiToolkitFilters {
 																}else{
 																	def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}"
 																	uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+																	println("PUT:${uri}")
 																	redirect(uri: "${uri}")
 																}
 															}
@@ -420,7 +412,6 @@ class ApiToolkitFilters {
 													}
 													
 													render(text:map as JSON, contentType: "application/json")
-													return false
 													break
 												case 'XML':
 													def map = newModel
@@ -471,6 +462,7 @@ class ApiToolkitFilters {
 											}
 											break
 										case 'DELETE':
+											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
 											switch(params.format){
 												case 'JSON':
 													def key

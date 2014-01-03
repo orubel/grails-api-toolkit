@@ -239,6 +239,7 @@ class ApiToolkitService{
 			}
 			def roles= cache["${state}"]['hookRoles']
 			def temp = roles.intersect(userRoles)
+
 			if(temp.size()>0){
 				String format = hook.format.toLowerCase()
 				if(hook.attempts>=grailsApplication.config.apitoolkit.attempts){
@@ -248,35 +249,33 @@ class ApiToolkitService{
 	
 				try{
 					def conn = hook.callback.toURL().openConnection()
+					
 					conn.setRequestMethod("POST")
 					conn.doOutput = true
 					def queryString = []
 					switch(format){
 						case 'xml':
-							conn.setRequestProperty("Content-Type", "application/xml;charset=UTF-8")
 							hookData = (data as XML).toString()
 							queryString << "state=${state}&xml=${hookData}"
 							break
 						case 'json':
 						default:
-							conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8")
 							hookData = (data as JSON).toString()
 							queryString << "state=${state}&json=${hookData}"
 							break
 					}
+
 					def writer = new OutputStreamWriter(conn.outputStream)
 					writer.write(queryString)
 					writer.flush()
 					writer.close()
-					conn.connect()
+					//conn.connect()
 					if(conn.content.text!='connected'){
 						hook.attempts+=1
-						hook.save(flush: true)
+						hook.save()
 						log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : Could not connect to ${hook.url}")
 					}
 				}catch(Exception e){
-					hook.attempts+=1
-					hook.save(flush: true)
 					log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : " + e)
 				}
 			}else{
