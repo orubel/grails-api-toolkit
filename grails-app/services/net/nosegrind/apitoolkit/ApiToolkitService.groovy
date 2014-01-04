@@ -413,31 +413,31 @@ class ApiToolkitService{
 			for (Method method : controller.getClazz().getDeclaredMethod(it.key)){
 				if(method.isAnnotationPresent(Api)) {
 					def action = method.getName()
-					if(cont[("${action}".toString())]){
-						String path = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/JSON/${controllername}/${action}"
-						doc[("${action}".toString())] = ["path":"${path}","method":cont[("${action}".toString())]["method"],"description":cont[("${action}".toString())]["description"]]
-						
-						if(cont["${action}"]["receives"]){
-							doc[("${action}".toString())]["receives"] = processDocValues(cont[("${action}".toString())]["receives"] as HashSet)
-						}
-						
-						if(cont["${action}"]["returns"]){
-							doc[("${action}".toString())]["returns"] = processDocValues(cont[("${action}".toString())]["returns"] as HashSet)
-							doc[("${action}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${action}".toString())]["returns"])
-						}
-						
-						if(cont["${action}"]["errorcodes"]){
-							doc[("${action}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${action}".toString())]["errorcodes"] as HashSet)
-						}
 
-						if(doc[("${action}".toString())]["json"]){
-							def json = doc[("${action}".toString())]["json"] as JSON
-							json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
-							json = json.toString().replaceAll("}"," </div>}<br>")
-							json = json.toString().replaceAll(",",",<br>")
-							doc[("${action}".toString())]["json"] = json
-						}
+					String path = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/JSON/${controllername}/${action}"
+					doc[("${action}".toString())] = ["path":"${path}","method":cont[("${action}".toString())]["method"],"description":cont[("${action}".toString())]["description"]]
+					
+					if(cont["${action}"]["receives"]){
+						doc[("${action}".toString())]["receives"] = processDocValues(cont[("${action}".toString())]["receives"] as HashSet)
 					}
+					
+					if(cont["${action}"]["returns"]){
+						doc[("${action}".toString())]["returns"] = processDocValues(cont[("${action}".toString())]["returns"] as HashSet)
+						doc[("${action}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${action}".toString())]["returns"])
+					}
+					
+					if(cont["${action}"]["errorcodes"]){
+						doc[("${action}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${action}".toString())]["errorcodes"] as HashSet)
+					}
+
+					if(doc[("${action}".toString())]["json"]){
+						def json = doc[("${action}".toString())]["json"] as JSON
+						json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
+						json = json.toString().replaceAll("}"," </div>}<br>")
+						json = json.toString().replaceAll(",",",<br>")
+						doc[("${action}".toString())]["json"] = json
+					}
+
 				}else{
 					// ERROR: method at '${controllername}/${actionname}' does not have API annotation
 				}

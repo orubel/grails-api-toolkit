@@ -214,15 +214,12 @@ class HookController {
 						return
 					}
 				}else{
-				println("no hook authority")
 					render([error: 'access denied'])
 				}
 			}else{
-			println("no hook roles")
 				render([error: 'access denied'])
 			}
 		}else{
-		println("no cache")
 			render([error: 'access denied'])
 		}
 
