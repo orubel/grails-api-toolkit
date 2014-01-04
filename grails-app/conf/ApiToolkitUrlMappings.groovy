@@ -9,8 +9,12 @@ class ApiToolkitUrlMappings {
 		
 		"/login/full"(controller:'login',action:'full', parseRequest: true)
 		"/$apiName/$apiVersion/$format/$c/$a?/$id" {
-			controller = c
-			action = a
+			if(['XML','JSON','HTML'].contains(format)){
+				controller = c
+				action = a
+			}else{
+				view = '/index'
+			}
 			parseRequest = true
 		}
 		

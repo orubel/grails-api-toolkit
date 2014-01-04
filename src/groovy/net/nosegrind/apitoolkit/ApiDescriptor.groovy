@@ -12,6 +12,7 @@ class ApiDescriptor {
 	List apiRoles
 	List hookRoles
     String description
+	Map doc
     ParamsDescriptor[] receives
     ParamsDescriptor[] returns
     ErrorCodeDescriptor[] errorcodes
@@ -20,6 +21,7 @@ class ApiDescriptor {
 		method(nullable:false,inList: ["GET", "POST", "PUT","DELETE"])
 		apiRoles(nullable:true)
 		description(nullable:true,maxSize:1000)
+		doc(nullable:true)
 		receives(nullable:true)
 		returns(nullable:true)
 		errorcodes(nullable:true)

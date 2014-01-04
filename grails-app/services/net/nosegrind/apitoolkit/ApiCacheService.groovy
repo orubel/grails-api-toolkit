@@ -19,7 +19,8 @@ class ApiCacheService{
 
 	def grailsApplication
 	def springSecurityService
-
+	def apiToolkitService
+	
 	static transactional = false
 	
 	def flushAllApiCache(){
@@ -50,6 +51,7 @@ class ApiCacheService{
 				if(api.hookRoles()){
 					apidoc['hookRoles'] = api.hookRoles()
 				}
+				apidoc['doc'] = apiToolkitService.generateApiDoc(controllername,methodname)
 				output = [("${methodname}".toString()):apidoc]
 			}
 		}

@@ -18,6 +18,16 @@ class ApiToolkitFilters {
 		apitoolkit(controller:'*', action:'*'){
 			before = { Map model ->
 
+				// used for testing
+				//if(request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null){
+				/*
+				if(request.isRedirected()){
+					def uri = grailsAttributes.getControllerActionUri(request)
+					println(uri)
+				}
+				*/
+
+				
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -83,7 +93,17 @@ class ApiToolkitFilters {
 											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
 											break;
 										case 'OPTIONS':
-											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
+											//apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
+											switch(params.format){
+
+												case 'XML':
+													render(text:cache["${params.action}"]['doc'] as XML, contentType: "application/json")
+													break
+												case 'JSON':
+												default:
+													render(text:cache["${params.action}"]['doc'] as JSON, contentType: "application/json")
+													break
+											}
 											break;
 										case 'GET':
 											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
@@ -395,7 +415,6 @@ class ApiToolkitFilters {
 																}else{
 																	def uri = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/${format}"
 																	uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
-																	println("PUT:${uri}")
 																	redirect(uri: "${uri}")
 																}
 															}

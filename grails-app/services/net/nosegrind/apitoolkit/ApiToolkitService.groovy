@@ -404,49 +404,46 @@ class ApiToolkitService{
 		return json
 	}
 	
-	Map generateApiDoc(){
+	Map generateApiDoc(String controllername, String actionname){
 		Map doc = [:]
 		
-		grailsApplication.controllerClasses.each { controllerClass ->
-			String controllername = controllerClass.logicalPropertyName
-			if(controllername!='aclClass'){
-				def cont = apiCacheService.getApiCache(controllername)
-				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-				for (Method method : controller.getClazz().getMethods()){
-					if(method.isAnnotationPresent(Api)) {
-						def action = method.getName()
-						if(cont){
-							if(cont[("${action}".toString())]){
-								String path = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/JSON/${controllername}/${action}"
-								doc[("${controllername}".toString())] = [("${action}".toString()):"${action}"]
-								doc[("${controllername}".toString())][("${action}".toString())] = ["path":"${path}","method":cont[("${action}".toString())]["method"],"description":cont[("${action}".toString())]["description"]]
-								
-								if(cont["${action}"]["receives"]){
-									doc[("${controllername}".toString())][("${action}".toString())]["receives"] = processDocValues(cont[("${action}".toString())]["receives"] as HashSet)
-								}
-								
-								if(cont["${action}"]["returns"]){
-									doc[("${controllername}".toString())][("${action}".toString())]["returns"] = processDocValues(cont[("${action}".toString())]["returns"] as HashSet)
-									doc[("${controllername}".toString())][("${action}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${action}".toString())]["returns"])
-								}
-								
-								if(cont["${action}"]["errorcodes"]){
-									doc[("${controllername}".toString())][("${action}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${action}".toString())]["errorcodes"] as HashSet)
-								}
+		def cont = apiCacheService.getApiCache(controllername)
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+		cont.each{
+			for (Method method : controller.getClazz().getDeclaredMethod(it.key)){
+				if(method.isAnnotationPresent(Api)) {
+					def action = method.getName()
+					if(cont[("${action}".toString())]){
+						String path = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/JSON/${controllername}/${action}"
+						doc[("${action}".toString())] = ["path":"${path}","method":cont[("${action}".toString())]["method"],"description":cont[("${action}".toString())]["description"]]
+						
+						if(cont["${action}"]["receives"]){
+							doc[("${action}".toString())]["receives"] = processDocValues(cont[("${action}".toString())]["receives"] as HashSet)
+						}
+						
+						if(cont["${action}"]["returns"]){
+							doc[("${action}".toString())]["returns"] = processDocValues(cont[("${action}".toString())]["returns"] as HashSet)
+							doc[("${action}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${action}".toString())]["returns"])
+						}
+						
+						if(cont["${action}"]["errorcodes"]){
+							doc[("${action}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${action}".toString())]["errorcodes"] as HashSet)
+						}
 
-								if(doc[("${controllername}".toString())][("${action}".toString())]["json"]){
-									def json = doc[("${controllername}".toString())][("${action}".toString())]["json"] as JSON
-									json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
-									json = json.toString().replaceAll("}"," </div>}<br>")
-									json = json.toString().replaceAll(",",",<br>")
-									doc[("${controllername}".toString())][("${action}".toString())]["json"] = json
-								}
-							}
+						if(doc[("${action}".toString())]["json"]){
+							def json = doc[("${action}".toString())]["json"] as JSON
+							json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
+							json = json.toString().replaceAll("}"," </div>}<br>")
+							json = json.toString().replaceAll(",",",<br>")
+							doc[("${action}".toString())]["json"] = json
 						}
 					}
+				}else{
+					// ERROR: method at '${controllername}/${actionname}' does not have API annotation
 				}
 			}
 		}
+
 		return doc
 	}
 }

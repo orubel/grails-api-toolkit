@@ -32,6 +32,6 @@ apitoolkit.defaultData.URL = 'http://www.yoursite.com'
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/JSON/**" : ['permitAll'],
 	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/XML/**" : ['permitAll'],
-	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/apidoc" : ['permitAll'],
+	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/HTML/**" : ['permitAll'],
 	"/hook/**" : ['permitAll'] 
 ]

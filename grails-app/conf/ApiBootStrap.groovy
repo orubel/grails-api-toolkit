@@ -1,21 +1,24 @@
-import net.nosegrind.apitoolkit.ApiDescriptor;
-import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
-import net.nosegrind.apitoolkit.ParamsDescriptor;
+import net.nosegrind.apitoolkit.ApiDescriptor
+import net.nosegrind.apitoolkit.ErrorCodeDescriptor
+import net.nosegrind.apitoolkit.ParamsDescriptor
 import java.lang.reflect.Method
 
-import net.nosegrind.apitoolkit.Api;
-import net.nosegrind.apitoolkit.ApiDescriptor;
-import net.nosegrind.apitoolkit.ParamsDescriptor;
-import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
-import net.nosegrind.apitoolkit.ApiErrors;
-import net.nosegrind.apitoolkit.ApiParams;
+import net.nosegrind.apitoolkit.Api
+import net.nosegrind.apitoolkit.ApiDescriptor
+import net.nosegrind.apitoolkit.ParamsDescriptor
+import net.nosegrind.apitoolkit.ErrorCodeDescriptor
+import net.nosegrind.apitoolkit.ApiErrors
+import net.nosegrind.apitoolkit.ApiParams
+
+import net.nosegrind.apitoolkit.ApiCacheService
+import net.nosegrind.apitoolkit.ApiToolkitService
 
 class ApiBootStrap {
 	
 	def springSecurityService
 	def grailsApplication
 	def apiCacheService
-	def apiErrorService
+	def apiToolkitService
 	
 	def init = { servletContext ->
 		grailsApplication.controllerClasses.each { controllerClass ->
@@ -34,7 +37,8 @@ class ApiBootStrap {
 						def service = new ApiDescriptor(
 							"method":"${api.method()}",
 							"description":'',
-							"receives":[]
+							"receives":[],
+							"doc": apiToolkitService.generateApiDoc(controllername,actionname)
 						)
 						apiCacheService.setApiCache("${controllername}","${actionname}",service)
 					}
