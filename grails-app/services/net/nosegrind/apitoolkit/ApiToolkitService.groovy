@@ -237,7 +237,7 @@ class ApiToolkitService{
 	}
 	
 	void callHook(String service, Object data, String state) {
-		println("hook called with Object")
+		println("hook called with Object : ${service} / ${state}")
 		data = formatDomainObject(data)
 		println(data)
 		send(data, state, service)
@@ -263,7 +263,8 @@ class ApiToolkitService{
 	private boolean send(Map data, String state, String service) {
 		def hooks = grailsApplication.getClassForName(grailsApplication.config.apitoolkit.domain).findAll("from Hook where service='${service}/${state}'")
 		def cache = apiCacheService.getApiCache(service)
-		
+		println("cache : ${cache}")
+		println("sending data...")
 		hooks.each { hook ->
 			// get cache and check each users authority for hook
 			def userRoles = []
@@ -309,7 +310,8 @@ class ApiToolkitService{
 				}catch(Exception e){
 					hook.attempts+=1
 					hook.save()
-					log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : " + e)
+					
+					println("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : " + e)
 				}
 			}else{
 				hook.delete(flush:true)
