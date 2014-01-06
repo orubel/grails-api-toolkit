@@ -7,7 +7,7 @@ log4j = {
 }
 
 grails.cache.enabled = true
-grails.cache.clearAtStartup	= true
+grails.cache.clearAtStartup	= false
 grails.cache.config = {
 	cache {
 		name 'ApiCache'

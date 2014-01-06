@@ -44,8 +44,8 @@ class ApiCacheService{
 	}
 	
 	@CachePut(value="ApiCache",key="#controllername")
-	def setApiCache(String controllername,Map data){
-		return data
+	def setApiCache(String controllername,Map apidoc){
+		return apidoc
 	}
 	
 	@CachePut(value="ApiCache",key="#controllername")
@@ -69,8 +69,8 @@ class ApiCacheService{
 	@Cacheable(value="ApiCache",key="#controllername")
 	def getApiCache(String controllername){
 		def cache = grailsCacheManager.getCache('ApiCache').get("${controllername}")
-		setApiCache(controllername,cache as Map)
-		println(cache)
+		//def cache = getCache(controllername)
+		//setApiCache(controllername,cache as Map)
 		return cache
 	}
 	

@@ -41,7 +41,6 @@ class ApiBootStrap {
 							"doc": apiToolkitService.generateApiDoc(controllername,actionname)
 						)
 						apiCacheService.setApiCache("${controllername}".toString(),"${actionname}".toString(),service)
-						println(apiCacheService.getApiCache("${controllername}"))
 					}
 				}
 			}

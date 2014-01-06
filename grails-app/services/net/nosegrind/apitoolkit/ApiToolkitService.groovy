@@ -231,15 +231,11 @@ class ApiToolkitService{
 	}
 	
 	void callHook(String service, Map data, String state) {
-		println("hook called with Map")
-		println(data)
 		send(data, state, service)
 	}
 	
 	void callHook(String service, Object data, String state) {
-		println("hook called with Object : ${service} / ${state}")
 		data = formatDomainObject(data)
-		println(data)
 		send(data, state, service)
 	}
 	
@@ -263,8 +259,6 @@ class ApiToolkitService{
 	private boolean send(Map data, String state, String service) {
 		def hooks = grailsApplication.getClassForName(grailsApplication.config.apitoolkit.domain).findAll("from Hook where service='${service}/${state}'")
 		def cache = apiCacheService.getApiCache(service)
-		println("cache : ${cache}")
-		println("sending data...")
 		hooks.each { hook ->
 			// get cache and check each users authority for hook
 			def userRoles = []
@@ -283,10 +277,12 @@ class ApiToolkitService{
 				String hookData
 	
 				try{
-					def conn = hook.callback.toURL().openConnection()
-					
+					def url = new URL(hook.callback)
+					def conn = url.openConnection()
 					conn.setRequestMethod("POST")
-					conn.doOutput = true
+					conn.setRequestProperty("User-Agent",'Mozilla/5.0')
+					conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5")
+					conn.setDoOutput(true)
 					def queryString = []
 					switch(format){
 						case 'xml':
@@ -300,18 +296,19 @@ class ApiToolkitService{
 							break
 					}
 
-					def writer = new OutputStreamWriter(conn.outputStream)
+					def writer = new OutputStreamWriter(conn.getOutputStream())
 					writer.write(queryString)
 					writer.flush()
 					writer.close()
 					conn.connect()
 					String output = conn.content.text
-					conn.close()
 				}catch(Exception e){
-					hook.attempts+=1
-					hook.save()
-					
-					println("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : " + e)
+					// ignore missing GSP/JSP exception
+					if(!(e in java.io.FileNotFoundException)){
+						hook.attempts+=1
+						hook.save()
+						log.info("[Hook] net.nosegrind.apitoolkit.ApiToolkitService : " + e)
+					}
 				}
 			}else{
 				hook.delete(flush:true)
@@ -418,7 +415,6 @@ class ApiToolkitService{
 	
 	Map generateApiDoc(String controllername, String actionname){
 		Map doc = [:]
-		
 		def cont = apiCacheService.getApiCache(controllername)
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
 		cont.each{
