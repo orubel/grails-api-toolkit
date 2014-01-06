@@ -8,7 +8,7 @@ class ApiToolkitUrlMappings {
 		String apiVersion = getGrailsApplication().metadata['app.version']
 		
 		"/login/full"(controller:'login',action:'full', parseRequest: true)
-		"/$apiName/$apiVersion/$format/$c/$a?/$id" {
+		"/$apiName_$apiVersion/$format/$c/$a?/$id" {
 			if(['XML','JSON','HTML'].contains(format)){
 				controller = c
 				action = a

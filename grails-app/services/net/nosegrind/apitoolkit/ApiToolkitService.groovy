@@ -70,11 +70,11 @@ class ApiToolkitService{
 		
 		def api
 		if(grailsApplication.config.grails.app.context=='/'){
-			api = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/"
+			api = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 		}else if(grailsApplication.config?.grails?.app?.context){
-			api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/"
+			api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 		}else if(!grailsApplication.config?.grails?.app?.context){
-			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/"
+			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 		}
 		api += (params?.format)?"${params.format}/${params.controller}/${params.action}":"JSON/${params.controller}/${params.action}"
 		api += (params.id)?"/${params.id}":""
@@ -401,6 +401,12 @@ class ApiToolkitService{
 				}
 			}
 		}
+		if(json){
+			json = json as JSON
+			json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
+			json = json.toString().replaceAll("}"," </div>}<br>")
+			json = json.toString().replaceAll(",",",<br>")
+		}
 		return json
 	}
 	
@@ -414,7 +420,7 @@ class ApiToolkitService{
 				if(method.isAnnotationPresent(Api)) {
 					def action = method.getName()
 
-					String path = "/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/JSON/${controllername}/${action}"
+					String path = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/JSON/${controllername}/${action}"
 					doc[("${action}".toString())] = ["path":"${path}","method":cont[("${action}".toString())]["method"],"description":cont[("${action}".toString())]["description"]]
 					
 					if(cont["${action}"]["receives"]){
@@ -429,15 +435,6 @@ class ApiToolkitService{
 					if(cont["${action}"]["errorcodes"]){
 						doc[("${action}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${action}".toString())]["errorcodes"] as HashSet)
 					}
-
-					if(doc[("${action}".toString())]["json"]){
-						def json = doc[("${action}".toString())]["json"] as JSON
-						json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
-						json = json.toString().replaceAll("}"," </div>}<br>")
-						json = json.toString().replaceAll(",",",<br>")
-						doc[("${action}".toString())]["json"] = json
-					}
-
 				}else{
 					// ERROR: method at '${controllername}/${actionname}' does not have API annotation
 				}
