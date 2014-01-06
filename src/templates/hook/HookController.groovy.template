@@ -32,9 +32,9 @@ class HookController {
 						if(method.isAnnotationPresent(Api)) {
 							def api = method.getAnnotation(Api)
 							def action = method.getName()
-							if(cont["${action}"]["hookRoles"].getClass()){
-								if(apiToolkitService.checkHookAuthority(cont["${action}"]["hookRoles"])){
-									def temp = ['controller':controllername,'action':action,'roles':cont["${action}"]["hookRoles"]]
+							if(cont["\${action}"]["hookRoles"].getClass()){
+								if(apiToolkitService.checkHookAuthority(cont["\${action}"]["hookRoles"])){
+									def temp = ['controller':controllername,'action':action,'roles':cont["\${action}"]["hookRoles"]]
 									services.add(temp)
 								}
 							}
@@ -62,8 +62,8 @@ class HookController {
 		def temp = params.service.split('/')
 		def cont = apiCacheService.getApiCache(temp[0])
 		if(cont){
-			if(cont["${temp[1]}"]["hookRoles"]){
-				if(apiToolkitService.checkHookAuthority(cont["${temp[1]}"]["hookRoles"])){
+			if(cont["\${temp[1]}"]["hookRoles"]){
+				if(apiToolkitService.checkHookAuthority(cont["\${temp[1]}"]["hookRoles"])){
 					Hook service = Hook.findByServiceAndUser(params.service,user)
 					if(service){
 						flash.message = "You are already subscribed to this service. Please edit it instead."
@@ -90,12 +90,12 @@ class HookController {
 			return
 		}
 		def formats = ['JSON','XML']
-		params.callback = params.callback.split('\n')
+		params.callback = params.callback.split("\\n")
 		def temp = params.service.split('/')
 		def cont = apiCacheService.getApiCache(temp[0])
 		if(cont){
-			if(cont["${temp[1]}"]["hookRoles"]){
-				if(apiToolkitService.checkHookAuthority(cont["${temp[1]}"]["hookRoles"])){
+			if(cont["\${temp[1]}"]["hookRoles"]){
+				if(apiToolkitService.checkHookAuthority(cont["\${temp[1]}"]["hookRoles"])){
 					Hook hook = Hook.findByServiceAndUser(params.service,user)
 					if(hook){
 						flash.message = "You are already subscribed to this service. Please edit it instead."
@@ -103,7 +103,7 @@ class HookController {
 					}else{
 						params.callback.each{ url ->
 							if(!apiToolkitService.validateUrl(url)){
-								flash.message = "BAD PROTOCOL: URL '${url}'MUST BE FULLY QUALIFIED DOMAIN NAME (OR IP ADDRESS) FORMATTED WITH HTTP/HTTPS. PLEASE TRY AGAIN."
+								flash.message = "BAD PROTOCOL: URL '\${url}'MUST BE FULLY QUALIFIED DOMAIN NAME (OR IP ADDRESS) FORMATTED WITH HTTP/HTTPS. PLEASE TRY AGAIN."
 								render(view:"create",model:[params:params,service:params.service,format:formats])
 								return
 							}
@@ -145,11 +145,11 @@ class HookController {
 		def temp = params.service.split('/')
 		def cont = apiCacheService.getApiCache(temp[0])
 		if(cont){
-			if(cont["${temp[1]}"]["hookRoles"]){
-				if(apiToolkitService.checkHookAuthority(cont["${temp[1]}"]["hookRoles"])){
+			if(cont["\${temp[1]}"]["hookRoles"]){
+				if(apiToolkitService.checkHookAuthority(cont["\${temp[1]}"]["hookRoles"])){
 					Hook service = Hook.findByServiceAndUser(params.service,user)
 					if(hook){
-						callback = hook.callback.replace(',','\n')
+						callback = hook.callback.replace(',','\\n')
 					}else{
 						flash.message = "WEBHOOK NOT FOUND: NO WEBHOOK WITH THAT ID FOUND BELONGING TO CURRENT USER."
 						render(view:"create",model:[params:params])
@@ -175,18 +175,18 @@ class HookController {
 			return
 		}
 
-		def callback = params.callback.split('\n')
+		def callback = params.callback.split('\\n')
 		def temp = params.service.split('/')
 		def cont = apiCacheService.getApiCache(temp[0])
 		if(cont){
-			if(cont["${temp[1]}"]["hookRoles"]){
-				if(apiToolkitService.checkHookAuthority(cont["${temp[1]}"]["hookRoles"])){
+			if(cont["\${temp[1]}"]["hookRoles"]){
+				if(apiToolkitService.checkHookAuthority(cont["\${temp[1]}"]["hookRoles"])){
 					Hook hook = Hook.findByServiceAndUser(params.service,user)
 					if(hook){
 						// continue editing service
 						callback.each{ url ->
 							if(!apiToolkitService.validateUrl(url)){
-								flash.message = "BAD PROTOCOL: URL '${url}' MUST BE FULLY QUALIFIED DOMAIN NAME (OR IP ADDRESS) FORMATTED WITH HTTP/HTTPS. PLEASE TRY AGAIN."
+								flash.message = "BAD PROTOCOL: URL '\${url}' MUST BE FULLY QUALIFIED DOMAIN NAME (OR IP ADDRESS) FORMATTED WITH HTTP/HTTPS. PLEASE TRY AGAIN."
 								render(view:"edit",model:[params:params,service:params.service,format:formats])
 								return
 							}

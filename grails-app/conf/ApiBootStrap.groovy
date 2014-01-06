@@ -40,7 +40,7 @@ class ApiBootStrap {
 							"receives":[],
 							"doc": apiToolkitService.generateApiDoc(controllername,actionname)
 						)
-						apiCacheService.setApiCache("${controllername}","${actionname}",service)
+						apiCacheService.setApiCache("${controllername}".toString(),"${actionname}".toString(),service)
 					}
 				}
 			}

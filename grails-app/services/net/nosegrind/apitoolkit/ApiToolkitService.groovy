@@ -231,11 +231,15 @@ class ApiToolkitService{
 	}
 	
 	void callHook(String service, Map data, String state) {
+		println("hook called with Map")
+		println(data)
 		send(data, state, service)
 	}
 	
 	void callHook(String service, Object data, String state) {
+		println("hook called with Object")
 		data = formatDomainObject(data)
+		println(data)
 		send(data, state, service)
 	}
 	
