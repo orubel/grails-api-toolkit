@@ -20,8 +20,7 @@ class ApiToolkitFilters {
 		String apiName = grailsApplication.config.apitoolkit.apiName
 		String apiVersion = grailsApplication.metadata['app.version']
 		
-		apitoolkit(uri:"/${apiName}_${apiVersion}/*"){
-		//apitoolkit(controller:'*', action:'*'){
+		apitoolkit(uri:"/${apiName}_${apiVersion}/**"){
 			before = { Map model ->
 				// used for testing
 				//if(request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null){
@@ -32,7 +31,6 @@ class ApiToolkitFilters {
 				}
 				*/
 
-				
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -42,14 +40,18 @@ class ApiToolkitFilters {
 						if (apiToolkitService.isApiCall()) {
 							// USER HAS ACCESS?
 							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['apiRoles'])){
+								println("noAuthority")
 								return false
 							}
 							// DOES METHOD MATCH?
-							def method = cache["${params.action}"]['method']
-							if(!apiToolkitService.isRequestMatch(Method["${method}"])){
+							def method = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+							
+							if(!apiToolkitService.isRequestMatch(method)){
+								println("noRequestMatch")
 								return false
 							}
 						}else{
+							println("noApiCall")
 							return false
 						}
 					}
@@ -57,6 +59,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
+				
 				/*
 				 if(request.isRedirected()){
 					 def uri = grailsAttributes.getControllerActionUri(request)
@@ -72,30 +75,16 @@ class ApiToolkitFilters {
 				def newModel
 
 				if(cache){
+					println("is cache")
 					if(cache["${params.action}"]){
-						def formats = ['XML':'text/html','JSON':'application/json','HTML':'application/xml']
-						def type = formats.findAll{ request.getHeader('Content-Type')?.startsWith(it.value) }
-						
-							/*
-							 * if api call, send api data
-							 * need to determine encoding at some time in future
-							 */
+						def type = ['XML':'text/html','JSON':'application/json','HTML':'application/xml'].findAll{ request.getHeader('Content-Type')?.startsWith(it.getValue()) }
+
 							if (apiToolkitService.isApiCall()) {
 								response.setHeader('Allow', cache["${params.action}"]['apiRoles'])
-								switch(type[0].key){
-									case 'JSON':
-										response.setHeader('Content-Type', 'application/json;charset=UTF-8')
-										break;
-									case 'XML':
-										response.setHeader('Content-Type', 'application/xml;charset=UTF-8')
-										break;
-									case 'HTML':
-										response.setHeader('Content-Type', 'application/html;charset=UTF-8')
-										break;
-								}
+								response.setHeader('Content-Type', "${type};charset=UTF-8")
 								
 								newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
-								String format = params.format
+								// String format = params.format
 								def method = cache["${params.action}"]['method'].intersect(request.method)
 								def queryString = request.'javax.servlet.forward.query_string'
 								def path = (queryString)?queryString.split('&'):[]
@@ -104,12 +93,11 @@ class ApiToolkitFilters {
 								if(method){
 									switch(method) {
 										case 'HEAD':
-											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
+											apiToolkitService.setApiHeaders(type,cache["${params.action}"]['method'])
 											break;
 										case 'OPTIONS':
 											//apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
-											switch(params.format){
-
+											switch(type.getKey()){
 												case 'XML':
 													render(text:cache["${params.action}"]['doc'] as XML, contentType: "application/json")
 													break
@@ -120,9 +108,9 @@ class ApiToolkitFilters {
 											}
 											break;
 										case 'GET':
-											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
+											apiToolkitService.setApiHeaders(type,cache["${params.action}"]['method'])
 											if(!newModel.isEmpty()){
-												switch(params.format){
+												switch(type.getKey()){
 													case 'JSON':
 														def map = newModel
 														def key
@@ -157,7 +145,7 @@ class ApiToolkitFilters {
 																			return apiToolkitService._404_NOTFOUND(msg)
 																		}
 																	}else{
-																		def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${format}"
+																		def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 																		uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																		redirect(uri: "${uri}")
 																	}
@@ -203,7 +191,7 @@ class ApiToolkitFilters {
 																			return apiToolkitService._404_NOTFOUND(msg)
 																		}
 																	}else{
-																		def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${format}"
+																		def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 																		uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																		redirect(uri: "${uri}")
 																	}
@@ -249,7 +237,7 @@ class ApiToolkitFilters {
 																			return apiToolkitService._404_NOTFOUND(msg)
 																		}
 																	}else{
-																		def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${format}"
+																		def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 																		uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																		redirect(uri: "${uri}")
 																	}
@@ -294,8 +282,8 @@ class ApiToolkitFilters {
 											}
 											break
 										case 'POST':
-											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
-											switch(params.format){
+											apiToolkitService.setApiHeaders(type,cache["${params.action}"]['method'])
+											switch(type.getKey()){
 												case 'JSON':
 													def map = newModel
 													def key
@@ -331,7 +319,7 @@ class ApiToolkitFilters {
 																		return apiToolkitService._404_NOTFOUND(msg)
 																	}
 																}else{
-																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${format}"
+																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 																	uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																	redirect(uri: "${uri}")
 																}
@@ -376,7 +364,7 @@ class ApiToolkitFilters {
 																		return apiToolkitService._404_NOTFOUND(msg)
 																	}
 																}else{
-																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${format}"
+																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 																	uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																	redirect(uri: "${uri}")
 																}
@@ -390,8 +378,8 @@ class ApiToolkitFilters {
 											}
 											break
 										case 'PUT':
-											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
-											switch(params.format){
+											apiToolkitService.setApiHeaders(type,cache["${params.action}"]['method'])
+											switch(type.getKey()){
 												case 'JSON':
 													def map = newModel
 													def key
@@ -427,7 +415,7 @@ class ApiToolkitFilters {
 																		return apiToolkitService._404_NOTFOUND(msg)
 																	}
 																}else{
-																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${format}"
+																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 																	uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																	redirect(uri: "${uri}")
 																}
@@ -472,7 +460,7 @@ class ApiToolkitFilters {
 																		return apiToolkitService._404_NOTFOUND(msg)
 																	}
 																}else{
-																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${format}"
+																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 																	uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																	redirect(uri: "${uri}")
 																}
@@ -486,8 +474,8 @@ class ApiToolkitFilters {
 											}
 											break
 										case 'DELETE':
-											apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
-											switch(params.format){
+											apiToolkitService.setApiHeaders(type,cache["${params.action}"]['method'])
+											switch(type.getKey()){
 												case 'JSON':
 													def key
 													
@@ -522,7 +510,7 @@ class ApiToolkitFilters {
 																		return apiToolkitService._404_NOTFOUND(msg)
 																	}
 																}else{
-																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${format}"
+																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 																	uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																	redirect(uri: "${uri}")
 																}
@@ -565,7 +553,7 @@ class ApiToolkitFilters {
 																		return apiToolkitService._404_NOTFOUND(msg)
 																	}
 																}else{
-																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${format}"
+																	def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 																	uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 																	redirect(uri: "${uri}")
 																}

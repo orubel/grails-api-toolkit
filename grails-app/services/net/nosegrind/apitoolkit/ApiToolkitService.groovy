@@ -69,8 +69,7 @@ class ApiToolkitService{
 		}
 		
 		def api
-		def type = ['text/html','application/json','application/xml'].findAll{ request.getHeader('Content-Type')?.startsWith(it) }
-		println("type : ${type}")
+		def type = ['XML':'text/html','JSON':'application/json','HTML':'application/xml'].findAll{ request.getHeader('Content-Type')?.startsWith(it.getValue()) }
 
 		if(grailsApplication.config.grails.app.context=='/'){
 			api = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
@@ -79,17 +78,23 @@ class ApiToolkitService{
 		}else if(!grailsApplication.config?.grails?.app?.context){
 			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 		}
-		//api += (params?.format)?"${params.format}/${params.controller}/${params.action}":"JSON/${params.controller}/${params.action}"
+		api += "${params.controller}/${params.action}"
 		api += (params.id)?"/${params.id}":""
 		api += (queryString)?"?${queryString}":""
 
-		//println("${uri}==${api}")
+		println("${uri}==${api}")
 		return uri==api
 	}
 
-	boolean isRequestMatch(String protocol){
+	boolean isRequestMatch(List protocol){
 		def request = getRequest()
-		return request.method.toString()==protocol.toString()
+		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
+		if(protocol.contains(method)){
+			return true
+		}else{
+			return false
+		}
+		return 
 	}
 	
 	Integer getKey(String key){
