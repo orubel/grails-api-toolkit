@@ -18,7 +18,7 @@ class ApiDescriptor {
     ErrorCodeDescriptor[] errorcodes
 
 	static constraints = { 
-		method(nullable:false,inList: ["GET", "POST", "PUT","DELETE"])
+		method(nullable:true,inList: ["GET","POST","PUT","DELETE"])
 		apiRoles(nullable:true)
 		description(nullable:true,maxSize:1000)
 		doc(nullable:true)

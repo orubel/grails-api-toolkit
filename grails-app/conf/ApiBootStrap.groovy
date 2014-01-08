@@ -2,6 +2,7 @@ import net.nosegrind.apitoolkit.ApiDescriptor
 import net.nosegrind.apitoolkit.ErrorCodeDescriptor
 import net.nosegrind.apitoolkit.ParamsDescriptor
 import java.lang.reflect.Method
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 
 import net.nosegrind.apitoolkit.Api
 import net.nosegrind.apitoolkit.ApiDescriptor
@@ -21,28 +22,34 @@ class ApiBootStrap {
 	def apiToolkitService
 	
 	def init = { servletContext ->
-		grailsApplication.controllerClasses.each { controllerClass ->
+		grailsApplication.controllerClasses.each { DefaultGrailsControllerClass controllerClass ->
 			String controllername = controllerClass.logicalPropertyName
-			if(controllername!='aclClass'){
-				//def cont = apiCacheService.getApiCache(controllername)
-				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-				for (Method method : controller.getClazz().getMethods()){
-					def actionname = method.getName()
-					if(method.isAnnotationPresent(Api)) {
-						def api = method.getAnnotation(Api)
-						
-						ApiErrors error = new ApiErrors()
-						ApiParams param = new ApiParams()
+			Map methods = [:]
+			controllerClass.getClazz().methods.each { Method method ->
+				String actionname = method.getName()
+				
+				if(method.isAnnotationPresent(Api)) {
+					def api = method.getAnnotation(Api)
+					
+					ApiErrors error = new ApiErrors()
+					ApiParams param = new ApiParams()
 
-						def service = new ApiDescriptor(
-							"method":"${api.method()}",
-							"description":'',
-							"receives":[],
-							"doc": apiToolkitService.generateApiDoc(controllername,actionname)
-						)
-						apiCacheService.setApiCache("${controllername}".toString(),"${actionname}".toString(),service)
+					ApiDescriptor service = new ApiDescriptor(
+						"method":"${api.method()}",
+						"description":'',
+						"receives":[],
+						"doc": apiToolkitService.generateApiDoc(controllername,actionname)
+					)
+					service['apiRoles'] = api.apiRoles()
+					if(api.hookRoles()){
+						service['hookRoles'] = api.hookRoles()
 					}
+					
+					methods["${actionname}"] = service
 				}
+			}
+			if(methods){
+				apiCacheService.setApiCache("${controllername}".toString(),methods)
 			}
 		}
 	}

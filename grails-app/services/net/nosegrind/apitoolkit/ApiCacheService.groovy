@@ -50,32 +50,29 @@ class ApiCacheService{
 	
 	@CachePut(value="ApiCache",key="#controllername")
 	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc){
-		Map output
-		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-		for (Method method : controller.getClazz().getDeclaredMethod(methodname)){
-			if(method.isAnnotationPresent(Api)) {
-				def api = method.getAnnotation(Api)
-				apidoc['apiRoles'] = api.apiRoles()
-				if(api.hookRoles()){
-					apidoc['hookRoles'] = api.hookRoles()
-				}
-				apidoc['doc'] = apiToolkitService.generateApiDoc(controllername,methodname)
-				output = [("${methodname}".toString()):apidoc]
+		try{
+			def cache = getApiCache(controllername)
+			if(cache["${methodname}"]){
+				cache["${methodname}"]['description'] = apidoc.description
+				cache["${methodname}"]['receives'] = apidoc.receives
+				cache["${methodname}"]['returns'] = apidoc.returns
+				cache["${methodname}"]['errorcodes'] = apidoc.errorcodes
+			}else{
+				log.info "[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
 			}
+			return cache
+		}catch(Exception e){
+			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} ")
 		}
-		return output
 	}
-	
-	@Cacheable(value="ApiCache",key="#controllername")
+
 	def getApiCache(String controllername){
-		def cache = grailsCacheManager.getCache('ApiCache').get("${controllername}")
-		//def cache = getCache(controllername)
-		//setApiCache(controllername,cache as Map)
-		return cache
-	}
-	
-	String getBelongsTo(String paramType, String controller, String belongsTo){
-		return (paramType=='PKey')?controller:belongsTo
+		try{
+			def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
+			return cache
+		}catch(Exception e){
+			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.getApiCache : No Cache exists for controller ${controllername} ")
+		}
 	}
 
 }

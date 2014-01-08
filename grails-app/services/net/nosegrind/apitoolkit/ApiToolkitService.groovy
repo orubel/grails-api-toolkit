@@ -69,6 +69,9 @@ class ApiToolkitService{
 		}
 		
 		def api
+		def type = ['text/html','application/json','application/xml'].findAll{ request.getHeader('Content-Type')?.startsWith(it) }
+		println("type : ${type}")
+
 		if(grailsApplication.config.grails.app.context=='/'){
 			api = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 		}else if(grailsApplication.config?.grails?.app?.context){
@@ -76,7 +79,7 @@ class ApiToolkitService{
 		}else if(!grailsApplication.config?.grails?.app?.context){
 			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 		}
-		api += (params?.format)?"${params.format}/${params.controller}/${params.action}":"JSON/${params.controller}/${params.action}"
+		//api += (params?.format)?"${params.format}/${params.controller}/${params.action}":"JSON/${params.controller}/${params.action}"
 		api += (params.id)?"/${params.id}":""
 		api += (queryString)?"?${queryString}":""
 
@@ -295,13 +298,13 @@ class ApiToolkitService{
 							queryString << "state=${state}&json=${hookData}"
 							break
 					}
-
+					
 					def writer = new OutputStreamWriter(conn.getOutputStream())
 					writer.write(queryString)
 					writer.flush()
 					writer.close()
-					conn.connect()
 					String output = conn.content.text
+					conn.connect()
 				}catch(Exception e){
 					// ignore missing GSP/JSP exception
 					if(!(e in java.io.FileNotFoundException)){

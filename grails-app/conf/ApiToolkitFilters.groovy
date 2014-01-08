@@ -20,7 +20,7 @@ class ApiToolkitFilters {
 		String apiName = grailsApplication.config.apitoolkit.apiName
 		String apiVersion = grailsApplication.metadata['app.version']
 		
-		apitoolkit(uri:"/"+apiName+"_"+apiVersion+"/*"){
+		apitoolkit(uri:"/${apiName}_${apiVersion}/*"){
 		//apitoolkit(controller:'*', action:'*'){
 			before = { Map model ->
 				// used for testing
@@ -73,13 +73,16 @@ class ApiToolkitFilters {
 
 				if(cache){
 					if(cache["${params.action}"]){
-							
+						def formats = ['XML':'text/html','JSON':'application/json','HTML':'application/xml']
+						def type = formats.findAll{ request.getHeader('Content-Type')?.startsWith(it.value) }
+						
 							/*
 							 * if api call, send api data
+							 * need to determine encoding at some time in future
 							 */
 							if (apiToolkitService.isApiCall()) {
 								response.setHeader('Allow', cache["${params.action}"]['apiRoles'])
-								switch(params.format){
+								switch(type[0].key){
 									case 'JSON':
 										response.setHeader('Content-Type', 'application/json;charset=UTF-8')
 										break;

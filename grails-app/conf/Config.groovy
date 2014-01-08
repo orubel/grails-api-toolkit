@@ -7,7 +7,7 @@ log4j = {
 }
 
 grails.cache.enabled = true
-grails.cache.clearAtStartup	= false
+grails.cache.clearAtStartup	= true
 grails.cache.config = {
 	cache {
 		name 'ApiCache'
@@ -30,9 +30,9 @@ apitoolkit.defaultData.EMAIL = 'example@yoursite.com'
 apitoolkit.defaultData.URL = 'http://www.yoursite.com'
 
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
-	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/JSON/**" : ['permitAll'],
-	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/XML/**" : ['permitAll'],
-	"/${grailsApplication.config.apitoolkit.apiName}/${grailsApplication.metadata['app.version']}/HTML/**" : ['permitAll'],
+	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/JSON/**" : ['permitAll'],
+	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/XML/**" : ['permitAll'],
+	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/HTML/**" : ['permitAll'],
 	"/hook/**" : ['permitAll'] 
 ]
 
