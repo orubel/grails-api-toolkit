@@ -328,9 +328,12 @@ class ApiToolkitService{
 	 * called on detection of apicall; default headers for api calls
 	 * regardless of success or failure
 	 */
-	void setApiHeaders(){
-		
+	/*
+	void setApiHeaders(String contentType, ArrayList methods){
+		def response = getResponse()
+		response.setHeader('Authorization', cache["${params.action}"]['apiRoles'].join(', '))
 	}
+	*/
 	
 	boolean isRequestRedirected(){
 		if(request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null){

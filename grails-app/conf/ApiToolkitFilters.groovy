@@ -47,11 +47,9 @@ class ApiToolkitFilters {
 							def method = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 							
 							if(!apiToolkitService.isRequestMatch(method)){
-								println("noRequestMatch")
 								return false
 							}
 						}else{
-							println("noApiCall")
 							return false
 						}
 					}
@@ -77,26 +75,30 @@ class ApiToolkitFilters {
 				if(cache){
 					println("is cache")
 					if(cache["${params.action}"]){
-						def type = ['XML':'text/html','JSON':'application/json','HTML':'application/xml'].findAll{ request.getHeader('Content-Type')?.startsWith(it.getValue()) }
-
+						def formats = ['text/html','application/json','application/xml']
+						
+						String type = formats.findAll{ request.getHeader('Content-Type')?.startsWith(it) }[0].toString()
+						
 							if (apiToolkitService.isApiCall()) {
-								response.setHeader('Allow', cache["${params.action}"]['apiRoles'])
-								response.setHeader('Content-Type', "${type};charset=UTF-8")
-								
-								newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
-								// String format = params.format
-								def method = cache["${params.action}"]['method'].intersect(request.method)
+								def methods = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+								def method = (methods.contains(request.method))?request.method:null
 								def queryString = request.'javax.servlet.forward.query_string'
 								def path = (queryString)?queryString.split('&'):[]
+								
+								response.setHeader('Allow', methods.join(', '))
+								response.setHeader('Content-Type', "${type};charset=UTF-8")
+								response.setHeader('Authorization', cache["${params.action}"]['apiRoles'].join(', '))
+								
+								newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
+
+
 								
 								def lastKey
 								if(method){
 									switch(method) {
 										case 'HEAD':
-											apiToolkitService.setApiHeaders(type,cache["${params.action}"]['method'])
 											break;
 										case 'OPTIONS':
-											//apiToolkitService.setApiHeaders(params.format,cache["${params.action}"]['method'])
 											switch(type.getKey()){
 												case 'XML':
 													render(text:cache["${params.action}"]['doc'] as XML, contentType: "application/json")
@@ -108,10 +110,9 @@ class ApiToolkitFilters {
 											}
 											break;
 										case 'GET':
-											apiToolkitService.setApiHeaders(type,cache["${params.action}"]['method'])
 											if(!newModel.isEmpty()){
-												switch(type.getKey()){
-													case 'JSON':
+												switch(type){
+													case 'application/json':
 														def map = newModel
 														def key
 														if(path){
@@ -156,7 +157,7 @@ class ApiToolkitFilters {
 														render(text:map as JSON, contentType: "application/json")
 														//return false
 														break
-													case 'XML':
+													case 'application/xml':
 														def map = newModel
 														def key
 					
@@ -202,7 +203,7 @@ class ApiToolkitFilters {
 														render(text:map as XML, contentType: "application/xml")
 														//return false
 														break
-													case 'HTML':
+													case 'text/html':
 														def map = newModel
 														def key
 					
@@ -282,9 +283,8 @@ class ApiToolkitFilters {
 											}
 											break
 										case 'POST':
-											apiToolkitService.setApiHeaders(type,cache["${params.action}"]['method'])
-											switch(type.getKey()){
-												case 'JSON':
+											switch(type){
+												case 'application/json':
 													def map = newModel
 													def key
 					
@@ -329,7 +329,7 @@ class ApiToolkitFilters {
 													
 													render(text:map as JSON, contentType: "application/json")
 													break
-												case 'XML':
+												case 'application/xml':
 													def map = newModel
 													def key
 					
@@ -378,9 +378,8 @@ class ApiToolkitFilters {
 											}
 											break
 										case 'PUT':
-											apiToolkitService.setApiHeaders(type,cache["${params.action}"]['method'])
-											switch(type.getKey()){
-												case 'JSON':
+											switch(type){
+												case 'application/json':
 													def map = newModel
 													def key
 					
@@ -425,7 +424,7 @@ class ApiToolkitFilters {
 													
 													render(text:map as JSON, contentType: "application/json")
 													break
-												case 'XML':
+												case 'application/json':
 													def map = newModel
 													def key
 					
@@ -474,9 +473,8 @@ class ApiToolkitFilters {
 											}
 											break
 										case 'DELETE':
-											apiToolkitService.setApiHeaders(type,cache["${params.action}"]['method'])
-											switch(type.getKey()){
-												case 'JSON':
+											switch(type){
+												case 'application/json':
 													def key
 													
 													if(path){
@@ -519,7 +517,7 @@ class ApiToolkitFilters {
 													}
 													return response.status
 													break;
-												case 'XML':
+												case 'application/xml':
 													def key
 													
 													if(path){
