@@ -40,7 +40,6 @@ class ApiToolkitFilters {
 						if (apiToolkitService.isApiCall()) {
 							// USER HAS ACCESS?
 							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['apiRoles'])){
-								println("noAuthority")
 								return false
 							}
 							// DOES METHOD MATCH?
@@ -73,7 +72,6 @@ class ApiToolkitFilters {
 				def newModel
 
 				if(cache){
-					println("is cache")
 					if(cache["${params.action}"]){
 						def formats = ['text/html','application/json','application/xml']
 						
@@ -91,8 +89,6 @@ class ApiToolkitFilters {
 								
 								newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 
-
-								
 								def lastKey
 								if(method){
 									switch(method) {
