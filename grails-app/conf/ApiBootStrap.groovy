@@ -38,7 +38,7 @@ class ApiBootStrap {
 						"method":"${api.method()}",
 						"description":'',
 						"receives":[],
-						"doc": apiToolkitService.generateApiDoc(controllername,actionname)
+						"doc": []
 					)
 					service['apiRoles'] = api.apiRoles()
 					if(api.hookRoles()){

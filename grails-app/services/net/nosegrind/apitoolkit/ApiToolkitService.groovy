@@ -5,9 +5,10 @@ import grails.converters.XML
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.lang.reflect.Method
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
+import java.util.ArrayList
+import java.util.HashSet
+import java.util.Map
 
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
@@ -16,11 +17,11 @@ import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 import net.nosegrind.apitoolkit.*
-import net.nosegrind.apitoolkit.ApiDescriptor;
-import net.nosegrind.apitoolkit.ParamsDescriptor;
-import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
-import net.nosegrind.apitoolkit.ApiErrors;
-import net.nosegrind.apitoolkit.ApiParams;
+import net.nosegrind.apitoolkit.ApiDescriptor
+import net.nosegrind.apitoolkit.ParamsDescriptor
+import net.nosegrind.apitoolkit.ErrorCodeDescriptor
+import net.nosegrind.apitoolkit.ApiErrors
+import net.nosegrind.apitoolkit.ApiParams
 
 class ApiToolkitService{
 
@@ -427,33 +428,30 @@ class ApiToolkitService{
 	Map generateApiDoc(String controllername, String actionname){
 		Map doc = [:]
 		def cont = apiCacheService.getApiCache(controllername)
-		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-		cont.each{
-			for (Method method : controller.getClazz().getDeclaredMethod(it.key)){
-				if(method.isAnnotationPresent(Api)) {
-					def action = method.getName()
-
-					String path = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/JSON/${controllername}/${action}"
-					doc[("${action}".toString())] = ["path":"${path}","method":cont[("${action}".toString())]["method"],"description":cont[("${action}".toString())]["description"]]
-					
-					if(cont["${action}"]["receives"]){
-						doc[("${action}".toString())]["receives"] = processDocValues(cont[("${action}".toString())]["receives"] as HashSet)
+		if(cont){
+			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+			for (Method method : controller.getClazz().getDeclaredMethod(actionname)){
+					if(method.isAnnotationPresent(Api)) {
+						String path = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/JSON/${controllername}/${actionname}"
+						doc[("${actionname}".toString())] = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
+						
+						if(cont["${actionname}"]["receives"]){
+							doc[("${actionname}".toString())]["receives"] = processDocValues(cont[("${actionname}".toString())]["receives"] as HashSet)
+						}
+						
+						if(cont["${actionname}"]["returns"]){
+							doc[("${actionname}".toString())]["returns"] = processDocValues(cont[("${actionname}".toString())]["returns"] as HashSet)
+							doc[("${actionname}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${actionname}".toString())]["returns"])
+						}
+						
+						if(cont["${actionname}"]["errorcodes"]){
+							doc[("${actionname}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
+						}
+					}else{
+						// ERROR: method at '${controllername}/${actionname}' does not have API annotation
 					}
-					
-					if(cont["${action}"]["returns"]){
-						doc[("${action}".toString())]["returns"] = processDocValues(cont[("${action}".toString())]["returns"] as HashSet)
-						doc[("${action}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${action}".toString())]["returns"])
-					}
-					
-					if(cont["${action}"]["errorcodes"]){
-						doc[("${action}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${action}".toString())]["errorcodes"] as HashSet)
-					}
-				}else{
-					// ERROR: method at '${controllername}/${actionname}' does not have API annotation
-				}
 			}
 		}
-
 		return doc
 	}
 }

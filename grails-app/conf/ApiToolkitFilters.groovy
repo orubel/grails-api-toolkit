@@ -46,24 +46,15 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				println("after filter...")
-				/*
-				 if(request.isRedirected()){
-					 def uri = grailsAttributes.getControllerActionUri(request)
-					 println(uri)
-				 }
-				 */
 
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
-				println(params.controller)
 				
 				def newModel
 
 				if(cache){
-					println("has cache...")
 					if(cache["${params.action}"]){
 						def formats = ['text/html','application/json','application/xml']
 						def type = (request.getHeader('Content-Type'))?formats.findAll{ request.getHeader('Content-Type')?.startsWith(it) }[0].toString():null
@@ -87,7 +78,6 @@ class ApiToolkitFilters {
 										case 'HEAD':
 											break;
 										case 'OPTIONS':
-											println(type)
 											switch(type){
 												case 'application/xml':
 													render(text:cache["${params.action}"]['doc'] as XML, contentType: "application/xml")
@@ -100,8 +90,6 @@ class ApiToolkitFilters {
 											break;
 										case 'GET':
 											if(!newModel.isEmpty()){
-												println("model not empty")
-												println(type)
 												switch(type){
 													case 'application/json':
 														def map = newModel
