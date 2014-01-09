@@ -7,14 +7,12 @@ import grails.converters.XML
 import net.nosegrind.apitoolkit.Api;
 import net.nosegrind.apitoolkit.Method;
 
-
 class ApiToolkitFilters {
 	
 	def apiToolkitService
 	def grailsApplication
 	def apiCacheService
 
-	
 	def filters = {
 		
 		String apiName = grailsApplication.config.apitoolkit.apiName
@@ -22,15 +20,7 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiName}_${apiVersion}/**"){
 			before = { Map model ->
-				// used for testing
-				//if(request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null){
-				/*
-				if(request.isRedirected()){
-					def uri = grailsAttributes.getControllerActionUri(request)
-					println(uri)
-				}
-				*/
-
+				
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -56,7 +46,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				
+				println("after filter...")
 				/*
 				 if(request.isRedirected()){
 					 def uri = grailsAttributes.getControllerActionUri(request)
@@ -68,14 +58,16 @@ class ApiToolkitFilters {
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
+				println(params.controller)
 				
 				def newModel
 
 				if(cache){
+					println("has cache...")
 					if(cache["${params.action}"]){
 						def formats = ['text/html','application/json','application/xml']
-						
-						String type = formats.findAll{ request.getHeader('Content-Type')?.startsWith(it) }[0].toString()
+						def type = (request.getHeader('Content-Type'))?formats.findAll{ request.getHeader('Content-Type')?.startsWith(it) }[0].toString():null
+						if(type){
 						
 							if (apiToolkitService.isApiCall()) {
 								def methods = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
@@ -95,11 +87,12 @@ class ApiToolkitFilters {
 										case 'HEAD':
 											break;
 										case 'OPTIONS':
-											switch(type.getKey()){
-												case 'XML':
-													render(text:cache["${params.action}"]['doc'] as XML, contentType: "application/json")
+											println(type)
+											switch(type){
+												case 'application/xml':
+													render(text:cache["${params.action}"]['doc'] as XML, contentType: "application/xml")
 													break
-												case 'JSON':
+												case 'application/json':
 												default:
 													render(text:cache["${params.action}"]['doc'] as JSON, contentType: "application/json")
 													break
@@ -107,6 +100,8 @@ class ApiToolkitFilters {
 											break;
 										case 'GET':
 											if(!newModel.isEmpty()){
+												println("model not empty")
+												println(type)
 												switch(type){
 													case 'application/json':
 														def map = newModel
@@ -562,16 +557,16 @@ class ApiToolkitFilters {
 									}
 								}
 								return false
-								
-							}else{
-								//render(view:params.action,model:model)
-							}
+							}	
 						}else{
 							//render(view:params.action,model:model)
 						}
+					}else{
+						//render(view:params.action,model:model)
 					}
 				}
 			}
+		}
 
 	}
 

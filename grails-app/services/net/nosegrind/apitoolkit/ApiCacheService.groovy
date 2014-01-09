@@ -14,7 +14,6 @@ import org.springframework.cache.Cache
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
-import net.nosegrind.apitoolkit.ApiDescriptor;
 import net.nosegrind.apitoolkit.*
 
 class ApiCacheService{
@@ -57,6 +56,7 @@ class ApiCacheService{
 				cache["${methodname}"]['receives'] = apidoc.receives
 				cache["${methodname}"]['returns'] = apidoc.returns
 				cache["${methodname}"]['errorcodes'] = apidoc.errorcodes
+				cache["${methodname}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname)
 			}else{
 				log.info "[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
 			}
