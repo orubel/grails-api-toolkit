@@ -18,16 +18,24 @@
 		<g:each in="${apiList}" var="controller">
 			<br>
 			<h3>${controller.key.toUpperCase()}</h3>
+			
 			<g:each in="${controller.value}" var="action">
-			<g:each in="${action.value}" var="api">
-				<g:if test="${api.key=='path'}"><g:set var="path" value="${api.value}"/></g:if> 
-				<g:if test="${api.key=='json'}"><g:set var="json" value="${api.value}"/></g:if> 
-				<g:if test="${api.key=='method'}"><g:set var="method" value="${api.value}"/></g:if> 
-				<g:if test="${api.key=='description'}"><g:set var="description" value="${api.value}"/></g:if>
-				<g:if test="${api.key=='receives'}"><g:set var="receives" value="${api.value}"/></g:if> 
-				<g:if test="${api.key=='returns'}"><g:set var="returns" value="${api.value}"/></g:if> 
-				<g:if test="${api.key=='errorcodes'}"><g:set var="errors" value="${api.value}"/></g:if> 
+			<g:set var="action" value="${action}"/> 
+			<g:each in="${action}" var="api">
+			<g:each in="${api.value}" var="descriptor">
+			<g:each in="${descriptor.doc}" var="doc">
+				<g:if test="${doc.value.path}"><g:set var="path" value="${doc.value.path}"/></g:if> 
+				<g:if test="${doc.value.json}"><g:set var="json" value="${doc.value.json}"/></g:if> 
+				<g:if test="${doc.value.method}"><g:set var="method" value="${doc.value.method}"/></g:if> 
+				<g:if test="${doc.value.description}"><g:set var="description" value="${doc.value.description}"/></g:if>
+				<g:if test="${doc.value.receives}"><g:set var="receives" value="${doc.value.receives}"/></g:if> 
+				<g:if test="${doc.value.returns}"><g:set var="returns" value="${doc.value.returns}"/></g:if> 
+				<g:if test="${doc.value.errorcodes}"><g:set var="errors" value="${doc.value.errorcodes}"/></g:if> 
 			</g:each>
+			</g:each>
+			</g:each>
+			</g:each>
+			
 			<br>
 			<div style="background-color: #f7f7f7;padding:5px;">
 				<div style="display: table;border: 1px solid #c5c5c5;">
@@ -107,8 +115,6 @@
 				</g:if>
 			</div>
 
-
-			</g:each>
 		</g:each>
 		
 		</div>

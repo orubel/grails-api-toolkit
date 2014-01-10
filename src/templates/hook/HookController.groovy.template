@@ -1,4 +1,4 @@
-package ${packageName}
+package net.nosegrind.apitoolkit
 
 import org.springframework.security.access.annotation.Secured
 import org.springframework.dao.DataIntegrityViolationException

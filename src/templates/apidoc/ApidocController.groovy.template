@@ -1,11 +1,13 @@
 package net.nosegrind.apitoolkit
 
 import org.springframework.security.access.annotation.Secured
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 
 @Secured('permitAll')
 class ApidocController {
 
 	def apiToolkitService
+	def apiCacheService
 	
 	def index(){
 		redirect(action:'show')
@@ -13,9 +15,16 @@ class ApidocController {
 	
 	@Secured('permitAll')
 	def show(){
-		Map doc = apiToolkitService.generateApiDoc()
-		
-		[apiList:doc as HashMap]
+		Map docs = [:]
+		grailsApplication.controllerClasses.each { DefaultGrailsControllerClass controllerClass ->
+			String controllername = controllerClass.logicalPropertyName
+			def cache = apiCacheService.getApiCache(controllername)
+			if(cache){
+				docs["${controllername}"]=cache
+			}
+		}
+		[apiList:docs]
 	}
 
 }
+
