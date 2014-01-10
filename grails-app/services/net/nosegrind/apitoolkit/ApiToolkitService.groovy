@@ -454,4 +454,45 @@ class ApiToolkitService{
 		}
 		return doc
 	}
+	
+	String isChainedApi(List path){
+			def pathSize = path.size()
+			path.eachWithIndex(){ val,i ->
+				if(val){
+					def temp = val.split('=')
+					String pathKey = temp[0]
+					String pathVal = (temp.size()>1)?temp[1]:null
+
+					if(pathKey=='null'){
+						pathVal = pathVal.split('/').join('.')
+						if(map."${pathVal}"){
+							if(map."${pathVal}" in java.util.Collection){
+								map = map."${pathVal}"
+							}else{
+								if(map."${pathVal}".toString().isInteger()){
+									if(i==(pathSize-1)){
+										def newMap = ["${pathVal}":map."${pathVal}"]
+										map = newMap
+									}else{
+										params.id = map."${pathVal}"
+									}
+								}else{
+									def newMap = ["${pathVal}":map."${pathVal}"]
+									map = newMap
+								}
+							}
+						}else{
+							String msg = "Path '${pathKey}' was unable to be parsed"
+							//return apiToolkitService._404_NOTFOUND(msg)
+							return ''
+						}
+					}else{
+						def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
+						uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+						//redirect(uri: "${uri}")
+						return uri
+					}
+				}
+			}
+	}
 }
