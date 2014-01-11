@@ -8,6 +8,6 @@ class ApitoolkitGrailsPlugin {
     def documentation = "https://github.com/orubel/grails-api-toolkit"
 
     def license = "Apache"
-    def issueManagement = [system: 'GitHub', url: 'https://github.com/orubel/grails-api-toolkitissues']
+    def issueManagement = [system: 'GitHub', url: 'https://github.com/orubel/grails-api-toolkit/issues']
     def scm = [url: 'https://github.com/orubel/grails-api-toolkit']
 }
