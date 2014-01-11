@@ -35,6 +35,7 @@ class ApiToolkitFilters {
 							// DOES METHOD MATCH?
 							def method = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 							
+							// DOES api.methods.contains(request.method)
 							if(!apiToolkitService.isRequestMatch(method)){
 								return false
 							}
@@ -57,7 +58,9 @@ class ApiToolkitFilters {
 				if(cache){
 					if(cache["${params.action}"]){
 						def formats = ['text/html','application/json','application/xml']
-						def type = (request.getHeader('Content-Type'))?formats.findAll{ request.getHeader('Content-Type')?.startsWith(it) }[0].toString():null
+						def tempType = request.getHeader('Content-Type').split(';')
+						def encoding = (tempType.size()>1)?tempType[1]:null
+						def type = (request.getHeader('Content-Type'))?formats.findAll{ tempType[0]?.startsWith(it) }[0].toString():null
 						if(type){
 						
 							if (apiToolkitService.isApiCall()) {
@@ -67,7 +70,7 @@ class ApiToolkitFilters {
 								def path = (queryString)?queryString.split('&'):[]
 								
 								response.setHeader('Allow', methods.join(', '))
-								response.setHeader('Content-Type', "${type};charset=UTF-8")
+								//response.setHeader('Content-Type', "${type};charset=UTF-8")
 								response.setHeader('Authorization', cache["${params.action}"]['apiRoles'].join(', '))
 								
 								newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
@@ -101,11 +104,14 @@ class ApiToolkitFilters {
 															return apiToolkitService._404_NOTFOUND(msg)
 														}
 													}
-				
-													render(text:map as XML, contentType: "${type}")
+													if(encoding){
+														println("encoding = "+encoding)
+														render(text:map as XML, contentType: "${type}",encoding:"${encoding}")
+													}else{
+														render(text:map as XML, contentType: "${type}")
+													}
 													break
 												case 'text/html':
-													def map = newModel
 													if(path){
 														String uri = isChainedApi(path)
 														if(uri){
@@ -118,7 +124,6 @@ class ApiToolkitFilters {
 													break
 												case 'application/json':
 												default:
-													def map = newModel
 													if(path){
 														String uri = isChainedApi(path)
 														if(uri){
@@ -128,8 +133,11 @@ class ApiToolkitFilters {
 															return apiToolkitService._404_NOTFOUND(msg)
 														}
 													}
-														
-													render(text:map as JSON, contentType: "${type}")
+													if(encoding){
+														render(text:map as JSON, contentType: "${type}",encoding:"${encoding}")
+													}else{
+														render(text:map as JSON, contentType: "${type}")
+													}
 													break
 												}
 											}
