@@ -131,41 +131,6 @@ class ApiToolkitFilters {
 														
 													render(text:map as JSON, contentType: "${type}")
 													break
-
-														/*
-														def linkRels = []
-														map.each(){ k,v ->
-															def api = action.getAnnotation(Api)
-															def returns = api.returns()
-															returns.each{ p ->
-																String paramType = p.paramType().toString()
-																String name = p.name().toString()
-																String belongsTo = p.belongsTo().toString()
-																Integer paramKey = apiToolkitService.getKey(paramType)
-																if(paramKey>0 && name==k){
-																	def temp = []
-																	if(paramKey==1){
-																		temp = apiToolkitService.createLinkRelationships(paramType,name,params.controller)
-																	}else{
-																		temp = apiToolkitService.createLinkRelationships(paramType,name,belongsTo)
-																		def uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${format}/${belongsTo[0].toLowerCase()+belongsTo.substring(1)}/show/${v}"
-																		map[k] = "<a href=${uri}>${v}<a>"
-																	}
-																	linkRels.add(temp)
-																}
-															}
-														}
-														map['linkRelationships']=linkRels
-														
-														def json = map as JSON
-														json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
-														json = json.toString().replaceAll("}"," </div>}<br>")
-														json = json.toString().replaceAll(",",",<br>")
-														
-														render(text:json)
-														//return false
-														break
-														*/
 												}
 											}
 											break
@@ -223,23 +188,11 @@ class ApiToolkitFilters {
 											switch(type){
 												case 'application/xml':
 													String uri = isChainedApi(path)
-													if(uri){
-														redirect(uri: "${uri}")
-													}else{
-														String msg = "Path was unable to be parsed"
-														return apiToolkitService._404_NOTFOUND(msg)
-													}
 													return response.status
 													break
 												case 'application/json':
 												default:
 													String uri = isChainedApi(path)
-													if(uri){
-														redirect(uri: "${uri}")
-													}else{
-														String msg = "Path was unable to be parsed"
-														return apiToolkitService._404_NOTFOUND(msg)
-													}
 													return response.status
 													break;
 											}
