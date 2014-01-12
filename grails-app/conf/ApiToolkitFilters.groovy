@@ -196,11 +196,23 @@ class ApiToolkitFilters {
 											switch(type){
 												case 'application/xml':
 													String uri = isChainedApi(path)
+													if(uri){
+														redirect(uri: "${uri}")
+													}else{
+														String msg = "Path was unable to be parsed"
+														return apiToolkitService._404_NOTFOUND(msg)
+													}
 													return response.status
 													break
 												case 'application/json':
 												default:
 													String uri = isChainedApi(path)
+													if(uri){
+														redirect(uri: "${uri}")
+													}else{
+														String msg = "Path was unable to be parsed"
+														return apiToolkitService._404_NOTFOUND(msg)
+													}
 													return response.status
 													break;
 											}
