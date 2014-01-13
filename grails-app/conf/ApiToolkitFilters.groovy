@@ -6,6 +6,7 @@ import grails.converters.JSON
 import grails.converters.XML
 import net.nosegrind.apitoolkit.Api;
 import net.nosegrind.apitoolkit.Method;
+import net.nosegrind.apitoolkit.ApiErrors;
 
 class ApiToolkitFilters {
 	
@@ -20,6 +21,7 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiName}_${apiVersion}/**"){
 			before = { Map model ->
+				println("filter (before)")
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -39,7 +41,12 @@ class ApiToolkitFilters {
 								// check for apichain
 								def queryString = request.'javax.servlet.forward.query_string'
 								List path = (queryString)?queryString.split('&'):[]
-								if(!apiToolkitService.checkChainedMethodPosition(uri,path as List)){
+								if(path){
+									int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
+									if(pos==3){
+										return false
+									}
+								}else{
 									return false
 								}
 							}
@@ -51,36 +58,60 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-
+				println("filter (after)")
+				ApiErrors error = new ApiErrors()
 				params.action = (params.action)?params.action:'index'
-				
+				def uri = [params.controller,params.action,params.id]
+				def queryString = request.'javax.servlet.forward.query_string'
+				List path = (queryString)?queryString.split('&'):[]
+
+
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 				
-				def newModel
-
+				def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
+				if(path){
+					println("has path")
+					int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
+					if(pos==3){
+						return false
+					}else{
+						String uri2 = isChainedApi(newModel,path)
+						println("uri2 = ${uri2}")
+						if(uri2){
+							redirect(uri: "${uri2}")
+						}else{
+							String msg = "Path was unable to be parsed"
+							return error._404_NOT_FOUND(msg)
+						}
+					}
+				}else{
+					return false
+				}
+				
 				if(cache){
+					println("has cache")
 					if(cache["${params.action}"]){
+						println("cache action")
 						def formats = ['text/html','application/json','application/xml']
 						def tempType = request.getHeader('Content-Type').split(';')
 						def encoding = (tempType.size()>1)?tempType[1]:null
 						def type = (request.getHeader('Content-Type'))?formats.findAll{ tempType[0]?.startsWith(it) }[0].toString():null
 						if(type){
-						
+							println("type exists")
 							if (apiToolkitService.isApiCall()) {
+								println("is api call")
 								def methods = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 								def method = (methods.contains(request.method))?request.method:null
-								def queryString = request.'javax.servlet.forward.query_string'
-								def path = (queryString)?queryString.split('&'):[]
 								
 								response.setHeader('Allow', methods.join(', '))
 								//response.setHeader('Content-Type', "${type};charset=UTF-8")
 								response.setHeader('Authorization', cache["${params.action}"]['apiRoles'].join(', '))
 								
-								newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
+								
 
 								if(method){
-									switch(method) {
+									switch(request.method) {
 										case 'HEAD':
 											break;
 										case 'OPTIONS':
@@ -95,48 +126,21 @@ class ApiToolkitFilters {
 											}
 											break;
 										case 'GET':
+											println("get method")
 											def map = newModel
 											if(!newModel.isEmpty()){
 											switch(type){
 												case 'application/xml':
-													if(path){
-														String uri = isChainedApi(path)
-														if(uri){
-															redirect(uri: "${uri}")
-														}else{
-															String msg = "Path was unable to be parsed"
-															return apiToolkitService._404_NOTFOUND(msg)
-														}
-													}
 													if(encoding){
-														println("encoding = "+encoding)
 														render(text:map as XML, contentType: "${type}",encoding:"${encoding}")
 													}else{
 														render(text:map as XML, contentType: "${type}")
 													}
 													break
 												case 'text/html':
-													if(path){
-														String uri = isChainedApi(path)
-														if(uri){
-															redirect(uri: "${uri}")
-														}else{
-															String msg = "Path was unable to be parsed"
-															return apiToolkitService._404_NOTFOUND(msg)
-														}
-													}
 													break
 												case 'application/json':
 												default:
-													if(path){
-														String uri = isChainedApi(path)
-														if(uri){
-															redirect(uri: "${uri}")
-														}else{
-															String msg = "Path was unable to be parsed"
-															return apiToolkitService._404_NOTFOUND(msg)
-														}
-													}
 													if(encoding){
 														render(text:map as JSON, contentType: "${type}",encoding:"${encoding}")
 													}else{
@@ -149,24 +153,10 @@ class ApiToolkitFilters {
 										case 'POST':
 											switch(type){
 												case 'application/xml':
-													String uri = isChainedApi(path)
-													if(uri){
-														redirect(uri: "${uri}")
-													}else{
-														String msg = "Path was unable to be parsed"
-														return apiToolkitService._404_NOTFOUND(msg)
-													}
 													return response.status
 													break
 												case 'application/json':
 												default:
-													String uri = isChainedApi(path)
-													if(uri){
-														redirect(uri: "${uri}")
-													}else{
-														String msg = "Path was unable to be parsed"
-														return apiToolkitService._404_NOTFOUND(msg)
-													}
 													return response.status
 													break
 											}
@@ -175,26 +165,10 @@ class ApiToolkitFilters {
 											println("method = put")
 											switch(type){
 												case 'application/xml':
-													String uri = isChainedApi(path)
-													if(uri){
-														redirect(uri: "${uri}")
-													}else{
-														String msg = "Path was unable to be parsed"
-														return apiToolkitService._404_NOTFOUND(msg)
-													}
 													return response.status
 													break
 												case 'application/json':
 												default:
-													println("type = json")
-													String uri = isChainedApi(path)
-													println("uri = ${uri}")
-													if(uri){
-														redirect(uri: "${uri}")
-													}else{
-														String msg = "Path was unable to be parsed"
-														return apiToolkitService._404_NOTFOUND(msg)
-													}
 													return response.status
 													break
 											}
@@ -203,24 +177,10 @@ class ApiToolkitFilters {
 											//delete can also stand for 'deactivate' depending on how someone implements. api chaining can be useful as a result
 											switch(type){
 												case 'application/xml':
-													String uri = isChainedApi(path)
-													if(uri){
-														redirect(uri: "${uri}")
-													}else{
-														String msg = "Path was unable to be parsed"
-														return apiToolkitService._404_NOTFOUND(msg)
-													}
 													return response.status
 													break
 												case 'application/json':
 												default:
-													String uri = isChainedApi(path)
-													if(uri){
-														redirect(uri: "${uri}")
-													}else{
-														String msg = "Path was unable to be parsed"
-														return apiToolkitService._404_NOTFOUND(msg)
-													}
 													return response.status
 													break;
 											}
@@ -240,6 +200,7 @@ class ApiToolkitFilters {
 		}
 
 	}
+
 
 }
 

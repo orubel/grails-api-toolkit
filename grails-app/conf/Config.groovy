@@ -19,7 +19,7 @@ grails.cache.config = {
 	}
  }
 
-apitoolkit.apichain.limit=5
+apitoolkit.apichain.limit=3
 
 apitoolkit.defaultData.PKEY = '26'
 apitoolkit.defaultData.FKEY = '32'
@@ -33,8 +33,8 @@ apitoolkit.defaultData.EMAIL = 'example@yoursite.com'
 apitoolkit.defaultData.URL = 'http://www.yoursite.com'
 
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
-	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/JSON/**" : ['permitAll'],
-	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/XML/**" : ['permitAll'],
-	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/HTML/**" : ['permitAll'],
+	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
+	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
+	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
 	"/hook/**" : ['permitAll'] 
 ]

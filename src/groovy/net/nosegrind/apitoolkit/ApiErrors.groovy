@@ -29,7 +29,7 @@ class ApiErrors{
 	 */
 	def send(){
 		def response = getResponse()
-		response.setStatus(this.error.code,this.error.description)
+		response.setStatus(this.error.code.toInteger(),this.error.description)
 		return
 	}
 	
