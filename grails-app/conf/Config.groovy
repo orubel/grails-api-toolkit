@@ -1,5 +1,6 @@
 
 log4j = {
+	debug 'org.springframework.security'
     error 'org.codehaus.groovy.grails',
           'org.springframework',
           'org.hibernate',

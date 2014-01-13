@@ -20,7 +20,6 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiName}_${apiVersion}/**"){
 			before = { Map model ->
-				
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -34,10 +33,15 @@ class ApiToolkitFilters {
 							}
 							// DOES METHOD MATCH?
 							def method = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-							
+							def uri = [params.controller,params.action,params.id]
 							// DOES api.methods.contains(request.method)
 							if(!apiToolkitService.isRequestMatch(method)){
-								return false
+								// check for apichain
+								def queryString = request.'javax.servlet.forward.query_string'
+								List path = (queryString)?queryString.split('&'):[]
+								if(!apiToolkitService.checkChainedMethodPosition(uri,path as List)){
+									return false
+								}
 							}
 						}else{
 							return false
@@ -168,6 +172,7 @@ class ApiToolkitFilters {
 											}
 											break
 										case 'PUT':
+											println("method = put")
 											switch(type){
 												case 'application/xml':
 													String uri = isChainedApi(path)
@@ -181,7 +186,9 @@ class ApiToolkitFilters {
 													break
 												case 'application/json':
 												default:
+													println("type = json")
 													String uri = isChainedApi(path)
+													println("uri = ${uri}")
 													if(uri){
 														redirect(uri: "${uri}")
 													}else{
@@ -193,6 +200,7 @@ class ApiToolkitFilters {
 											}
 											break
 										case 'DELETE':
+											//delete can also stand for 'deactivate' depending on how someone implements. api chaining can be useful as a result
 											switch(type){
 												case 'application/xml':
 													String uri = isChainedApi(path)

@@ -431,25 +431,25 @@ class ApiToolkitService{
 		if(cont){
 			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
 			for (Method method : controller.getClazz().getDeclaredMethod(actionname)){
-					if(method.isAnnotationPresent(Api)) {
-						String path = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/JSON/${controllername}/${actionname}"
-						doc[("${actionname}".toString())] = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
-						
-						if(cont["${actionname}"]["receives"]){
-							doc[("${actionname}".toString())]["receives"] = processDocValues(cont[("${actionname}".toString())]["receives"] as HashSet)
-						}
-						
-						if(cont["${actionname}"]["returns"]){
-							doc[("${actionname}".toString())]["returns"] = processDocValues(cont[("${actionname}".toString())]["returns"] as HashSet)
-							doc[("${actionname}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${actionname}".toString())]["returns"])
-						}
-						
-						if(cont["${actionname}"]["errorcodes"]){
-							doc[("${actionname}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
-						}
-					}else{
-						// ERROR: method at '${controllername}/${actionname}' does not have API annotation
+				if(method.isAnnotationPresent(Api)) {
+					String path = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/JSON/${controllername}/${actionname}"
+					doc[("${actionname}".toString())] = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
+					
+					if(cont["${actionname}"]["receives"]){
+						doc[("${actionname}".toString())]["receives"] = processDocValues(cont[("${actionname}".toString())]["receives"] as HashSet)
 					}
+					
+					if(cont["${actionname}"]["returns"]){
+						doc[("${actionname}".toString())]["returns"] = processDocValues(cont[("${actionname}".toString())]["returns"] as HashSet)
+						doc[("${actionname}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${actionname}".toString())]["returns"])
+					}
+					
+					if(cont["${actionname}"]["errorcodes"]){
+						doc[("${actionname}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
+					}
+				}else{
+					// ERROR: method at '${controllername}/${actionname}' does not have API annotation
+				}
 			}
 		}
 		return doc
@@ -457,6 +457,7 @@ class ApiToolkitService{
 	
 	String isChainedApi(List path){
 			def pathSize = path.size()
+			checkChainedMethodPosition(path)
 			path.eachWithIndex(){ val,i ->
 				if(val){
 					def temp = val.split('=')
@@ -494,5 +495,78 @@ class ApiToolkitService{
 					}
 				}
 			}
+	}
+	
+	/*
+	 * Returns chainType
+	 * 0 = null (no match)
+	 * 1 = prechain
+	 * 2 = postchain
+	 * 3 = illegal combination
+	 */
+	boolean checkChainedMethodPosition(List uri,List path){
+		boolean preMatch = false
+		boolean postMatch = false
+		boolean pathMatch = false
+		Long pathSize = path.size()
+		
+		// prematch check
+		def request = getRequest()
+		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
+		def cache = apiCacheService.getApiCache(uri[0])
+		def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+		if(method=='GET'){
+			if(!methods.contains(method)){ preMatch = true }
+		}else{
+			if(methods.contains(method)){ preMatch = true }
+		}
+		
+		// postmatch check
+		if(pathSize>1){
+			println(path)
+			def last=path.last()?.split('=')
+			if(last[0] && last[0]!='null'){
+				List last2 = last[0].split('/')
+				cache = apiCacheService.getApiCache(last2[0])
+				methods = cache["${last2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+				if(method=='GET'){
+					if(!methods.contains(method)){ postMatch = true }
+				}else{
+					if(methods.contains(method)){ postMatch = true }
+				}
+			}
+		}
+		
+		// path check
+		int start = 1
+		int end = pathSize-2
+		if(start<end){
+			path(start..end).each{ val ->
+				if(val){
+					List temp=val.split('=')
+					List temp2 = temp[0].split('/')
+					cache = apiCacheService.getApiCache(temp2[0])
+					methods = cache["${temp2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+					if(method=='GET'){
+						if(!methods.contains(method)){ pathMatch = true }
+					}else{
+						if(methods.contains(method)){ pathMatch = true }
+					}
+				}
+			}
+		}
+		
+		if(pathMatch || (preMatch && postMatch)){
+			return false
+		}else{
+			if(preMatch){
+				return true
+			}else if(postMatch){
+				return true
+			}
+		}
+
+		return false
+
 	}
 }
