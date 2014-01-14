@@ -23,6 +23,8 @@ import net.nosegrind.apitoolkit.ErrorCodeDescriptor
 import net.nosegrind.apitoolkit.ApiErrors
 import net.nosegrind.apitoolkit.ApiParams
 
+import org.springframework.ui.ModelMap
+
 class ApiToolkitService{
 
 	def grailsApplication
@@ -123,7 +125,7 @@ class ApiToolkitService{
 		}
 	}
 	
-	Map formatModel(Object data){
+	Map formatModel(Map data){
 		def newMap = [:]
 		if(data && (!data?.response && !data?.metaClass && !data?.params)){
 			data.each{ key, value ->
@@ -154,6 +156,36 @@ class ApiToolkitService{
 		return newMap
 	}
 
+	Map convertModel(Map map){
+		println map.getClass()
+		println("################ convertmap")
+		println(map.size())
+		
+		Map newMap
+		if(grailsApplication.isDomainClass(map.getClass())){
+			println("formatting domain object")
+			newMap = formatDomainObject(map)
+		}else{
+			// if is 'respond' if map has one key/val and second is domain
+			// convert responder and return
+			def val
+			
+			map.each{ k,v -> 
+				if(grailsApplication.isDomainClass(v.getClass())){
+					val = v
+				}
+			}
+			if(map.size()==1 && val){
+				println("####### converting responder...")
+				newMap = newMap = formatDomainObject(val)
+			}else{
+				newMap = formatModel(map)
+			}
+		}
+		return newMap
+	}
+
+	
 	Map formatDomainObject(Object data){
 		def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
 		def newMap = [:]
@@ -453,6 +485,52 @@ class ApiToolkitService{
 			}
 		}
 		return doc
+	}
+	
+	String isChainedApi(Map map,List path){
+		ApiErrors error = new ApiErrors()
+		def pathSize = path.size()
+		String uri
+		 for (val in path) {
+			if(val){
+				println("isChainedApi > ${val}")
+				def temp = val.split('=')
+				String pathKey = temp[0]
+				String pathVal = (temp.size()>1)?temp[1]:null
+
+				if(pathKey=='null'){
+					println("path = null")
+					println(map)
+					pathVal = pathVal.split('/').join('.')
+					if(map."${pathVal}"){
+						println("map has val")
+						if(map."${pathVal}" in java.util.Collection){
+							map = map."${pathVal}"
+						}else{
+							if(map."${pathVal}".toString().isInteger()){
+								if(i==(pathSize-1)){
+									def newMap = ["${pathVal}":map."${pathVal}"]
+									map = newMap
+								}else{
+									params.id = map."${pathVal}"
+								}
+							}else{
+								def newMap = ["${pathVal}":map."${pathVal}"]
+								map = newMap
+							}
+						}
+					}else{
+						return ''
+					}
+				}else{
+					uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
+					uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+					println("isChainedApi = ${uri}")
+					return uri
+					break
+				}
+			}
+		}
 	}
 	
 	

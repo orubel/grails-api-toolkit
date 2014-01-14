@@ -59,33 +59,40 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 				println("filter (after)")
+				println(model)
+				println(model.size())
+				//def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
+				def newModel = apiToolkitService.convertModel(model)
+				println(newModel)
+				
 				ApiErrors error = new ApiErrors()
 				params.action = (params.action)?params.action:'index'
 				def uri = [params.controller,params.action,params.id]
 				def queryString = request.'javax.servlet.forward.query_string'
 				List path = (queryString)?queryString.split('&'):[]
 
-
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
-				
-				def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
+				//def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 				if(path){
 					println("has path")
 					int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 					if(pos==3){
 						return false
 					}else{
-						String uri2 = isChainedApi(newModel,path)
+						String uri2 = apiToolkitService.isChainedApi(newModel,path as List)
 						println("uri2 = ${uri2}")
 						if(uri2){
-							redirect(uri: "${uri2}")
+							if(uri2!='null'){
+								println("have uri2")
+								redirect(uri: "${uri2}")
+							}
 						}else{
-							String msg = "Path was unable to be parsed"
-							return error._404_NOT_FOUND(msg)
+							String msg = "Path was unable to be parsed. Check your path variables and try again."
+							redirect(uri: "/")
+							error._404_NOT_FOUND(msg).send()
 						}
 					}
-				}else{
 					return false
 				}
 				
@@ -94,9 +101,17 @@ class ApiToolkitFilters {
 					if(cache["${params.action}"]){
 						println("cache action")
 						def formats = ['text/html','application/json','application/xml']
-						def tempType = request.getHeader('Content-Type').split(';')
-						def encoding = (tempType.size()>1)?tempType[1]:null
-						def type = (request.getHeader('Content-Type'))?formats.findAll{ tempType[0]?.startsWith(it) }[0].toString():null
+						def tempType = request.getHeader('Content-Type')?.split(';')
+						def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+						def encoding = null
+						if(tempType){
+							encoding = (tempType.size()>1)?tempType[1]:null
+						}
+						
+						// make 'application/json' default
+						println(type)
+						type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
+
 						if(type){
 							println("type exists")
 							if (apiToolkitService.isApiCall()) {
@@ -108,8 +123,6 @@ class ApiToolkitFilters {
 								//response.setHeader('Content-Type', "${type};charset=UTF-8")
 								response.setHeader('Authorization', cache["${params.action}"]['apiRoles'].join(', '))
 								
-								
-
 								if(method){
 									switch(request.method) {
 										case 'HEAD':
