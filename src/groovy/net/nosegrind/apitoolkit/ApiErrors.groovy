@@ -48,6 +48,17 @@ class ApiErrors{
 		return this
 	}
 
+	// 302 found
+	def _304_FOUND(String msg){
+		this.error = new ErrorCodeDescriptor(code:302,description:"[Found] : ${msg}")
+		return this
+	}
+	
+	def _304_FOUND(){
+		this.error = new ErrorCodeDescriptor(code:302,description:"[Found]")
+		return this
+	}
+	
 	// 304 not modified
 	def _304_NOT_MODIFIED(String msg){
 		this.error = new ErrorCodeDescriptor(code:304,description:"[Not Modified] : ${msg}")
