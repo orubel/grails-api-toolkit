@@ -21,6 +21,7 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiName}_${apiVersion}/**"){
 			before = { Map model ->
+				println("############## filter (before)")
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -103,10 +104,7 @@ class ApiToolkitFilters {
 						def formats = ['text/html','application/json','application/xml']
 						def tempType = request.getHeader('Content-Type')?.split(';')
 						def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
-						def encoding = null
-						if(tempType){
-							encoding = (tempType.size()>1)?tempType[1]:null
-						}
+						def encoding = (tempType)?(encoding = (tempType.size()>1)?tempType[1]:null):null
 						
 						// make 'application/json' default
 						type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
@@ -117,7 +115,6 @@ class ApiToolkitFilters {
 								def method = (methods.contains(request.method))?request.method:null
 								
 								response.setHeader('Allow', methods.join(', '))
-								//response.setHeader('Content-Type', "${type};charset=UTF-8")
 								response.setHeader('Authorization', cache["${params.action}"]['apiRoles'].join(', '))
 								
 								if(method){
@@ -182,7 +179,6 @@ class ApiToolkitFilters {
 											}
 											break
 										case 'DELETE':
-											//delete can also stand for 'deactivate' depending on how someone implements. api chaining can be useful as a result
 											switch(type){
 												case 'application/xml':
 													//return response.status
