@@ -193,7 +193,6 @@ class ApiToolkitService{
 				}
 			}
 		}
-		println("formatDomainObject = ${newMap}")
 		return newMap
 	}
 	
@@ -488,23 +487,16 @@ class ApiToolkitService{
 		def pathSize = path.size()
 		String uri
 
-		//long i = 0
 		for (int i = 0; i < path.size(); i++) {
-
-		 //for (val in path) {
 			if(path[i]){
 				def val=path[i]
-				println("isChainedApi > ${val}")
 				def temp = val.split('=')
 				String pathKey = temp[0]
 				String pathVal = (temp.size()>1)?temp[1]:null
 
 				if(pathKey=='null'){
-					println("path = null")
-					println(map)
 					pathVal = pathVal.split('/').join('.')
 					if(map."${pathVal}"){
-						println("map has val")
 						if(map."${pathVal}" in java.util.Collection){
 							map = map."${pathVal}"
 						}else{
@@ -526,16 +518,17 @@ class ApiToolkitService{
 				}else{
 					
 						uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
-						uri += (params.id)?"${pathKey}/${params.id}?null=${pathVal}":"${pathKey}"
+						uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
+						if(pathVal){
+							uri += "?null=${pathVal}"
+						}
 						if(path[(i+1)]){
 							uri += "&${path[(i+1)]}"
 						}
-						println("isChainedApi = ${uri}")
 						return uri
 						break
 				}
 			}
-			//i++
 		}
 	}
 	

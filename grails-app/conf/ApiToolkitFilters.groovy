@@ -21,11 +21,11 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiName}_${apiVersion}/**"){
 			before = { Map model ->
-				println("filter (before)")
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
+				
 				if(cache){
 					if(cache["${params.action}"]){
 						if (apiToolkitService.isApiCall()) {
@@ -58,12 +58,8 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				println("filter (after)")
-				println(model)
-
 				//def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 				def newModel = apiToolkitService.convertModel(model)
-				println("afterfilter > newModel = ${newModel}")
 				
 				ApiErrors error = new ApiErrors()
 				params.action = (params.action)?params.action:'index'
@@ -75,22 +71,17 @@ class ApiToolkitFilters {
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 				//def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 				if(path){
-					println("has path : ${path}")
 					int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 					if(pos==3){
 						return false
 					}else{
 						String uri2 = apiToolkitService.isChainedApi(newModel,path as List)
 
-						println("uri2 = ${uri2}")
 						if(uri2){
 							if(uri2!='null'){
-								println("have uri2")
 								if(uri2 =~ "&"){
-									println("sending to url...${grailsApplication.config.grails.serverURL}${uri2}")
 									redirect(url: "${grailsApplication.config.grails.serverURL}${uri2}")
 									return false
-									println("${grailsApplication.config.apitoolkit.protocol}://${grailsApplication.config.grails.serverURL}${uri2}")
 								}else{
 									redirect(uri: "${uri2}")
 									return false
@@ -108,9 +99,7 @@ class ApiToolkitFilters {
 				}
 				
 				if(cache){
-					println("has cache")
 					if(cache["${params.action}"]){
-						println("cache action")
 						def formats = ['text/html','application/json','application/xml']
 						def tempType = request.getHeader('Content-Type')?.split(';')
 						def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
@@ -120,13 +109,10 @@ class ApiToolkitFilters {
 						}
 						
 						// make 'application/json' default
-						println(type)
 						type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
 
 						if(type){
-							println("type exists")
 							if (apiToolkitService.isApiCall()) {
-								println("is api call")
 								def methods = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 								def method = (methods.contains(request.method))?request.method:null
 								
@@ -150,7 +136,6 @@ class ApiToolkitFilters {
 											}
 											break;
 										case 'GET':
-											println("get method")
 											def map = newModel
 											if(!newModel.isEmpty()){
 											switch(type){
@@ -177,23 +162,22 @@ class ApiToolkitFilters {
 										case 'POST':
 											switch(type){
 												case 'application/xml':
-													return response.status
+													//return response.status
 													break
 												case 'application/json':
 												default:
-													return response.status
+													//return response.status
 													break
 											}
 											break
 										case 'PUT':
-											println("method = put")
 											switch(type){
 												case 'application/xml':
-													return response.status
+													//return response.status
 													break
 												case 'application/json':
 												default:
-													return response.status
+													//return response.status
 													break
 											}
 											break
@@ -201,11 +185,11 @@ class ApiToolkitFilters {
 											//delete can also stand for 'deactivate' depending on how someone implements. api chaining can be useful as a result
 											switch(type){
 												case 'application/xml':
-													return response.status
+													//return response.status
 													break
 												case 'application/json':
 												default:
-													return response.status
+													//return response.status
 													break;
 											}
 											break
