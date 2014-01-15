@@ -60,10 +60,10 @@ class ApiToolkitFilters {
 			after = { Map model ->
 				println("filter (after)")
 				println(model)
-				println(model.size())
+
 				//def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 				def newModel = apiToolkitService.convertModel(model)
-				println(newModel)
+				println("afterfilter > newModel = ${newModel}")
 				
 				ApiErrors error = new ApiErrors()
 				params.action = (params.action)?params.action:'index'
@@ -75,22 +75,33 @@ class ApiToolkitFilters {
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 				//def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 				if(path){
-					println("has path")
+					println("has path : ${path}")
 					int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 					if(pos==3){
 						return false
 					}else{
 						String uri2 = apiToolkitService.isChainedApi(newModel,path as List)
+
 						println("uri2 = ${uri2}")
 						if(uri2){
 							if(uri2!='null'){
 								println("have uri2")
-								redirect(uri: "${uri2}")
+								if(uri2 =~ "&"){
+									println("sending to url...${grailsApplication.config.grails.serverURL}${uri2}")
+									redirect(url: "${grailsApplication.config.grails.serverURL}${uri2}")
+									return false
+									println("${grailsApplication.config.apitoolkit.protocol}://${grailsApplication.config.grails.serverURL}${uri2}")
+								}else{
+									redirect(uri: "${uri2}")
+									return false
+								}
+								return false
 							}
 						}else{
 							String msg = "Path was unable to be parsed. Check your path variables and try again."
 							redirect(uri: "/")
 							error._404_NOT_FOUND(msg).send()
+							return false
 						}
 					}
 					return false

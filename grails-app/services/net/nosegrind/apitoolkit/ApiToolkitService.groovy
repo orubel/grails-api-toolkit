@@ -157,29 +157,22 @@ class ApiToolkitService{
 	}
 
 	Map convertModel(Map map){
-		println map.getClass()
-		println("################ convertmap")
-		println(map.size())
-		
 		Map newMap
 		if(grailsApplication.isDomainClass(map.getClass())){
-			println("formatting domain object")
 			newMap = formatDomainObject(map)
 		}else{
-			// if is 'respond' if map has one key/val and second is domain
+			// it is 'respond' if map has one key/val and second is domain
 			// convert responder and return
-			def val
-			
-			map.each{ k,v -> 
+			for (v in map.values()) {
 				if(grailsApplication.isDomainClass(v.getClass())){
-					val = v
+					if(map.size()==1){
+						return formatDomainObject(v)
+						break
+					}else{
+						return formatModel(map)
+						break
+					}
 				}
-			}
-			if(map.size()==1 && val){
-				println("####### converting responder...")
-				newMap = newMap = formatDomainObject(val)
-			}else{
-				newMap = formatModel(map)
 			}
 		}
 		return newMap
@@ -189,6 +182,8 @@ class ApiToolkitService{
 	Map formatDomainObject(Object data){
 		def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
 		def newMap = [:]
+		
+		newMap['id'] = data.id
 		data.getProperties().each { key, val ->
 			if (!nonPersistent.contains(key)) {
 				if(grailsApplication.isDomainClass(val.getClass())){
@@ -198,6 +193,7 @@ class ApiToolkitService{
 				}
 			}
 		}
+		println("formatDomainObject = ${newMap}")
 		return newMap
 	}
 	
@@ -491,8 +487,13 @@ class ApiToolkitService{
 		ApiErrors error = new ApiErrors()
 		def pathSize = path.size()
 		String uri
-		 for (val in path) {
-			if(val){
+
+		//long i = 0
+		for (int i = 0; i < path.size(); i++) {
+
+		 //for (val in path) {
+			if(path[i]){
+				def val=path[i]
 				println("isChainedApi > ${val}")
 				def temp = val.split('=')
 				String pathKey = temp[0]
@@ -523,13 +524,18 @@ class ApiToolkitService{
 						return ''
 					}
 				}else{
-					uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
-					uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
-					println("isChainedApi = ${uri}")
-					return uri
-					break
+					
+						uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
+						uri += (params.id)?"${pathKey}/${params.id}?null=${pathVal}":"${pathKey}"
+						if(path[(i+1)]){
+							uri += "&${path[(i+1)]}"
+						}
+						println("isChainedApi = ${uri}")
+						return uri
+						break
 				}
 			}
+			//i++
 		}
 	}
 	
