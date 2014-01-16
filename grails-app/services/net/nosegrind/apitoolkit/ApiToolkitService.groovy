@@ -554,7 +554,9 @@ class ApiToolkitService{
 		def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
 		def newMap = [:]
 		
-		newMap['id'] = data.id
+		if(data?.id){
+			newMap['id'] = data.id
+		}
 		data.getProperties().each { key, val ->
 			if (!nonPersistent.contains(key)) {
 				if(grailsApplication.isDomainClass(val.getClass())){

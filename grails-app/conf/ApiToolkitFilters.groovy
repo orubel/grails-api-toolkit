@@ -58,9 +58,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				println(model)
 				def newModel = apiToolkitService.convertModel(model)
-				println(newModel)
 				ApiStatuses error = new ApiStatuses()
 				params.action = (params.action)?params.action:'index'
 				def uri = [params.controller,params.action,params.id]
@@ -71,14 +69,11 @@ class ApiToolkitFilters {
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 
 				if(path){
-					println(path)
 					int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 					if(pos==3){
-						println("bad position")
 						return false
 					}else{
 						String uri2 = apiToolkitService.isChainedApi(newModel,path as List)
-println("uri2 = ${uri2}")
 						if(uri2){
 							if(uri2!='null'){
 								if(uri2 =~ "&"){
