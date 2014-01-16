@@ -58,7 +58,9 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
+				println(model)
 				def newModel = apiToolkitService.convertModel(model)
+				println(newModel)
 				ApiStatuses error = new ApiStatuses()
 				params.action = (params.action)?params.action:'index'
 				def uri = [params.controller,params.action,params.id]

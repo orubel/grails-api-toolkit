@@ -17,11 +17,6 @@ import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 import net.nosegrind.apitoolkit.*
-import net.nosegrind.apitoolkit.ApiDescriptor
-import net.nosegrind.apitoolkit.ParamsDescriptor
-import net.nosegrind.apitoolkit.ErrorCodeDescriptor
-import net.nosegrind.apitoolkit.ApiStatuses
-import net.nosegrind.apitoolkit.ApiParams
 
 import org.springframework.ui.ModelMap
 
@@ -114,86 +109,6 @@ class ApiToolkitService{
 		}
 	}
 	
-	Map formatModel(Map data){
-		def newMap = [:]
-		if(data && (!data?.response && !data?.metaClass && !data?.params)){
-			data.each{ key, value ->
-				if(value){
-					if(grailsApplication.isDomainClass(value.getClass())){
-						newMap[key]=value
-					}else{
-						if(value in java.util.Collection){
-							if(value?.size()>0){
-								if(grailsApplication.isDomainClass(value[0].getClass())){
-									value.each{ k,v ->
-										newMap[key][v.id]= v
-									}
-								}else{
-									value = formatModel(value)
-									newMap[key]= value
-								}
-							}
-						}else{
-							newMap[key]=value.toString()
-						}
-					}
-				}else{
-					//println("no value")
-				}
-			}
-		}
-		return newMap
-	}
-
-	Map convertModel(Map map){
-		Map newMap = [:]
-		if(map && (!map?.response && !map?.metaClass && !map?.params)){
-			if(grailsApplication.isDomainClass(map.getClass())){
-				newMap = formatDomainObject(map)
-			}else{
-				// it is 'respond' if map has one key/val and second is domain
-				// convert responder and return
-				map.each{ key, val ->
-					if(val){
-						if(grailsApplication.isDomainClass(val.getClass())){
-							newMap[key]=formatDomainObject(val)
-						}else{
-							if(val in java.util.ArrayList || val in java.util.List){
-								newMap[key] = val
-							}else if(val in java.util.Map){
-								newMap[key]= val
-							}else{
-								newMap[key]=val.toString()
-							}
-						}
-					}else if(key && !val){
-						if(grailsApplication.isDomainClass(key.getClass())){
-							newMap[key.key] = formatDomainObject(key)
-						}
-					}
-				}
-			}
-		}
-		return newMap
-	}
-
-	
-	Map formatDomainObject(Object data){
-		def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
-		def newMap = [:]
-		
-		newMap['id'] = data.id
-		data.getProperties().each { key, val ->
-			if (!nonPersistent.contains(key)) {
-				if(grailsApplication.isDomainClass(val.getClass())){
-					newMap.put key, val.id
-				}else{
-					newMap.put key, val
-				}
-			}
-		}
-		return newMap
-	}
 	
 	boolean validateUrl(String url){
 		String[] schemes = ["http","https"]
@@ -484,7 +399,7 @@ class ApiToolkitService{
 	String isChainedApi(Map map,List path){
 		def pathSize = path.size()
 		String uri
-		String mapKey = map.entrySet().toList().first().key
+
 		for (int i = 0; i < path.size(); i++) {
 			if(path[i]){
 				def val=path[i]
@@ -494,27 +409,6 @@ class ApiToolkitService{
 
 				if(pathKey=='null'){
 					pathVal = pathVal.split('/').join('.')
-					if(map[mapKey] in java.util.Collection){
-						if(map[mapKey]["${pathVal}"]){
-							if(map[mapKey]["${pathVal}"] in java.util.Collection){
-								map = map[mapKey]["${pathVal}"]
-							}else{
-								if(map[mapKey]["${pathVal}"].toString().isInteger()){
-									if(i==(pathSize-1)){
-										def newMap = ["${pathVal}":map[mapKey]["${pathVal}"]]
-										map = newMap
-									}else{
-										params.id = map[mapKey]["${pathVal}"]
-									}
-								}else{
-									def newMap = ["${pathVal}":map[mapKey]["${pathVal}"]]
-									map = newMap
-								}
-							}
-						}else{
-							return ''
-						}
-					}else{
 						if(map["${pathVal}"]){
 							if(map["${pathVal}"] in java.util.Collection){
 								map = map["${pathVal}"]
@@ -534,7 +428,6 @@ class ApiToolkitService{
 						}else{
 							return ''
 						}
-					}
 				}else{
 						uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 						uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
@@ -624,5 +517,50 @@ class ApiToolkitService{
 		// if so, not restful; does not comply
 		return 3
 
+	}
+	
+	Map convertModel(Map map){
+		Map newMap = [:]
+		String k = map.entrySet().toList().first().key
+		
+		if(map && (!map?.response && !map?.metaClass && !map?.params)){
+			if(grailsApplication.isDomainClass(map[k].getClass())){
+				newMap = formatDomainObject(map[k])
+			}else{
+				map[k].each{ key, val ->
+					if(val){
+						if(grailsApplication.isDomainClass(val.getClass())){
+							newMap[key]=formatDomainObject(val)
+						}else{
+							if(val in java.util.ArrayList || val in java.util.List){
+								newMap[key] = val
+							}else if(val in java.util.Map){
+								newMap[key]= val
+							}else{
+								newMap[key]=val.toString()
+							}
+						}
+					}
+				}
+			}
+		}
+		return newMap
+	}
+
+	Map formatDomainObject(Object data){
+		def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
+		def newMap = [:]
+		
+		newMap['id'] = data.id
+		data.getProperties().each { key, val ->
+			if (!nonPersistent.contains(key)) {
+				if(grailsApplication.isDomainClass(val.getClass())){
+					newMap.put key, val.id
+				}else{
+					newMap.put key, val
+				}
+			}
+		}
+		return newMap
 	}
 }
