@@ -461,7 +461,8 @@ class ApiToolkitService{
 		def request = getRequest()
 		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
 		def cache = apiCacheService.getApiCache(uri[0])
-		def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+		//def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+		def methods = cache["${uri[1]}"]['method'][1..-2].split(',')*.trim() as List
 		if(method=='GET'){
 			if(!methods.contains(method)){ preMatch = true }
 		}else{
