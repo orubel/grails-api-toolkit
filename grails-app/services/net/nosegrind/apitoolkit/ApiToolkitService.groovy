@@ -157,24 +157,60 @@ class ApiToolkitService{
 	}
 
 	Map convertModel(Map map){
-		Map newMap
-		if(grailsApplication.isDomainClass(map.getClass())){
-			newMap = formatDomainObject(map)
-		}else{
-			// it is 'respond' if map has one key/val and second is domain
-			// convert responder and return
-			for (v in map.values()) {
-				if(grailsApplication.isDomainClass(v.getClass())){
-					if(map.size()==1){
-						return formatDomainObject(v)
-						break
-					}else{
-						return formatModel(map)
-						break
+		Map newMap = [:]
+		println("convertmodel > ${map}")
+		if(map && (!map?.response && !map?.metaClass && !map?.params)){
+			println("convertmodel > ${map}")
+			if(grailsApplication.isDomainClass(map.getClass())){
+				println("is domain")
+				newMap = formatDomainObject(map)
+			}else{
+				// it is 'respond' if map has one key/val and second is domain
+				// convert responder and return
+				map.each{ key, val ->
+					println(key)
+					println(val)
+					if(val){
+						println("hasval")
+						if(grailsApplication.isDomainClass(val.getClass())){
+							println("val isdomain")
+							newMap[key]=formatDomainObject(val)
+						}else{
+							println("...else...")
+							if(val in java.util.ArrayList || val in java.util.List){
+								newMap[key] = val
+							}else if(val in java.util.Map){
+								val = formatModel(val)
+								newMap[key]= val
+							}else{
+								println(key)
+								println(val)
+								println(val.getClass())
+								newMap[key]=val.toString()
+							}
+						}
+					}else if(key && !val){
+						if(grailsApplication.isDomainClass(key.getClass())){
+							newMap[key.key] = formatDomainObject(key)
+						}
 					}
 				}
+				
+				/*
+					if(grailsApplication.isDomainClass(val.getClass())){
+						if(map.size()==1){
+							return formatDomainObject(v)
+							break
+						}else{
+							return formatModel(map)
+							break
+						}
+					}
+				}
+				*/
 			}
 		}
+		println(newMap)
 		return newMap
 	}
 
@@ -486,7 +522,6 @@ class ApiToolkitService{
 		ApiErrors error = new ApiErrors()
 		def pathSize = path.size()
 		String uri
-
 		for (int i = 0; i < path.size(); i++) {
 			if(path[i]){
 				def val=path[i]

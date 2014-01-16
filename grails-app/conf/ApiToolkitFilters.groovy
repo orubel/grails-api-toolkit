@@ -21,7 +21,6 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiName}_${apiVersion}/**"){
 			before = { Map model ->
-				println("############## filter (before)")
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -59,9 +58,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				//def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
 				def newModel = apiToolkitService.convertModel(model)
-				
 				ApiErrors error = new ApiErrors()
 				params.action = (params.action)?params.action:'index'
 				def uri = [params.controller,params.action,params.id]
@@ -70,7 +67,7 @@ class ApiToolkitFilters {
 
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
-				//def newModel = (grailsApplication.isDomainClass(model.getClass()))?model:apiToolkitService.formatModel(model)
+
 				if(path){
 					int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 					if(pos==3){
@@ -104,7 +101,10 @@ class ApiToolkitFilters {
 						def formats = ['text/html','application/json','application/xml']
 						def tempType = request.getHeader('Content-Type')?.split(';')
 						def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
-						def encoding = (tempType)?(encoding = (tempType.size()>1)?tempType[1]:null):null
+						def encoding = null
+						if(tempType){
+							encoding = (tempType.size()>1)?tempType[1]:null
+						}
 						
 						// make 'application/json' default
 						type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
