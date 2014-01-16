@@ -474,7 +474,8 @@ class ApiToolkitService{
 			if(last[0] && last[0]!='null'){
 				List last2 = last[0].split('/')
 				cache = apiCacheService.getApiCache(last2[0])
-				methods = cache["${last2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+				//methods = cache["${last2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+				methods = cache["${last2[1]}"]['method'][1..-2].split(',')*.trim() as List
 				if(method=='GET'){
 					if(!methods.contains(method)){ postMatch = true }
 				}else{
@@ -492,7 +493,8 @@ class ApiToolkitService{
 					List temp=val.split('=')
 					List temp2 = temp[0].split('/')
 					cache = apiCacheService.getApiCache(temp2[0])
-					methods = cache["${temp2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+					//methods = cache["${temp2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+					methods = cache["${temp2[1]}"]['method'][1..-2].split(',')*.trim() as List
 					if(method=='GET'){
 						if(!methods.contains(method)){ pathMatch = true }
 					}else{
