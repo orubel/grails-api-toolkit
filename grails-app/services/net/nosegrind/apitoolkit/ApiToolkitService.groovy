@@ -20,7 +20,7 @@ import net.nosegrind.apitoolkit.*
 import net.nosegrind.apitoolkit.ApiDescriptor
 import net.nosegrind.apitoolkit.ParamsDescriptor
 import net.nosegrind.apitoolkit.ErrorCodeDescriptor
-import net.nosegrind.apitoolkit.ApiErrors
+import net.nosegrind.apitoolkit.ApiStatuses
 import net.nosegrind.apitoolkit.ApiParams
 
 import org.springframework.ui.ModelMap
@@ -30,7 +30,8 @@ class ApiToolkitService{
 	def grailsApplication
 	def springSecurityService
 	def apiCacheService
-
+	ApiStatuses error = new ApiStatuses()
+	
 	static transactional = false
 
 	Long responseCode
@@ -113,18 +114,6 @@ class ApiToolkitService{
 		}
 	}
 	
-	/*
-	 * Which annos declare this KEY as being 'received'.
-	 * Check first in own controller then walk all others
-	 */
-	String createLinkRelationships(String paramType,String name,String controllername){
-		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-		//def methods = controller?.getClazz().metaClass.methods*.name.sort().unique()
-		for (Method method : controller.getClazz().getMethods()){
-				if(method.isAnnotationPresent(Api)) {}
-		}
-	}
-	
 	Map formatModel(Map data){
 		def newMap = [:]
 		if(data && (!data?.response && !data?.metaClass && !data?.params)){
@@ -158,34 +147,22 @@ class ApiToolkitService{
 
 	Map convertModel(Map map){
 		Map newMap = [:]
-		println("convertmodel > ${map}")
 		if(map && (!map?.response && !map?.metaClass && !map?.params)){
-			println("convertmodel > ${map}")
 			if(grailsApplication.isDomainClass(map.getClass())){
-				println("is domain")
 				newMap = formatDomainObject(map)
 			}else{
 				// it is 'respond' if map has one key/val and second is domain
 				// convert responder and return
 				map.each{ key, val ->
-					println(key)
-					println(val)
 					if(val){
-						println("hasval")
 						if(grailsApplication.isDomainClass(val.getClass())){
-							println("val isdomain")
 							newMap[key]=formatDomainObject(val)
 						}else{
-							println("...else...")
 							if(val in java.util.ArrayList || val in java.util.List){
 								newMap[key] = val
 							}else if(val in java.util.Map){
-								val = formatModel(val)
 								newMap[key]= val
 							}else{
-								println(key)
-								println(val)
-								println(val.getClass())
 								newMap[key]=val.toString()
 							}
 						}
@@ -195,22 +172,8 @@ class ApiToolkitService{
 						}
 					}
 				}
-				
-				/*
-					if(grailsApplication.isDomainClass(val.getClass())){
-						if(map.size()==1){
-							return formatDomainObject(v)
-							break
-						}else{
-							return formatModel(map)
-							break
-						}
-					}
-				}
-				*/
 			}
 		}
-		println(newMap)
 		return newMap
 	}
 
@@ -519,9 +482,9 @@ class ApiToolkitService{
 	}
 	
 	String isChainedApi(Map map,List path){
-		ApiErrors error = new ApiErrors()
 		def pathSize = path.size()
 		String uri
+		String mapKey = map.entrySet().toList().first().key
 		for (int i = 0; i < path.size(); i++) {
 			if(path[i]){
 				def val=path[i]
@@ -531,27 +494,48 @@ class ApiToolkitService{
 
 				if(pathKey=='null'){
 					pathVal = pathVal.split('/').join('.')
-					if(map."${pathVal}"){
-						if(map."${pathVal}" in java.util.Collection){
-							map = map."${pathVal}"
-						}else{
-							if(map."${pathVal}".toString().isInteger()){
-								if(i==(pathSize-1)){
-									def newMap = ["${pathVal}":map."${pathVal}"]
-									map = newMap
-								}else{
-									params.id = map."${pathVal}"
-								}
+					if(map[mapKey] in java.util.Collection){
+						if(map[mapKey]["${pathVal}"]){
+							if(map[mapKey]["${pathVal}"] in java.util.Collection){
+								map = map[mapKey]["${pathVal}"]
 							}else{
-								def newMap = ["${pathVal}":map."${pathVal}"]
-								map = newMap
+								if(map[mapKey]["${pathVal}"].toString().isInteger()){
+									if(i==(pathSize-1)){
+										def newMap = ["${pathVal}":map[mapKey]["${pathVal}"]]
+										map = newMap
+									}else{
+										params.id = map[mapKey]["${pathVal}"]
+									}
+								}else{
+									def newMap = ["${pathVal}":map[mapKey]["${pathVal}"]]
+									map = newMap
+								}
 							}
+						}else{
+							return ''
 						}
 					}else{
-						return ''
+						if(map["${pathVal}"]){
+							if(map["${pathVal}"] in java.util.Collection){
+								map = map["${pathVal}"]
+							}else{
+								if(map["${pathVal}"].toString().isInteger()){
+									if(i==(pathSize-1)){
+										def newMap = ["${pathVal}":map["${pathVal}"]]
+										map = newMap
+									}else{
+										params.id = map["${pathVal}"]
+									}
+								}else{
+									def newMap = ["${pathVal}":map["${pathVal}"]]
+									map = newMap
+								}
+							}
+						}else{
+							return ''
+						}
 					}
 				}else{
-					
 						uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 						uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
 						if(pathVal){
@@ -570,7 +554,6 @@ class ApiToolkitService{
 	
 	/*
 	 * Returns chainType
-	 * 0 = null (no match)
 	 * 1 = prechain
 	 * 2 = postchain
 	 * 3 = illegal combination
@@ -635,8 +618,10 @@ class ApiToolkitService{
 				return 2
 			}
 		}
+		
 		// path but but no position
 		// could be trying to make api call and url encode data
+		// if so, not restful; does not comply
 		return 3
 
 	}

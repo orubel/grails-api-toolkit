@@ -6,7 +6,7 @@ import grails.converters.JSON
 import grails.converters.XML
 import net.nosegrind.apitoolkit.Api;
 import net.nosegrind.apitoolkit.Method;
-import net.nosegrind.apitoolkit.ApiErrors;
+import net.nosegrind.apitoolkit.ApiStatuses;
 
 class ApiToolkitFilters {
 	
@@ -59,7 +59,7 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 				def newModel = apiToolkitService.convertModel(model)
-				ApiErrors error = new ApiErrors()
+				ApiStatuses error = new ApiStatuses()
 				params.action = (params.action)?params.action:'index'
 				def uri = [params.controller,params.action,params.id]
 				def queryString = request.'javax.servlet.forward.query_string'
@@ -69,19 +69,21 @@ class ApiToolkitFilters {
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 
 				if(path){
+					println(path)
 					int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 					if(pos==3){
+						println("bad position")
 						return false
 					}else{
 						String uri2 = apiToolkitService.isChainedApi(newModel,path as List)
-
+println("uri2 = ${uri2}")
 						if(uri2){
 							if(uri2!='null'){
 								if(uri2 =~ "&"){
-									redirect(url: "${grailsApplication.config.grails.serverURL}${uri2}")
+									redirect(url: "${uri2}",absolute:true)
 									return false
 								}else{
-									redirect(uri: "${uri2}")
+									redirect(uri: "${uri2}",absolute:true)
 									return false
 								}
 								return false
@@ -90,7 +92,7 @@ class ApiToolkitFilters {
 							String msg = "Path was unable to be parsed. Check your path variables and try again."
 							redirect(uri: "/")
 							error._404_NOT_FOUND(msg).send()
-							return false
+							return
 						}
 					}
 					return false
@@ -204,9 +206,4 @@ class ApiToolkitFilters {
 		}
 
 	}
-
-
 }
-
-
-		

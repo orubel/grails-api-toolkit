@@ -8,7 +8,7 @@ import net.nosegrind.apitoolkit.Api
 import net.nosegrind.apitoolkit.ApiDescriptor
 import net.nosegrind.apitoolkit.ParamsDescriptor
 import net.nosegrind.apitoolkit.ErrorCodeDescriptor
-import net.nosegrind.apitoolkit.ApiErrors
+import net.nosegrind.apitoolkit.ApiStatuses
 import net.nosegrind.apitoolkit.ApiParams
 
 import net.nosegrind.apitoolkit.ApiCacheService
@@ -31,7 +31,7 @@ class ApiBootStrap {
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
 					
-					ApiErrors error = new ApiErrors()
+					ApiStatuses error = new ApiStatuses()
 					ApiParams param = new ApiParams()
 
 					ApiDescriptor service = new ApiDescriptor(
@@ -50,7 +50,6 @@ class ApiBootStrap {
 			}
 			if(methods){
 				apiCacheService.setApiCache("${controllername}".toString(),methods)
-				println(apiCacheService.getApiCache("${controllername}"))
 			}
 		}
 		
