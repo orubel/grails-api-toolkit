@@ -58,6 +58,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
+				println("################ after filter ")
 				def newModel = apiToolkitService.convertModel(model)
 				ApiStatuses error = new ApiStatuses()
 				params.action = (params.action)?params.action:'index'
@@ -69,12 +70,22 @@ class ApiToolkitFilters {
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 
 				if(path){
+					println("has path")
 					int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 					if(pos==3){
 						return false
 					}else{
-						String uri2 = apiToolkitService.isChainedApi(newModel,path as List)
+						def uri2 = apiToolkitService.isChainedApi(newModel,path as List)
 						if(uri2){
+							println(uri2)
+							Map query = apiToolkitService.getForwardQueryString(params.controller, params.action, path)
+							println(query)
+							
+							//response.toQueryString(mapToQueryString(new HashMap(query)))
+							forward(controller:"${uri2['controller']}",action:"${uri2['action']}", id:uri2['id'],params:query)
+							
+							return
+							/*
 							if(uri2!='null'){
 								if(uri2 =~ "&"){
 									redirect(url: "${uri2}",absolute:true)
@@ -85,6 +96,7 @@ class ApiToolkitFilters {
 								}
 								return false
 							}
+							*/
 						}else{
 							String msg = "Path was unable to be parsed. Check your path variables and try again."
 							redirect(uri: "/")

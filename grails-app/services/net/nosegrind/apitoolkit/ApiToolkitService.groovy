@@ -396,10 +396,10 @@ class ApiToolkitService{
 		return doc
 	}
 	
-	String isChainedApi(Map map,List path){
+	Map isChainedApi(Map map,List path){
 		def pathSize = path.size()
-		String uri
-
+		//String uri = ''
+		Map uri = [:]
 		for (int i = 0; i < path.size(); i++) {
 			if(path[i]){
 				def val=path[i]
@@ -426,24 +426,62 @@ class ApiToolkitService{
 								}
 							}
 						}else{
-							return ''
+							return uri
 						}
 				}else{
-						uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
-						uri += (params.id)?"${pathKey}/${params.id}":"${pathKey}"
-						if(pathVal){
-							uri += "?null=${pathVal}"
+					uri['id'] = map["${pathVal}"]
+					uri['controller'] = pathKey.split('/')[0]
+					uri['action'] = pathKey.split('/')[1]
+					if(i+1<=path.size()-1){
+						uri['params'] = [:]
+						path[i+1..path.size()-1].each{
+							 def tmp = it.split('=')
+							 uri['params'][tmp[0]] = tmp[1]
 						}
-						if(path[(i+1)]){
-							uri += "&${path[(i+1)]}"
-						}
-						return uri
-						break
+					}
+					return uri
+					break
 				}
 			}
 		}
 	}
 	
+	java.util.Map getForwardQueryString(String controller, String action, List path){
+		String currentKey = "${controller}/${action}"
+		Long nullKey
+		java.util.Map<String, String> map = [:]
+		for (int i = 0; i < path.size(); i++) {
+			if(path[i]){
+				def val=path[i]
+				def temp = val.split('=')
+				String pathKey = temp[0]
+				if(pathKey=='null'){ nullKey=i }
+				println("${currentKey} ==${pathKey}")
+				if(currentKey==pathKey){
+					if(i+1<=path.size()-1){
+						path[i+1..path.size()-1].each{
+							def tmp = it.split('=')
+							map.put(tmp[0],tmp[1])
+						}
+						return map
+						break
+					}
+
+				}
+			}
+		}
+		
+		if(!map){
+			if(nullKey+1<=path.size()-1){
+				path[nullKey+1..path.size()-1].each{
+					def tmp = it.split('=')
+					map.put(tmp[0],tmp[1])
+				}
+				println(map[0].getClass())
+				return map
+			}
+		}
+	}
 	
 	/*
 	 * Returns chainType
