@@ -1,4 +1,7 @@
 
+String apiName = grailsApplication.config.apitoolkit.apiName
+String apiVersion = grailsApplication.metadata['app.version']
+
 log4j = {
 	debug 'org.springframework.security'
     error 'org.codehaus.groovy.grails',
@@ -32,6 +35,10 @@ apitoolkit.defaultData.BIGDECIMAL = '123567828794.87'
 apitoolkit.defaultData.LONG = '18926'
 apitoolkit.defaultData.EMAIL = 'example@yoursite.com'
 apitoolkit.defaultData.URL = 'http://www.yoursite.com'
+
+grails.plugin.springsecurity.filterChain.chainMap = [
+	"/${apiName}_${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
+]
 
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/**" : ['permitAll'],

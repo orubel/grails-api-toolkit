@@ -562,12 +562,19 @@ class ApiToolkitService{
 	
 	Map convertModel(Map map){
 		Map newMap = [:]
+		println(map.entrySet())
+		println(map.getClass())
+		//if(grailsApplication.isDomainClass(map.getClass())
 		String k = map.entrySet().toList().first().key
 		
 		if(map && (!map?.response && !map?.metaClass && !map?.params)){
 			if(grailsApplication.isDomainClass(map[k].getClass())){
 				newMap = formatDomainObject(map[k])
 			}else{
+				println("convertModel : "+map[k])
+				println(map)
+				println(k)
+				
 				map[k].each{ key, val ->
 					if(val){
 						if(grailsApplication.isDomainClass(val.getClass())){
