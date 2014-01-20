@@ -113,12 +113,6 @@ class ApiToolkitFilters {
 								i++
 							}
 
-							//GrailsWebRequest newRequest = 
-							//servletContext.forward(newRequest,response)
-							
-							//forward(controller:"${apiName}_${apiVersion}/${uri2['controller']}",action:"${uri2['action']}/${uri2['id']}?${query}")
-							//redirect(uri:"/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${query}")
-							//request.getRequestDispatcher("/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${query}").forward(request, response)
 							response.sendRedirect("/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${query}")
 							return
 
