@@ -101,10 +101,6 @@ class ApiToolkitFilters {
 					}else{
 						def uri2 = apiToolkitService.isChainedApi(newModel,path as List)
 						if(uri2){
-							println(uri2)
-							//Map query = apiToolkitService.getForwardQueryString(params.controller, params.action, path)
-							//println("query = "+query)
-							
 							String query = ''
 							def i = 1
 							uri2['params'].each{ k,v ->
@@ -234,62 +230,5 @@ class ApiToolkitFilters {
 		}
 
 	}
-	
-	private boolean doFilterInternal(def request, def response,def uri){
-		def servletContext = org.codehaus.groovy.grails.web.context.ServletContextHolder.getServletContext()
-		GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST)
-		UrlMappingsHolder holder = WebUtils.lookupUrlMappings(servletContext)
-		GrailsApplication application = WebUtils.lookupApplication(servletContext)
 
-
-		UrlMappingInfo[] urlInfos = holder.matchAll(uri)
-		WrappedResponseHolder.setWrappedResponse(response)
-
-		boolean dispatched = false;
-		try {
-			for (int i = 0; i < urlInfos.length; i++) {
-				UrlMappingInfo info = urlInfos[i]
-					if(info!=null) {
-						info.configure(webRequest)
-						String action = info.getActionName() == null ? "" : info.getActionName()
-						final String viewName = info.getViewName()
-						if (viewName == null) {
-							String controllerName = info.getControllerName()
-							int begin= uri.indexOf("?");
-							if(begin>-1){
-								uri = uri.substring(0,begin)
-							}
-							GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, uri)
-							if(controller == null)  {
-								continue;
-							}
-						}
-
-						dispatched = true;
-
-
-
-						if(viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-							String includedUrl = IncludeWebUtils.includeRequestForUrlMappingInfo(request, response, info,webRequest)
-							if(log.isDebugEnabled()) {
-								log.debug("Matched URI ["+uri+"] to URL mapping ["+info+"], included ["+includedUrl+"] with response ["+response.getClass()+"]")
-							}
-						}
-						else {
-							if(!groovyPagesTemplateEngine) throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
-							def engine = groovyPagesTemplateEngine
-							def r = engine.getResourceForUri(viewName + ".gsp")
-							def t = engine.createTemplate( r )
-							t.make().writeTo(response.getWriter())
-						}
-						break;
-					}
-			}
-		}
-		finally {
-			WrappedResponseHolder.setWrappedResponse(null);
-		}
-
-		return dispatched
-	}
 }

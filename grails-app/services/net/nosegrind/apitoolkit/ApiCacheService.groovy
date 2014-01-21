@@ -52,6 +52,7 @@ class ApiCacheService{
 		try{
 			def cache = getApiCache(controllername)
 			if(cache["${methodname}"]){
+				cache["${methodname}"]['name'] = apidoc.name
 				cache["${methodname}"]['description'] = apidoc.description
 				cache["${methodname}"]['receives'] = apidoc.receives
 				cache["${methodname}"]['returns'] = apidoc.returns

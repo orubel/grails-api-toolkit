@@ -266,17 +266,6 @@ class ApiToolkitService{
 		}
 	}
 	
-	/*
-	 * called on detection of apicall; default headers for api calls
-	 * regardless of success or failure
-	 */
-	/*
-	void setApiHeaders(String contentType, ArrayList methods){
-		def response = getResponse()
-		response.setHeader('Authorization', cache["${params.action}"]['apiRoles'].join(', '))
-	}
-	*/
-	
 	boolean isRequestRedirected(){
 		if(request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null){
 			return true
@@ -446,6 +435,7 @@ class ApiToolkitService{
 		}
 	}
 	
+	/*
 	java.util.Map getForwardQueryString(String controller, String action, List path){
 		String currentKey = "${controller}/${action}"
 		Long nullKey
@@ -482,6 +472,8 @@ class ApiToolkitService{
 			}
 		}
 	}
+	*/
+	
 	
 	/*
 	 * Returns chainType
