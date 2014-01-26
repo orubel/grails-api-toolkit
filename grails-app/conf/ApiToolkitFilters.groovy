@@ -9,7 +9,9 @@ import net.nosegrind.apitoolkit.Method;
 import net.nosegrind.apitoolkit.ApiStatuses;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
-
+import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingInfo
+import org.codehaus.groovy.grails.web.mapping.UrlMappingData
+import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -45,6 +47,7 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiName}_${apiVersion}/**"){
 			before = { Map model ->
+				println("################ after filter ")
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -57,7 +60,7 @@ class ApiToolkitFilters {
 							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['apiRoles'])){
 								return false
 							}
-							// DOES METHOD MATCH?
+							// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
 							def method = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 							def uri = [params.controller,params.action,params.id]
 							// DOES api.methods.contains(request.method)
@@ -82,148 +85,190 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				println("################ after filter ")
+				if(!model){
+					return false
+				}
 				def newModel = apiToolkitService.convertModel(model)
+				println("newModel = "+newModel)
 				ApiStatuses error = new ApiStatuses()
 				params.action = (params.action)?params.action:'index'
 				def uri = [params.controller,params.action,params.id]
 				def queryString = request.'javax.servlet.forward.query_string'
-				List path = (queryString)?queryString.split('&'):[]
+				List oldPath = (queryString)?queryString.split('&'):[]
+				
+				List path = []
 
+				if(params.newPath){
+					println(params.newPath)
+					path = params.newPath.split('&')
+				}else{
+					path = (queryString)?queryString.split('&'):[]
+				}
+				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 
+				// api chaining
 				if(path){
-					println("has path")
-					int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
+					int pos = apiToolkitService.checkChainedMethodPosition(uri,oldPath as List)
 					if(pos==3){
+						println("bad position")
 						return false
 					}else{
-						def uri2 = apiToolkitService.isChainedApi(newModel,path as List)
-						if(uri2){
-							String query = ''
-							def i = 1
-							uri2['params'].each{ k,v ->
-								query += "${k}=${v}"
-								query += (i<uri2['params'].size())?"&":''
-								i++
+						def uri2 = [:]
+						def inc = 0
+						println(path.last().split('=')[0].split('/')[0])
+						while(uri2['controller']!=path.last().split('=')[0].split('/')[0]){
+							uri2 = apiToolkitService.isChainedApi(newModel,path as List)
+							if(uri2){
+								Map query = [:]
+								inc.each{ i ->
+									path.remove(i)
+								}
+								println(path)
+								
+								for(int b = inc+1;b<path.size();b++){
+									def temp = path[b].split('=')
+									query[temp[0]] = temp[1]
+								}
+
+								def newQuery = []
+								query.each{ k,v ->
+									newQuery.add("${k}=${v}")
+								}
+								
+								def tempType = request.getHeader('Content-Type')?.split(';')
+								def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+								def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+								def method = (methods.contains(request.method))?request.method:null
+
+								switch(type){
+									case 'application/xml':
+										//request.getRequestDispatcher("/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${newQuery.join('&')}").forward(request, response);
+										forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+										break
+									case 'application/json':
+									default:
+										//request.getRequestDispatcher("/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${newQuery.join('&')}").forward(request, response)
+										forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+										break
+								}
+								
+								break
+							}else{
+								String msg = "Path was unable to be parsed. Check your path variables and try again."
+								redirect(uri: "/")
+								error._404_NOT_FOUND(msg).send()
+								return
 							}
-
-							response.sendRedirect("/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${query}")
-							return
-
-						}else{
-							String msg = "Path was unable to be parsed. Check your path variables and try again."
-							redirect(uri: "/")
-							error._404_NOT_FOUND(msg).send()
-							return
+							inc++
 						}
 					}
 					return false
-				}
-				
-				if(cache){
-					if(cache["${params.action}"]){
-						def formats = ['text/html','application/json','application/xml']
-						def tempType = request.getHeader('Content-Type')?.split(';')
-						def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
-						def encoding = null
-						if(tempType){
-							encoding = (tempType.size()>1)?tempType[1]:null
-						}
-						
-						// make 'application/json' default
-						type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
-
-						if(type){
-							if (apiToolkitService.isApiCall()) {
-								def methods = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-								def method = (methods.contains(request.method))?request.method:null
-								
-								response.setHeader('Allow', methods.join(', '))
-								response.setHeader('Authorization', cache["${params.action}"]['apiRoles'].join(', '))
-								
-								if(method){
-									switch(request.method) {
-										case 'HEAD':
-											break;
-										case 'OPTIONS':
-											switch(type){
-												case 'application/xml':
-													render(text:cache["${params.action}"]['doc'] as XML, contentType: "${type}")
-													break
-												case 'application/json':
-												default:
-													render(text:cache["${params.action}"]['doc'] as JSON, contentType: "${type}")
-													break
-											}
-											break;
-										case 'GET':
-											def map = newModel
-											if(!newModel.isEmpty()){
-											switch(type){
-												case 'application/xml':
-													if(encoding){
-														render(text:map as XML, contentType: "${type}",encoding:"${encoding}")
-													}else{
-														render(text:map as XML, contentType: "${type}")
-													}
-													break
-												case 'text/html':
-													break
-												case 'application/json':
-												default:
-													if(encoding){
-														render(text:map as JSON, contentType: "${type}",encoding:"${encoding}")
-													}else{
-														render(text:map as JSON, contentType: "${type}")
-													}
-													break
+				}else{
+					if(cache){
+						if(cache["${params.action}"]){
+							def formats = ['text/html','application/json','application/xml']
+							def tempType = request.getHeader('Content-Type')?.split(';')
+							def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+							def encoding = null
+							if(tempType){
+								encoding = (tempType.size()>1)?tempType[1]:null
+							}
+							
+							// make 'application/json' default
+							type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
+	
+							if(type){
+								if (apiToolkitService.isApiCall()) {
+									def methods = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+									def method = (methods.contains(request.method))?request.method:null
+									
+									response.setHeader('Allow', methods.join(', '))
+									response.setHeader('Authorization', cache["${params.action}"]['apiRoles'].join(', '))
+									
+									if(method){
+										switch(request.method) {
+											case 'HEAD':
+												break;
+											case 'OPTIONS':
+												switch(type){
+													case 'application/xml':
+														render(text:cache["${params.action}"]['doc'] as XML, contentType: "${type}")
+														break
+													case 'application/json':
+													default:
+														render(text:cache["${params.action}"]['doc'] as JSON, contentType: "${type}")
+														break
 												}
-											}
-											break
-										case 'POST':
-											switch(type){
-												case 'application/xml':
-													//return response.status
-													break
-												case 'application/json':
-												default:
-													//return response.status
-													break
-											}
-											break
-										case 'PUT':
-											switch(type){
-												case 'application/xml':
-													//return response.status
-													break
-												case 'application/json':
-												default:
-													//return response.status
-													break
-											}
-											break
-										case 'DELETE':
-											switch(type){
-												case 'application/xml':
-													//return response.status
-													break
-												case 'application/json':
-												default:
-													//return response.status
-													break;
-											}
-											break
+												break;
+											case 'GET':
+												def map = newModel
+												if(!newModel.isEmpty()){
+												switch(type){
+													case 'application/xml':
+														if(encoding){
+															render(text:map as XML, contentType: "${type}",encoding:"${encoding}")
+														}else{
+															render(text:map as XML, contentType: "${type}")
+														}
+														break
+													case 'text/html':
+														break
+													case 'application/json':
+													default:
+														if(encoding){
+															render(text:map as JSON, contentType: "${type}",encoding:"${encoding}")
+														}else{
+															render(text:map as JSON, contentType: "${type}")
+														}
+														break
+													}
+												}
+												break
+											case 'POST':
+												switch(type){
+													case 'application/xml':
+														//return response.status
+														break
+													case 'application/json':
+													default:
+														//return response.status
+														break
+												}
+												break
+											case 'PUT':
+												switch(type){
+													case 'application/xml':
+														//return response.status
+														break
+													case 'application/json':
+													default:
+														//return response.status
+														break
+												}
+												break
+											case 'DELETE':
+												switch(type){
+													case 'application/xml':
+														//return response.status
+														break
+													case 'application/json':
+													default:
+														//return response.status
+														break;
+												}
+												break
+										}
 									}
-								}
-								return false
-							}	
+									return false
+								}	
+							}else{
+								//render(view:params.action,model:model)
+							}
 						}else{
 							//render(view:params.action,model:model)
 						}
-					}else{
-						//render(view:params.action,model:model)
 					}
 				}
 			}

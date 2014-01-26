@@ -418,7 +418,9 @@ class ApiToolkitService{
 							return uri
 						}
 				}else{
-					uri['id'] = map["${pathVal}"]
+					if(!uri['id']){
+						uri['id'] = map["${pathVal}"]
+					}
 					uri['controller'] = pathKey.split('/')[0]
 					uri['action'] = pathKey.split('/')[1]
 					if(i+1<=path.size()-1){
@@ -554,8 +556,8 @@ class ApiToolkitService{
 	
 	Map convertModel(Map map){
 		Map newMap = [:]
-		println(map.entrySet())
-		println(map.getClass())
+		println("mapentryset = "+map.entrySet())
+		println("mapclass = "+map.getClass())
 		//if(grailsApplication.isDomainClass(map.getClass())
 		String k = map.entrySet().toList().first().key
 		
@@ -564,8 +566,8 @@ class ApiToolkitService{
 				newMap = formatDomainObject(map[k])
 			}else{
 				println("convertModel : "+map[k])
-				println(map)
-				println(k)
+				println("map = "+map)
+				println("key = "+k)
 				
 				map[k].each{ key, val ->
 					if(val){
