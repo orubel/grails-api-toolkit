@@ -81,7 +81,6 @@ class ApiToolkitService{
 		api += (params.id)?"/${params.id}":""
 		api += (queryString)?"?${queryString}":""
 
-		//println("${uri}==${api}")
 		return uri==api
 	}
 
@@ -437,44 +436,6 @@ class ApiToolkitService{
 		}
 	}
 	
-	/*
-	java.util.Map getForwardQueryString(String controller, String action, List path){
-		String currentKey = "${controller}/${action}"
-		Long nullKey
-		java.util.Map<String, String> map = [:]
-		for (int i = 0; i < path.size(); i++) {
-			if(path[i]){
-				def val=path[i]
-				def temp = val.split('=')
-				String pathKey = temp[0]
-				if(pathKey=='null'){ nullKey=i }
-				println("${currentKey} ==${pathKey}")
-				if(currentKey==pathKey){
-					if(i+1<=path.size()-1){
-						path[i+1..path.size()-1].each{
-							def tmp = it.split('=')
-							map.put(tmp[0],tmp[1])
-						}
-						return map
-						break
-					}
-
-				}
-			}
-		}
-		
-		if(!map){
-			if(nullKey+1<=path.size()-1){
-				path[nullKey+1..path.size()-1].each{
-					def tmp = it.split('=')
-					map.put(tmp[0],tmp[1])
-				}
-				println(map[0].getClass())
-				return map
-			}
-		}
-	}
-	*/
 	
 	
 	/*
@@ -556,19 +517,12 @@ class ApiToolkitService{
 	
 	Map convertModel(Map map){
 		Map newMap = [:]
-		println("mapentryset = "+map.entrySet())
-		println("mapclass = "+map.getClass())
-		//if(grailsApplication.isDomainClass(map.getClass())
 		String k = map.entrySet().toList().first().key
 		
 		if(map && (!map?.response && !map?.metaClass && !map?.params)){
 			if(grailsApplication.isDomainClass(map[k].getClass())){
 				newMap = formatDomainObject(map[k])
 			}else{
-				println("convertModel : "+map[k])
-				println("map = "+map)
-				println("key = "+k)
-				
 				map[k].each{ key, val ->
 					if(val){
 						if(grailsApplication.isDomainClass(val.getClass())){

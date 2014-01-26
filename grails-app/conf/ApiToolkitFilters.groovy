@@ -47,7 +47,6 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiName}_${apiVersion}/**"){
 			before = { Map model ->
-				println("################ after filter ")
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -89,7 +88,6 @@ class ApiToolkitFilters {
 					return false
 				}
 				def newModel = apiToolkitService.convertModel(model)
-				println("newModel = "+newModel)
 				ApiStatuses error = new ApiStatuses()
 				params.action = (params.action)?params.action:'index'
 				def uri = [params.controller,params.action,params.id]
@@ -99,7 +97,6 @@ class ApiToolkitFilters {
 				List path = []
 
 				if(params.newPath){
-					println(params.newPath)
 					path = params.newPath.split('&')
 				}else{
 					path = (queryString)?queryString.split('&'):[]
@@ -108,16 +105,20 @@ class ApiToolkitFilters {
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 
+				
+				def tempType = request.getHeader('Content-Type')?.split(';')
+				def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+
 				// api chaining
 				if(path){
 					int pos = apiToolkitService.checkChainedMethodPosition(uri,oldPath as List)
 					if(pos==3){
-						println("bad position")
+						log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
 						return false
 					}else{
 						def uri2 = [:]
 						def inc = 0
-						println(path.last().split('=')[0].split('/')[0])
+
 						while(uri2['controller']!=path.last().split('=')[0].split('/')[0]){
 							uri2 = apiToolkitService.isChainedApi(newModel,path as List)
 							if(uri2){
@@ -125,7 +126,6 @@ class ApiToolkitFilters {
 								inc.each{ i ->
 									path.remove(i)
 								}
-								println(path)
 								
 								for(int b = inc+1;b<path.size();b++){
 									def temp = path[b].split('=')
@@ -137,8 +137,6 @@ class ApiToolkitFilters {
 									newQuery.add("${k}=${v}")
 								}
 								
-								def tempType = request.getHeader('Content-Type')?.split(';')
-								def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
 								def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 								def method = (methods.contains(request.method))?request.method:null
 
@@ -163,14 +161,24 @@ class ApiToolkitFilters {
 							}
 							inc++
 						}
+						
+
+					}
+					
+					switch(type){
+						case 'application/xml':
+							render(text:newModel as XML, contentType: "${type}")
+							break
+						case 'application/json':
+						default:
+							render(text:newModel as JSON, contentType: "${type}")
+							break
 					}
 					return false
 				}else{
 					if(cache){
 						if(cache["${params.action}"]){
 							def formats = ['text/html','application/json','application/xml']
-							def tempType = request.getHeader('Content-Type')?.split(';')
-							def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
 							def encoding = null
 							if(tempType){
 								encoding = (tempType.size()>1)?tempType[1]:null
