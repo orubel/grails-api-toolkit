@@ -139,25 +139,30 @@ class ApiToolkitFilters {
 								
 								def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 								def method = (methods.contains(request.method))?request.method:null
-
-								switch(type){
-									case 'application/xml':
-										//request.getRequestDispatcher("/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${newQuery.join('&')}").forward(request, response);
-										forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
-										break
-									case 'application/json':
-									default:
-										//request.getRequestDispatcher("/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${newQuery.join('&')}").forward(request, response)
-										forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
-										break
-								}
 								
+								if(apiToolkitService.checkAuthority(cache["${params.action}"]['apiRoles'])){
+									switch(type){
+										case 'application/xml':
+											//request.getRequestDispatcher("/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${newQuery.join('&')}").forward(request, response);
+											forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+											break
+										case 'application/json':
+										default:
+											//request.getRequestDispatcher("/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${newQuery.join('&')}").forward(request, response)
+											forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+											break
+									}
+								}else{
+									String msg = "User does not have access."
+									error._403_FORBIDDEN()(msg).send()
+									return false
+								}
 								break
 							}else{
 								String msg = "Path was unable to be parsed. Check your path variables and try again."
-								redirect(uri: "/")
+								//redirect(uri: "/")
 								error._404_NOT_FOUND(msg).send()
-								return
+								return false
 							}
 							inc++
 						}
