@@ -15,8 +15,7 @@ grails.project.dependency.resolution = {
 	
     plugins {
 		compile ':spring-security-core:2.0-RC2'
-		compile ":spring-security-appinfo:2.0-RC2"
-		build(':release:2.2.1', ':rest-client-builder:1.0.3',':cache:1.1.1') {
+		build(':release:2.3.5', ':rest-client-builder:1.0.3',':cache:1.1.1') {
 		  export = false
 		}
     }
