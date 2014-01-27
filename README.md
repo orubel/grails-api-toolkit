@@ -17,4 +17,6 @@ Some of the features in the apitoolkit include:
 
 Please see http://grails.org/plugin/restrpc for documentation on old functionality
 
+Functionality will be published on Grails Plugin page when plugin gets published. For now alot of it resides in the wiki...
+
 
