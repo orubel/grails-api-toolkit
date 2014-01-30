@@ -1,7 +1,7 @@
 # Grails API Toolkit
 
 - <a href='https://github.com/orubel/grails-api-toolkit/wiki/Installation'>Installation</a>
-    - config changes
+    - <a href='https://github.com/orubel/grails-api-toolkit/wiki/Configuration'>Config changes</a>
     - bootstrapping apidocs
 - Api Usage
     - Api Roles
