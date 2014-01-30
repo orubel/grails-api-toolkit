@@ -1,6 +1,6 @@
 # Grails API Toolkit
 
-- installation
+- <a href='https://github.com/orubel/grails-api-toolkit/wiki/Installation'>Installation</a>
     - config changes
     - bootstrapping apidocs
 - Api Usage
