@@ -1,6 +1,18 @@
 # Grails API Toolkit
 
-Grails API Toolkit is scheduled to be launched by Feb 1 2014
+- installation
+    - config changes
+    - bootstrapping apidocs
+- Api Usage
+    - Api Roles
+    - Multiple Methods
+    - Sending Data to API
+- Statuses
+- Apidocs
+    - Boostrapping Api
+    - Apidocs Roles
+- Hooks
+- Api Chaining
 
 Some of the features in the apitoolkit include:
 
