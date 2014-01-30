@@ -2,17 +2,16 @@
 
 - <a href='https://github.com/orubel/grails-api-toolkit/wiki/Installation'>Installation</a>
     - <a href='https://github.com/orubel/grails-api-toolkit/wiki/Configuration'>Config changes</a>
-    - bootstrapping apidocs
-- Api Usage
-    - Api Roles
-    - Multiple Methods
-    - Sending Data to API
+    - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Docs'>Bootstrapping apidocs</a>
+- <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Annotations'>Api Usage</a>
+    - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Annotations#wiki-api-roles'>Api Roles</a>
+    - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Annotations#wiki-multiple-methods'>Multiple Methods</a>
+    - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Annotations#wiki-sending-data-to-api'>Sending Data to API</a>
 - Statuses
-- Apidocs
-    - Boostrapping Api
-    - Apidocs Roles
-- Hooks
-- Api Chaining
+- <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Docs'>Apidocs</a>
+    - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Docs#wiki-apidocs-roles'>Apidocs Roles</a>
+- <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Hooks'>Hooks</a>
+- <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Chaining'>Api Chaining</a>
 
 Some of the features in the apitoolkit include:
 
