@@ -49,12 +49,12 @@ class ApiStatuses{
 	}
 
 	// 302 found
-	def _304_FOUND(String msg){
+	def _302_FOUND(String msg){
 		this.status = new ErrorCodeDescriptor(code:302,description:"[Found] : ${msg}")
 		return this
 	}
 	
-	def _304_FOUND(){
+	def _302_FOUND(){
 		this.status = new ErrorCodeDescriptor(code:302,description:"[Found]")
 		return this
 	}

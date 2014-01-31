@@ -70,22 +70,23 @@ class ApiToolkitFilters {
 								if(path){
 									int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 									if(pos==3){
-										return false
+										return true
 									}
 								}else{
 									return false
 								}
 							}
 						}else{
-							return false
+							return true
 						}
 					}
 				}
+				return true
 			}
 			
 			after = { Map model ->
 				if(!model){
-					return false
+					return true
 				}
 				def newModel = apiToolkitService.convertModel(model)
 				ApiStatuses error = new ApiStatuses()
@@ -284,6 +285,7 @@ class ApiToolkitFilters {
 						}
 					}
 				}
+				return true
 			}
 		}
 
