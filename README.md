@@ -12,6 +12,7 @@
     - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Docs#wiki-apidocs-roles'>Apidocs Roles</a>
 - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Hooks'>Hooks</a>
 - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Chaining'>Api Chaining</a>
+- <a href='https://github.com/orubel/grails-api-toolkit/wiki/Troubleshooting'>Troubleshooting</a
 
 Some of the features in the apitoolkit include:
 
