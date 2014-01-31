@@ -7,7 +7,7 @@
     - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Annotations#wiki-api-roles'>Api Roles</a>
     - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Annotations#wiki-multiple-methods'>Multiple Methods</a>
     - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Annotations#wiki-sending-data-to-api'>Sending Data to API</a>
-- Statuses
+- <a href='https://github.com/orubel/grails-api-toolkit/wiki/Statuses'>Statuses</a>
 - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Docs'>Apidocs</a>
     - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Docs#wiki-apidocs-roles'>Apidocs Roles</a>
 - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Hooks'>Hooks</a>
