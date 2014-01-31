@@ -3,8 +3,6 @@ import grails.util.Metadata
 
 // add default views for apitoolkit apidocs
 
-printMessage = { String message -> event('StatusUpdate', [message]) }
-
 ant.mkdir(dir: "${basedir}/grails-app/views/apidoc")
 ant.copy(file:"${pluginBasedir}/src/templates/apidoc/show.gsp.template",tofile:"${basedir}/grails-app/views/apidoc/show.gsp")
 
@@ -20,12 +18,13 @@ if (configFile.exists()) {
 		it.writeLine "apitoolkit.user.roles = ['ROLE_USER']"
 		it.writeLine "apitoolkit.admin.roles = ['ROLE_ROOT','ROLE_ADMIN']"
 	}
-}
-
-printMessage """
+	
+	println """
 	*************************************************************
 	* SUCCESS! You have successfully installed the API Toolkit..*
 	* Please run 'grails apitoolkit-init' to finish the install *
 	* process...                                                *
 	*************************************************************
 """
+}
+

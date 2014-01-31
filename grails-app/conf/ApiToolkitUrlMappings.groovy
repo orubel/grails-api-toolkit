@@ -1,4 +1,3 @@
-
 class ApiToolkitUrlMappings {
 
 	static grailsApplication

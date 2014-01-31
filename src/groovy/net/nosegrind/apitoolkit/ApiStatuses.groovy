@@ -81,6 +81,17 @@ class ApiStatuses{
 		return this
 	}
 	
+	// 401 unauthorized
+	def _401_UNAUTHORIZED(String msg){
+		status = new ErrorCodeDescriptor(code:400,description:"[Bad Request] : ${msg}")
+		return this
+	}
+	
+	def _401_UNAUTHORIZED(){
+		status = new ErrorCodeDescriptor(code:400,description:"[Bad Request]")
+		return this
+	}
+	
 	// 403 forbidden
 	def _403_FORBIDDEN(String msg){
 		status = new ErrorCodeDescriptor(code:403,description:"[Forbidden] : ${msg}")

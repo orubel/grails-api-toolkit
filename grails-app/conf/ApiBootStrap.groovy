@@ -52,7 +52,6 @@ class ApiBootStrap {
 				apiCacheService.setApiCache("${controllername}".toString(),methods)
 			}
 		}
-		
 	}
 
     def destroy = {}

@@ -27,7 +27,13 @@
 					<tr class="${(i % 2) == 0 ? 'even' : 'odd'}">
 						<g:set var="service" value="${webhookInstance.controller}/${webhookInstance.action}" />
 						<g:set var="userHook" value="${Hook.findByServiceAndUser(service,user)}" />
-						<td>${service}</td>
+						<g:if test="${webhookInstance.name}">
+						<td><a href="" title="${webhookInstance.description}" onclick="return false">${webhookInstance.name}</a></td>
+						</td>
+						</g:if>
+						<g:else>
+						<td><a href="" title="${webhookInstance.description}" onclick="return false">${service}</a></td>
+						</g:else>
 						
 						<g:if test="${userHook}">
 							<td>

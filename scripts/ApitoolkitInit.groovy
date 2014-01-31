@@ -16,7 +16,7 @@ Example: grails apitoolkit-init com.yourapp User Role
 
 packageName = ''
 userClassName = ''
-templateDir = "$apitoolkitPluginDir/src/templates"
+templateDir = "$apiToolkitPluginDir/src/templates"
 appDir = "$basedir/grails-app"
 
 target(apitoolkitInit: 'Creates artifacts for the Api Hooks') {

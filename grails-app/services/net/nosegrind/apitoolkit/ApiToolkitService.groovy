@@ -77,6 +77,7 @@ class ApiToolkitService{
 		}else if(!grailsApplication.config?.grails?.app?.context){
 			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
 		}
+
 		api += "${params.controller}/${params.action}"
 		api += (params.id)?"/${params.id}":""
 		api += (queryString)?"?${queryString}":""
