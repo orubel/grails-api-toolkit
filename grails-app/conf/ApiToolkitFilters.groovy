@@ -119,8 +119,8 @@ class ApiToolkitFilters {
 					}else{
 						def uri2 = [:]
 						def inc = 0
-
-						while(uri2['controller'] && uri2['controller']!=path.last().split('=')[0].split('/')[0]){
+						boolean returnState = false
+						while(uri2['controller'] && returnState==false && grailsApplication.config.apitoolkit.apichain.limit<=inc+1 && uri2['controller']!=path.last().split('=')[0].split('/')[0]){
 							uri2 = apiToolkitService.isChainedApi(newModel,path as List)
 							if(uri2){
 								Map query = [:]
@@ -130,6 +130,7 @@ class ApiToolkitFilters {
 								
 								for(int b = inc+1;b<path.size();b++){
 									def temp = path[b].split('=')
+									returnState = (temp[1]='return')?true:false
 									query[temp[0]] = temp[1]
 								}
 
@@ -178,6 +179,7 @@ class ApiToolkitFilters {
 							render(text:newModel as JSON, contentType: "${type}")
 							break
 					}
+					return false
 				}else{
 					if(cache){
 						if(cache["${params.action}"]){
