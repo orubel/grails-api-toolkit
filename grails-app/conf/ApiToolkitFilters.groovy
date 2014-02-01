@@ -120,7 +120,7 @@ class ApiToolkitFilters {
 						def uri2 = [:]
 						def inc = 0
 
-						while(uri2['controller']!=path.last().split('=')[0].split('/')[0]){
+						while(uri2['controller'] && uri2['controller']!=path.last().split('=')[0].split('/')[0]){
 							uri2 = apiToolkitService.isChainedApi(newModel,path as List)
 							if(uri2){
 								Map query = [:]
@@ -144,7 +144,6 @@ class ApiToolkitFilters {
 								if(apiToolkitService.checkAuthority(cache["${params.action}"]['apiRoles'])){
 									switch(type){
 										case 'application/xml':
-											//request.getRequestDispatcher("/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${newQuery.join('&')}").forward(request, response);
 											forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
 											break
 										case 'application/json':
@@ -167,7 +166,6 @@ class ApiToolkitFilters {
 							}
 							inc++
 						}
-						
 
 					}
 					
@@ -180,7 +178,6 @@ class ApiToolkitFilters {
 							render(text:newModel as JSON, contentType: "${type}")
 							break
 					}
-					return false
 				}else{
 					if(cache){
 						if(cache["${params.action}"]){
@@ -284,8 +281,8 @@ class ApiToolkitFilters {
 							//render(view:params.action,model:model)
 						}
 					}
+					return true
 				}
-				return true
 			}
 		}
 
