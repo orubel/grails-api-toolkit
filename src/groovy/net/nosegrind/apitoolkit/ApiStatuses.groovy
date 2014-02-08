@@ -47,7 +47,7 @@ class ApiStatuses{
 		this.status = new ErrorCodeDescriptor(code:200,description:"[Success]")
 		return this
 	}
-
+	
 	// 302 found
 	def _302_FOUND(String msg){
 		this.status = new ErrorCodeDescriptor(code:302,description:"[Found] : ${msg}")
