@@ -9,31 +9,6 @@ import net.nosegrind.apitoolkit.Method;
 import net.nosegrind.apitoolkit.ApiStatuses;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingInfo
-import org.codehaus.groovy.grails.web.mapping.UrlMappingData
-import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo
-
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
-import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.springframework.web.context.request.RequestContextHolder
-
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-
-import java.io.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse
-
 class ApiToolkitFilters {
 	
 	def apiToolkitService
@@ -137,7 +112,6 @@ class ApiToolkitFilters {
 								
 								def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 								def method = (methods.contains(request.method))?request.method:null
-
 								if(apiToolkitService.checkAuthority(cache["${uri2['action']}"]['apiRoles'])){
 									switch(type){
 										case 'application/xml':
