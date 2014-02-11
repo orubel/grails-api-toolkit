@@ -1,4 +1,3 @@
-import org.springframework.context.ApplicationContext
 import grails.util.Holders
 
 class ApiToolkitUrlMappings {

@@ -13,6 +13,10 @@ grails.project.dependency.resolution = {
 		mavenRepo "http://repo.spring.io/milestone/"
     }
 	
+	dependencies {
+		compile "net.sf.ehcache:ehcache-core:2.4.6"
+	}
+	
     plugins {
 		build(":release:3.0.0",":rest-client-builder:1.0.3") {
 			 export = false
