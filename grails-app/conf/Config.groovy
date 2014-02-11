@@ -22,7 +22,6 @@ grails.cache.config = {
 	}
  }
 
-apitoolkit.apichain.limit=3
 apitoolkit.protocol='http'
 
 apitoolkit.defaultData.PKEY = '26'

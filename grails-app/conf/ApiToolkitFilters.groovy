@@ -155,13 +155,14 @@ class ApiToolkitFilters {
 				}else{
 					if(cache){
 						if(cache["${params.action}"]){
-							def formats = ['text/html','application/json','application/xml']
+							
 							def encoding = null
 							if(tempType){
 								encoding = (tempType.size()>1)?tempType[1]:null
 							}
 							
 							// make 'application/json' default
+							def formats = ['text/html','application/json','application/xml']
 							type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
 	
 							if(type){
@@ -181,6 +182,11 @@ class ApiToolkitFilters {
 									
 									if(method){
 										switch(request.method) {
+											case 'PURGE':
+												// cleans cache
+												break;
+											case 'TRACE':
+												break;
 											case 'HEAD':
 												break;
 											case 'OPTIONS':
