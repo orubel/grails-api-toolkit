@@ -24,7 +24,7 @@ Some of the features in the apitoolkit include:
 - FULL REST methods support (HEAD, OPTIONS, GET, PUT, POST, DELETE, TRACE, PATCH)
 - apidoc generation
 - webhooks/real time notifications
-- api linking (see documentation)
+- api chaining (see documentation)
 - improved perfomance
 - integrated spring security for setting roles on your APIs, docs and hooks
 - simplified api generation and usage
