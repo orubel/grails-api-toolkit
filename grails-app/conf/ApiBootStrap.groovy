@@ -49,7 +49,8 @@ class ApiBootStrap {
 				}
 			}
 			if(methods){
-				apiCacheService.setApiCache("${controllername}".toString(),methods)
+				String controller = controllername.toString()
+				apiCacheService.setApiCache(controller,methods)
 			}
 		}
 	}

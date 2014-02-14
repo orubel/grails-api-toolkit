@@ -22,6 +22,7 @@ grails.cache.config = {
 	}
  }
 
+apitoolkit.apiName = 'api'
 apitoolkit.protocol='http'
 
 apitoolkit.defaultData.PKEY = '26'

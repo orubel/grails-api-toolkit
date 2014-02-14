@@ -31,6 +31,7 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
 
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 
 import net.nosegrind.apitoolkit.*
 
@@ -56,17 +57,17 @@ class ApiToolkitService{
 		return RCH.currentRequestAttributes().currentResponse
 	}
 
-	def getParams(){
-		def params = RCH.currentRequestAttributes().params
+	GrailsParameterMap getParams(){
+		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		def request = getRequest()
-		def formats = ['text/html','application/json','application/xml']
-		def tempType = request.getHeader('Content-Type')?.split(';')
-		def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+		List formats = ['text/html','application/json','application/xml']
+		List tempType = request.getHeader('Content-Type')?.split(';')
+		String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
 		type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
 		if(type=='application/json'){
 			def json = request.JSON
 			json.each() { key,value ->
-				params[key] = value
+				params.put(key,value)
 			}
 		}
 		return params
@@ -75,10 +76,10 @@ class ApiToolkitService{
 	// api call now needs to detect request method and see if it matches anno request method
 	boolean isApiCall(){
 		def request = getRequest()
-		def params = getParams()
-		def queryString = request.'javax.servlet.forward.query_string'
-		
-		def uri
+		GrailsParameterMap params = getParams()
+		String queryString = request.'javax.servlet.forward.query_string'
+
+		String uri
 		if(request.isRedirected()){
 			if(params.action=='index'){
 				uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI+'/'+params.action
@@ -89,20 +90,20 @@ class ApiToolkitService{
 			uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI
 		}
 		
-		def api
-		def type = ['XML':'text/xml','JSON':'application/json','HTML':'application/html'].findAll{ request.getHeader('Content-Type')?.startsWith(it.getValue()) }
+		String api
+		Map type = ['XML':'text/xml','JSON':'application/json','HTML':'application/html'].findAll{ request.getHeader('Content-Type')?.startsWith(it.getValue()) }
 
 		if(grailsApplication.config.grails.app.context=='/'){
-			api = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
+			api = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
 		}else if(grailsApplication.config?.grails?.app?.context){
-			api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
+			api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
 		}else if(!grailsApplication.config?.grails?.app?.context){
-			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
+			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
 		}
 
-		api += "${params.controller}/${params.action}"
-		api += (params.id)?"/${params.id}":""
-		api += (queryString)?"?${queryString}":""
+		api += "${params.controller}/${params.action}" as String
+		api += (params.id)?"/${params.id}" as String:""
+		api += (queryString)?"?${queryString}" as String:""
 
 		return uri==api
 	}
@@ -115,7 +116,7 @@ class ApiToolkitService{
 		}else{
 			return false
 		}
-		return 
+		return false
 	}
 	
 	Integer getKey(String key){
@@ -130,7 +131,6 @@ class ApiToolkitService{
 				return 0
 		}
 	}
-	
 	
 	boolean validateUrl(String url){
 		String[] schemes = ["http","https"]
@@ -212,8 +212,8 @@ class ApiToolkitService{
 	}
 	
 	boolean methodCheck(List roles){
-		def optionalMethods = ['OPTIONS','HEAD']
-		def requiredMethods = ['GET','POST','PUT','DELETE','PATCH','TRACE']
+		List optionalMethods = ['OPTIONS','HEAD']
+		List requiredMethods = ['GET','POST','PUT','DELETE','PATCH','TRACE']
 		
 		def temp = roles.removeAll(optionalMethods)
 		if(requiredMethods.contains(temp)){
