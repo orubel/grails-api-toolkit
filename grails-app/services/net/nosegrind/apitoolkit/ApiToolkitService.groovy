@@ -384,7 +384,7 @@ class ApiToolkitService{
 			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
 			for (Method method : controller.getClazz().getDeclaredMethod(actionname)){
 				if(method.isAnnotationPresent(Api)) {
-					String path = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/JSON/${controllername}/${actionname}"
+					String path = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${controllername}/${actionname}"
 					doc[("${actionname}".toString())] = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
 					
 					if(cont["${actionname}"]["receives"]){
@@ -399,12 +399,80 @@ class ApiToolkitService{
 					if(cont["${actionname}"]["errorcodes"]){
 						doc[("${actionname}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
 					}
+					List links = generateLinkRels(controllername,actionname,doc)
+					doc[("${actionname}".toString())]["links"] = links
 				}else{
 					// ERROR: method at '${controllername}/${actionname}' does not have API annotation
 				}
 			}
 		}
+
 		return doc
+	}
+	
+	List generateLinkRels(String controllerName, String actionName,Map apidoc){
+		List links = []
+		String uri = ''
+		if(grailsApplication.config.grails.app.context=='/'){
+			uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
+		}else if(grailsApplication.config?.grails?.app?.context){
+			uri = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
+		}else if(!grailsApplication.config?.grails?.app?.context){
+			uri = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
+		}
+		apidoc.each() { descriptor ->
+			def receives = descriptor.value.receives
+			if(receives){
+				receives.each() { param ->
+					def paramType = param?.paramType
+					if(paramType){
+						switch(paramType){
+							case 'PKEY':
+								String endChain = getPostChainUri(controllerName,actionName)
+								String newLink = "${uri}${endChain}" as String
+								print(newLink)
+								links.push(newLink)
+								break
+							case 'FKEY':
+								String endChain = getBlankChainUri(controllerName,actionName)
+								String newLink = "${uri}${endChain}" as String
+								links.push(newLink)
+								break
+						}
+						// loop through controller.value.value.doc.value.receives and add to
+						// controller.value.value.links
+						// for PKEY, getPostChain
+						// for FKEY, getBlankChain
+					}
+				}
+			}
+
+		}
+		return links
+	}
+	
+	private String getBlankChainUri(String controllername,String actionname){
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+		for (Method method : controller.getClazz().getDeclaredMethod(actionname)){
+			if(method.isAnnotationPresent(Api)) {
+				String path = "${controllername}/${actionname}=return"
+				return path
+			}else{
+				return null
+			}
+		}
+	}
+	
+	private String getPostChainUri(String controllername,String actionname){
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+		for (Method method : controller.getClazz().getDeclaredMethod(actionname)){
+			if(method.isAnnotationPresent(Api)) {
+				String path = "${controllername}/${actionname}=return"
+				return path
+			}else{
+				return null
+			}
+		}
 	}
 	
 	Map isChainedApi(Map map,List path){

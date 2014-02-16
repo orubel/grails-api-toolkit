@@ -38,7 +38,8 @@ class ApiBootStrap {
 						"method":"${api.method()}",
 						"description":'',
 						"receives":[],
-						"doc":[:]
+						"doc":[:],
+						"links":[]
 					)
 					service['apiRoles'] = api.apiRoles()
 					if(api.hookRoles()){
@@ -48,6 +49,7 @@ class ApiBootStrap {
 					methods["${actionname}"] = service
 				}
 			}
+
 			if(methods){
 				String controller = controllername.toString()
 				apiCacheService.setApiCache(controller,methods)
