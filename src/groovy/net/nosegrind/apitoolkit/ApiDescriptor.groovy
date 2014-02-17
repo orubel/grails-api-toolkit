@@ -29,7 +29,6 @@ class ApiDescriptor {
 	String name
     String description
 	Map doc
-	List links
     ParamsDescriptor[] receives
     ParamsDescriptor[] returns
     ErrorCodeDescriptor[] errorcodes
@@ -40,7 +39,6 @@ class ApiDescriptor {
 		name(nullable:true,maxSize:500)
 		description(nullable:true,maxSize:1000)
 		doc(nullable:true)
-		links(nullable:true)
 		receives(nullable:true)
 		returns(nullable:true)
 		errorcodes(nullable:true)

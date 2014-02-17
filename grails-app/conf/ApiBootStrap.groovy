@@ -38,8 +38,7 @@ class ApiBootStrap {
 						"method":"${api.method()}",
 						"description":'',
 						"receives":[],
-						"doc":[:],
-						"links":[]
+						"doc":[:]
 					)
 					service['apiRoles'] = api.apiRoles()
 					if(api.hookRoles()){

@@ -412,31 +412,30 @@ class ApiToolkitService{
 	
 	List generateLinkRels(String controllerName, String actionName,Map apidoc){
 		List links = []
-		String uri = ''
-		if(grailsApplication.config.grails.app.context=='/'){
-			uri = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
-		}else if(grailsApplication.config?.grails?.app?.context){
-			uri = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
-		}else if(!grailsApplication.config?.grails?.app?.context){
-			uri = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
-		}
+		int inc = 0
 		apidoc.each() { descriptor ->
 			def receives = descriptor.value.receives
+			def path = descriptor.value.path
 			if(receives){
 				receives.each() { param ->
 					def paramType = param?.paramType
 					if(paramType){
 						switch(paramType){
 							case 'PKEY':
-								String endChain = getPostChainUri(controllerName,actionName)
-								String newLink = "${uri}${endChain}" as String
-								print(newLink)
-								links.push(newLink)
+								String uri = "${path}/[ID]?null="
+								def endChains = getPostChainUri(controllerName,actionName,uri)
+								endChains.each(){ end ->
+									links.add(inc,end)
+									inc++
+								}
 								break
 							case 'FKEY':
-								String endChain = getBlankChainUri(controllerName,actionName)
-								String newLink = "${uri}${endChain}" as String
-								links.push(newLink)
+								String uri = "${path}/[ID]?null="
+								def endChains = getBlankChainUri(controllerName,actionName,uri)
+								endChains.each(){ end ->
+									links.add(inc,end)
+									inc++
+								}
 								break
 						}
 						// loop through controller.value.value.doc.value.receives and add to
@@ -451,28 +450,42 @@ class ApiToolkitService{
 		return links
 	}
 	
-	private String getBlankChainUri(String controllername,String actionname){
+	private List getBlankChainUri(String controllername,String actionname,String uri){
+		def paths = []
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-		for (Method method : controller.getClazz().getDeclaredMethod(actionname)){
-			if(method.isAnnotationPresent(Api)) {
-				String path = "${controllername}/${actionname}=return"
-				return path
-			}else{
-				return null
+		Map methods = [:]
+		controller.getClazz().methods.each { Method method ->
+			String action = method.getName()
+			if(action!=actionname){
+				if(method.isAnnotationPresent(Api)) {
+					def api = method.getAnnotation(Api)
+					if(api.method().contains('GET')){
+						def path = [url:"${uri}&${controllername}/${action}=return",roles:api.apiRoles() as ArrayList]
+						paths.add(path)
+					}
+				}
 			}
 		}
+		return paths
 	}
 	
-	private String getPostChainUri(String controllername,String actionname){
+	private List getPostChainUri(String controllername,String actionname,String uri){
+		def paths = []
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-		for (Method method : controller.getClazz().getDeclaredMethod(actionname)){
-			if(method.isAnnotationPresent(Api)) {
-				String path = "${controllername}/${actionname}=return"
-				return path
-			}else{
-				return null
+		Map methods = [:]
+		controller.getClazz().methods.each { Method method ->
+			String action = method.getName()
+			if(action!=actionname){
+				if(method.isAnnotationPresent(Api)) {
+					def api = method.getAnnotation(Api)
+					if(api.method().contains('POST') || api.method().contains('PUT') || api.method().contains('DELETE')){
+						def path = [url:"${uri}&${controllername}/${action}=return",roles:api.apiRoles() as ArrayList]
+						paths.add(path)
+					}
+				}
 			}
 		}
+		return paths
 	}
 	
 	Map isChainedApi(Map map,List path){
