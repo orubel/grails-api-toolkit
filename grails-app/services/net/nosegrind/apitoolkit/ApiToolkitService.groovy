@@ -301,7 +301,6 @@ class ApiToolkitService{
 		// params.action = temp[1]
 		def uri = SCH.servletContext.getControllerActionUri(request)
 		return uri[1..(uri.size()-1)].split('/')
-
 	}
 	
 	private ArrayList processDocValues(HashSet value){
@@ -309,7 +308,7 @@ class ApiToolkitService{
 		List val2 = []
 		values.each{ v ->
 			Map val = [:]
-			if((v.roles && checkDocAuthority(v.roles)) || !v.roles){
+			//if((v.roles && checkDocAuthority(v.roles)) || !v.roles){
 				val = [
 					"paramType":"${v.paramType}",
 					"name":"${v.name}",
@@ -329,8 +328,11 @@ class ApiToolkitService{
 				if(v.values){
 					val["values"] = processDocValues(v.values)
 				}
+				if(v.roles){
+					val["roles"] = ${v.roles}
+				}
 				val2.add(val)
-			}
+			//}
 		}
 		return val2
 	}
@@ -540,6 +542,43 @@ class ApiToolkitService{
 		}
 	}
 	
+	
+	def Map generateDoc(String controllerName, String actionName){
+		def newDoc = []
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
+		def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
+		
+		def doc = cache["${actionName}"]['doc']
+		def path = doc["${actionName}"].path
+		def method = doc["${actionName}"].method
+		def description = doc["${actionName}"].description
+		
+		newDoc = ["path":"${path}","method":method,"description":"${description}"]
+		newDoc.receives = doc["${actionName}"].receives
+
+		if(doc["${actionName}"].returns){
+			newDoc.returns = []
+			doc["${actionName}"].returns.each(){ v ->
+				if(springSecurityService.principal.authorities*.authority.any { v.roles.contains(it) }){
+					newDoc.returns.add(v)
+				}
+			}
+		}
+		
+		if(doc["${actionName}"].errorcodes){
+			newDoc.errorcodes = doc["${actionName}"].errorcodes
+		}
+		
+		if(doc["${actionName}"].links){
+			newDoc.links = []
+			doc["${actionName}"].links.each(){ v ->
+				if(springSecurityService.principal.authorities*.authority.any { v.roles.contains(it) }){
+					newDoc.links.add(v.url)
+				}
+			}
+		}
+		return newDoc
+	}
 	
 	
 	/*

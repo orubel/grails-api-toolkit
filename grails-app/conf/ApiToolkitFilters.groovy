@@ -192,11 +192,11 @@ class ApiToolkitFilters {
 											case 'OPTIONS':
 												switch(type){
 													case 'application/xml':
-														render(text:cache["${params.action}"]['doc'] as XML, contentType: "${type}")
+														render(text:apiToolkitService.generateDoc(params.controller,params.action) as XML, contentType: "${type}")
 														break
 													case 'application/json':
 													default:
-														render(text:cache["${params.action}"]['doc'] as JSON, contentType: "${type}")
+														render(text:apiToolkitService.generateDoc(params.controller,params.action) as JSON, contentType: "${type}")
 														break
 												}
 												return false
