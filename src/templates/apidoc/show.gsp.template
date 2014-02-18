@@ -20,27 +20,23 @@
 			<h3>${controller.key.toUpperCase()}</h3>
 			
 			<g:each in="${controller.value}" var="action">
-			<g:set var="action" value="${action}"/> 
-			<g:each in="${action}" var="api">
-			<g:each in="${api.value}" var="descriptor">
-			<g:each in="${descriptor.doc}" var="doc">
-				<g:if test="${doc.value.path}"><g:set var="path" value="${doc.value.path}"/></g:if> 
-				<g:if test="${doc.value.json}"><g:set var="json" value="${doc.value.json}"/></g:if> 
-				<g:if test="${doc.value.method}"><g:set var="method" value="${doc.value.method}"/></g:if> 
-				<g:if test="${doc.value.description}"><g:set var="description" value="${doc.value.description}"/></g:if>
-				<g:if test="${doc.value.receives}"><g:set var="receives" value="${doc.value.receives}"/></g:if> 
-				<g:if test="${doc.value.returns}"><g:set var="returns" value="${doc.value.returns}"/></g:if> 
-				<g:if test="${doc.value.errorcodes}"><g:set var="errors" value="${doc.value.errorcodes}"/></g:if> 
+			<g:set var="action" value="${action.key}"/> 
+
+			<g:if test="${action.value.path}"><g:set var="path" value="${action.value.path}"/></g:if> 
+			<g:if test="${action.value.json}"><g:set var="json" value="${action.value.json}"/></g:if> 
+			<g:if test="${action.value.method}"><g:set var="method" value="${action.value.method}"/></g:if> 
+			<g:if test="${action.value.description}"><g:set var="description" value="${action.value.description}"/></g:if>
+			<g:if test="${action.value.receives}"><g:set var="receives" value="${action.value.receives}"/></g:if> 
+			<g:if test="${action.value.returns}"><g:set var="returns" value="${action.value.returns}"/></g:if> 
+			<g:if test="${action.value.errorcodes}"><g:set var="errors" value="${action.value.errorcodes}"/></g:if> 
+			<g:if test="${action.value.links}"><g:set var="links" value="${action.value.links}"/></g:if> 
+
 			</g:each>
-			</g:each>
-			</g:each>
-			</g:each>
-			
 			<br>
 			<div style="background-color: #f7f7f7;padding:5px;">
 				<div style="display: table;border: 1px solid #c5c5c5;">
 				 <div style="display: table-row; background-color:#b4b8be;color:#fff;">
-					   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>${action.key}</b></span>
+					   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>${action}</b></span>
 					   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>${path}</b></span>
 					   <span style="display: table-cell;width: 400px;padding-left: 10px;border: 1px #d7ad7b;"><b>&nbsp;</b></span>
 				 </div>
@@ -54,7 +50,18 @@
 				<br>
 				</g:if>
 
-				
+				<g:if test="${links?.size()>0}">
+				<div style="display: table;border: 1px solid #c5c5c5;">
+					<div style="display: table-row; background-color:#b4b8be;color:#fff;">
+					   <span style="display: table-cell;width: 800px;padding-left: 10px;border: 1px #d7ad7b;"><b>Links</b></span>
+					</div>
+					<g:each in="${links}" var="link">
+						<div style="display: table-row; background-color:#fff;">
+						   <span style="display: table-cell;width: 800px;padding-left: 10px;border: 1px #d7ad7b;">${link}</span>
+					    </div>
+					 </g:each>
+				 </div>
+				</g:if>
 				
 				<b>Receives</b>
 				<div style="display: table;border: 1px solid #c5c5c5;">
@@ -98,6 +105,7 @@
 					 </g:each>
 				 </div>
 				 </g:if>
+				
 				<g:if test="${errors?.size()>0}">
 				<b>Errors</b>
 				<div style="display: table;border: 1px solid #c5c5c5;">

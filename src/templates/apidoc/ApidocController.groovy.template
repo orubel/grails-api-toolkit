@@ -20,7 +20,15 @@ class ApidocController {
 			String controllername = controllerClass.logicalPropertyName
 			def cache = apiCacheService.getApiCache(controllername)
 			if(cache){
-				docs["${controllername}"]=cache
+				cache.each(){ it ->
+					def newDocs=apiToolkitService.generateDoc(controllername, it.key)
+					if(newDocs){
+						println(newDocs)
+						docs["${controllername}"] = [:]
+						docs["${controllername}"]["${it.key}"]=newDocs["${it.key}"]
+					}
+				}
+
 			}
 		}
 		[apiList:docs]
