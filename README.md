@@ -1,5 +1,7 @@
 # Grails API Toolkit
 
+To see a example project, go <a href='https://github.com/orubel/api-example'>here</a> to view the code
+
 - <a href='https://github.com/orubel/grails-api-toolkit/wiki/Installation'>Installation</a>
     - <a href='https://github.com/orubel/grails-api-toolkit/wiki/Configuration'>Config changes</a>
     - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Docs'>Bootstrapping apidocs</a>
@@ -29,5 +31,5 @@ Some of the features in the apitoolkit include:
 - integrated spring security for setting roles on your APIs, docs and hooks
 - simplified api generation and usage
 
-To see a example project, go <a href='https://github.com/orubel/api-example'>here</a> to view the code
+
 
