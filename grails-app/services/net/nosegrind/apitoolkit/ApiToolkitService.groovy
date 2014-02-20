@@ -414,7 +414,6 @@ class ApiToolkitService{
 	
 	def Map generateDoc(String controllerName, String actionName){
 		def newDoc = [:]
-		println("${controllerName} / ${actionName}")
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
 		def cache = (params.controller)?apiCacheService.getApiCache(controllerName):null
 		if(cache["${actionName}"]?.doc){
@@ -445,11 +444,15 @@ class ApiToolkitService{
 			def links = generateLinkRels(controllerName, actionName,doc)
 			if(links){
 				newDoc["${actionName}"].links = []
-				links.each(){ v ->
-					if(springSecurityService.principal.authorities*.authority.any { v.roles.contains(it) }){
-						newDoc["${actionName}"].links.add(v.url)
+				links.each(){ role ->
+					role.each(){ v ->
+						println("############### ${v}")
+						if(springSecurityService.principal.authorities*.authority.any { v.key }){
+							newDoc["${actionName}"].links.add(v.value)
+						}
 					}
 				}
+				newDoc["${actionName}"].links.unique()
 			}
 		}
 		return newDoc
@@ -505,6 +508,8 @@ class ApiToolkitService{
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
 					if(api.method().contains('GET')){
+						def roles = api.apiRoles() as List
+						println("################ ${roles}")
 						def path = [url:"${uri}&${controllername}/${action}=return",roles:api.apiRoles() as ArrayList]
 						paths.add(path)
 					}
@@ -518,13 +523,21 @@ class ApiToolkitService{
 		def paths = []
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
 		Map methods = [:]
+		Map path = [:]
 		controller.getClazz().methods.each { Method method ->
 			String action = method.getName()
 			if(action!=actionname){
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
 					if(api.method().contains('POST') || api.method().contains('PUT') || api.method().contains('DELETE')){
-						def path = [url:"${uri}&${controllername}/${action}=return",roles:api.apiRoles() as ArrayList]
+						def roles = api.apiRoles() as List
+						roles.each(){
+							if(!path["${it}"]){
+								path["${it}"] = [:]
+							}
+							path["${it}"] = "${uri}&${controllername}/${action}=return"
+						}
+						//def path = [url:"${uri}&${controllername}/${action}=return",roles:api.apiRoles() as ArrayList]
 						paths.add(path)
 					}
 				}
