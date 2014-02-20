@@ -1,5 +1,7 @@
 # Grails API Toolkit
 
+To see a example project, go <a href='https://github.com/orubel/api-example'>here</a> to view the code
+
 - <a href='https://github.com/orubel/grails-api-toolkit/wiki/Installation'>Installation</a>
     - <a href='https://github.com/orubel/grails-api-toolkit/wiki/Configuration'>Config changes</a>
     - <a href='https://github.com/orubel/grails-api-toolkit/wiki/API-Docs'>Bootstrapping apidocs</a>
@@ -19,6 +21,7 @@
 Some of the features in the apitoolkit include:
 
 - header generation
+- dynamic api chain generation in OPTIONS method and apidocs
 - support for different encoding types for return data (as set by client)
 - content-type handling/output through 'content-type' header
 - FULL REST methods support (HEAD, OPTIONS, GET, PUT, POST, DELETE, TRACE, PATCH)
