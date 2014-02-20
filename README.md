@@ -21,6 +21,7 @@ To see a example project, go <a href='https://github.com/orubel/api-example'>her
 Some of the features in the apitoolkit include:
 
 - header generation
+- dynamic api chain generation in OPTIONS method and apidocs
 - support for different encoding types for return data (as set by client)
 - content-type handling/output through 'content-type' header
 - FULL REST methods support (HEAD, OPTIONS, GET, PUT, POST, DELETE, TRACE, PATCH)
