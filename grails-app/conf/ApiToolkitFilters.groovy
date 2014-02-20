@@ -196,7 +196,7 @@ class ApiToolkitFilters {
 														break
 													case 'application/json':
 													default:
-														render(text:apiToolkitService.generateDoc(params.controller,params.action) as JSON, contentType: "${type}")
+														render(text:apiToolkitService.getApiDoc() as JSON, contentType: "${type}")
 														break
 												}
 												return false

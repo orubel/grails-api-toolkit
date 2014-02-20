@@ -379,6 +379,59 @@ class ApiToolkitService{
 		return json
 	}
 	
+	Map getApiDoc(){
+		def params = getParams()
+		def newDoc = [:]
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
+		if(controller){
+			def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
+			if(cache){
+				if(cache["${params.action}"]){
+
+					def doc = cache["${params.action}"].doc
+					def path = doc["${params.action}"].path
+					def method = doc["${params.action}"].method
+					def description = doc["${params.action}"].description
+					
+					newDoc["${params.action}"] = ["path":"${path}","method":method,"description":"${description}"]
+					if(doc["${params.action}"].receives){
+						newDoc["${params.action}"].receives = doc["${params.action}"].receives
+					}
+			
+					if(doc["${params.action}"].returns){
+						newDoc["${params.action}"].returns = []
+						doc["${params.action}"].returns.each(){ v ->
+							if(springSecurityService.principal.authorities*.authority.any { v.roles.contains(it) }){
+								newDoc["${params.action}"].returns.add(v)
+							}
+						}
+						newDoc["${params.action}"].json = processJson(newDoc.returns)
+					}
+					
+					if(doc["${params.action}"].errorcodes){
+						newDoc["${params.action}"].errorcodes = doc["${params.action}"].errorcodes
+					}
+					
+					def links = generateLinkRels(params.controller, params.action,doc)
+					if(links){
+						newDoc["${params.action}"].links = []
+						links.each(){ role ->
+							role.each(){ v ->
+								if(springSecurityService.principal.authorities*.authority.any { v.key }){
+									newDoc["${params.action}"].links.add(v.value)
+								}
+							}
+						}
+						newDoc["${params.action}"].links.unique()
+					}
+
+					return newDoc
+				}
+			}
+		}
+		return [:]
+	}
+	
 	Map generateApiDoc(String controllername, String actionname){
 		Map doc = [:]
 		def cont = apiCacheService.getApiCache(controllername)
@@ -446,7 +499,6 @@ class ApiToolkitService{
 				newDoc["${actionName}"].links = []
 				links.each(){ role ->
 					role.each(){ v ->
-						println("############### ${v}")
 						if(springSecurityService.principal.authorities*.authority.any { v.key }){
 							newDoc["${actionName}"].links.add(v.value)
 						}
@@ -486,10 +538,6 @@ class ApiToolkitService{
 								}
 								break
 						}
-						// loop through controller.value.value.doc.value.receives and add to
-						// controller.value.value.links
-						// for PKEY, getPostChain
-						// for FKEY, getBlankChain
 					}
 				}
 			}
@@ -509,8 +557,12 @@ class ApiToolkitService{
 					def api = method.getAnnotation(Api)
 					if(api.method().contains('GET')){
 						def roles = api.apiRoles() as List
-						println("################ ${roles}")
-						def path = [url:"${uri}&${controllername}/${action}=return",roles:api.apiRoles() as ArrayList]
+						roles.each(){
+							if(!path["${it}"]){
+								path["${it}"] = [:]
+							}
+							path["${it}"] = "${uri}&${controllername}/${action}=return"
+						}
 						paths.add(path)
 					}
 				}
@@ -537,7 +589,6 @@ class ApiToolkitService{
 							}
 							path["${it}"] = "${uri}&${controllername}/${action}=return"
 						}
-						//def path = [url:"${uri}&${controllername}/${action}=return",roles:api.apiRoles() as ArrayList]
 						paths.add(path)
 					}
 				}
