@@ -90,15 +90,22 @@ class ApiToolkitService{
 			uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI
 		}
 		
+		String apiPrefix
+		if(grailsApplication.config.apitoolkit.apiName){
+			apiPrefix = "${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String
+		}else{
+			apiPrefix = "v${grailsApplication.metadata['app.version']}" as String
+		}
+
 		String api
 		Map type = ['XML':'text/xml','JSON':'application/json','HTML':'application/html'].findAll{ request.getHeader('Content-Type')?.startsWith(it.getValue()) }
 
 		if(grailsApplication.config.grails.app.context=='/'){
-			api = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
+			api = "/${apiPrefix}/" as String
 		}else if(grailsApplication.config?.grails?.app?.context){
-			api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
+			api = "/${grailsApplication.config.grails.app.context}/${apiPrefix}/" as String
 		}else if(!grailsApplication.config?.grails?.app?.context){
-			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/" as String
+			api = "/${grailsApplication.metadata['app.name']}/${apiPrefix}/" as String
 		}
 
 		api += "${params.controller}/${params.action}" as String
@@ -435,11 +442,19 @@ class ApiToolkitService{
 	Map generateApiDoc(String controllername, String actionname){
 		Map doc = [:]
 		def cont = apiCacheService.getApiCache(controllername)
+		String apiPrefix
+		if(grailsApplication.config.apitoolkit.apiName){
+			apiPrefix = "/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/" as String
+		}else{
+			apiPrefix = "/v${grailsApplication.metadata['app.version']}/" as String
+		}
+		
 		if(cont){
 			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
 			for (Method method : controller.getClazz().getDeclaredMethod(actionname)){
 				if(method.isAnnotationPresent(Api)) {
-					String path = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/${controllername}/${actionname}"
+					
+					String path = "/${apiPrefix}/${controllername}/${actionname}"
 					doc[("${actionname}".toString())] = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
 					
 					if(cont["${actionname}"]["receives"]){
@@ -504,6 +519,7 @@ class ApiToolkitService{
 						}
 					}
 				}
+				
 				newDoc["${actionName}"].links.unique()
 			}
 		}

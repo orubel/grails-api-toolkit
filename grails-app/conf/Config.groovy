@@ -37,12 +37,12 @@ apitoolkit.defaultData.EMAIL = 'example@yoursite.com'
 apitoolkit.defaultData.URL = 'http://www.yoursite.com'
 
 grails.plugin.springsecurity.filterChain.chainMap = [
-	"/${apiName}_${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
+	"/${apiName}_v${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
+	"/v${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
 ]
 
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
-	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
-	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
-	"/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
+	"/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
+	"/v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
 	"/hook/**" : ['permitAll'] 
 ]
