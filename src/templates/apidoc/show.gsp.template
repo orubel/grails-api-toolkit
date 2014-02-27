@@ -3,10 +3,195 @@
 	<head>
 		<meta name="layout" content="main">
 		<title>Api Docs</title>
+		
+	    <g:javascript library="jquery" plugin="jquery"/>
 
+		<style media="screen" type="text/css">
+		.controllerList{
+			margin-left: auto;
+			margin-right: auto;
+			width: 800px;
+			font-weight: normal;
+		}
+		
+		.methodList{
+			display:inline-box;
+		}
+		
+		.controllerName{
+			float:left;
+			width: 600px;
+			line-height:20px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: bold;
+			color:black;
+		}
+		
+		.controllerName a{
+				text-decoration:none;
+				color: #848484 !important;
+		}
+		.controllerName a:hover{
+			color: #000 !important;
+		}
+		
+		.functions{
+			text-align:right;
+			float:right;
+			width: 200px;
+			line-height:20px;
+		    font-size:12px;
+		    height:20px;
+			font-family: "Droid Sans", sans-serif;
+			color:grey;
+		}
+		
+		.method{
+			position:relative;
+			z-index:999;
+			-webkit-border-top-left-radius: 5px !important;
+			-webkit-border-bottom-left-radius: 5px !important;
+			border-top-left-radius: 5px !important;
+			border-bottom-left-radius: 5px !important;
+			-moz-border-radius-topleft: 7px !important;
+			-moz-border-radius-bottomleft: 5px !important;
+			float:left;
+			width: 75px;
+			line-height:20px;
+			padding-left:18px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: bold;
+			color:white;
+			border-top: 1px solid white;
+			border-bottom: 1px solid white;
+		}
+		
+		.method a{
+				text-decoration:none;
+				color: #fff !important;
+		}
+		.method a:hover{
+			color: #000 !important;
+		}
+		
+		.path{
+			position:relative;
+			z-index:999;
+			-webkit-border-top-right-radius: 5px !important;
+			-webkit-border-bottom-right-radius: 5px !important;
+			border-top-right-radius: 5px !important;
+			border-bottom-right-radius: 5px !important;
+			-moz-border-radius-topright: 5px !important;
+			-moz-border-radius-bottomright: 5px !important;
+			float:right;
+			width: 707px;
+			line-height:20px;
+		    font-size:15px;
+		    height:20px;
+			font-family: "Droid Sans", sans-serif;
+			color:black;
+			border-top: 1px solid white;
+			border-bottom: 1px solid white;
+		}
+			
+		.methodSeparator{
+			z-index:999;
+			float:left;
+			background-color:white;
+			height:20px;
+			width:2px;
+		}
+			
+		.getDark{
+			background-color: #66cc33 !important;
+		}
+		.getLight{
+			background-color: #b3e19c !important;
+		}
+		.getDesc{
+			text-align:right;
+			float:right;
+			padding-right:10px;
+			color: #4e9d27;
+		}
+		
+		.putDark{
+			background-color: #ff9900 !important;
+		}
+		.putLight{
+			background-color: #fedaa3 !important;
+		}
+		.putDesc{
+			text-align:right;
+			float:right;
+			padding-right:10px;
+			color: #cf7c00;
+		}
+		
+		.postDark{
+			background-color: #6699ff !important;
+		}
+		.postLight{
+			background-color: #b1c8fe !important;
+		}
+		.postDesc{
+			text-align:right;
+			float:right;
+			padding-right:10px;
+			color: #4c73bf
+		}
+		
+		.deleteDark{
+			background-color: #ff3300 !important;
+		}
+		.deleteLight{
+			background-color: #fdbfb1 !important;
+		}
+		.deleteDesc{
+			text-align:right;
+			float:right;
+			padding-right:10px;
+			color: #c52700;
+		}
+		
+		.infoBox{
+			z-index:1;
+			position:relative;top:-3px;
+			-webkit-border-bottom-left-radius: 5px !important;
+			-webkit-border-bottom-right-radius: 5px !important;
+			border-bottom-left-radius: 5px !important;
+			border-bottom-right-radius: 5px !important;
+			-moz-border-radius-bottomleft: 5px !important;
+			-moz-border-radius-bottomright: 5px !important;
+			line-height:20px;
+			padding-left:18px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: bold;
+			background-color:#e0e0e0;
+			width:782px;
+			clear: both;
+			display:inline-box;
+			padding-top:3px;
+		}
+		
+		.json{
+			display: table;border: 1px solid #ff9900;
+			width:730px;
+			background-color:#fedaa3;
+			color:#cf7c00;
+			line-height:20px;
+			padding-left:18px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		</style>
 	</head>
 
-	<body style="color: #393939;font: 13px/1.4em helvetica,arial,freesans,clean,sans-serif;">
+	<body>
 
 		<div id="show-apidocs" class="content scaffold-show" role="main">
 			<g:if test="${flash.message}">
@@ -14,117 +199,139 @@
 			</g:if>
 		</div>
 		
-		<div style="margin-left: auto; margin-right: auto;width: 800px;">
 		<g:each in="${apiList}" var="controller">
-			<br>
-			<h3>${controller.key.toUpperCase()}</h3>
+			<div class="controllerList">
+				<div class="controllerName"><a href='#' onClick="toggleControllerList(this);">${controller.key.toUpperCase()}</a></div>
+				<div class="functions"><a href='#' onClick="toggleMethodList(this);">show/hide</a></div>
 			
-			<g:each in="${controller.value}" var="action">
-			<g:set var="action" value="${action.key}"/> 
+			<g:set var="temp" value="${controller.value.collect()}"/>
+			<g:set var="actionCount" value="${temp.size()}"/>
 
-			<g:if test="${action.value.path}"><g:set var="path" value="${action.value.path}"/></g:if> 
-			<g:if test="${action.value.json}"><g:set var="json" value="${action.value.json}"/></g:if> 
-			<g:if test="${action.value.method}"><g:set var="method" value="${action.value.method}"/></g:if> 
-			<g:if test="${action.value.description}"><g:set var="description" value="${action.value.description}"/></g:if>
-			<g:if test="${action.value.receives}"><g:set var="receives" value="${action.value.receives}"/></g:if> 
-			<g:if test="${action.value.returns}"><g:set var="returns" value="${action.value.returns}"/></g:if> 
-			<g:if test="${action.value.errorcodes}"><g:set var="errors" value="${action.value.errorcodes}"/></g:if> 
-			<g:if test="${action.value.links}"><g:set var="links" value="${action.value.links}"/></g:if> 
+			<g:each in="${controller.value}" var="act">
+				<g:each in="${act}" var="action">
 
-			</g:each>
-			<br>
-			<div style="background-color: #f7f7f7;padding:5px;">
-				<div style="display: table;border: 1px solid #c5c5c5;">
-				 <div style="display: table-row; background-color:#b4b8be;color:#fff;">
-					   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>${action}</b></span>
-					   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>${path}</b></span>
-					   <span style="display: table-cell;width: 400px;padding-left: 10px;border: 1px #d7ad7b;"><b>&nbsp;</b></span>
-				 </div>
-				</div>
-				${description}
-				<br><br>
-				
-				<g:if test="${json}">
-				<b>RETURN EXAMPLE</b>
-				<div>${json}</div>
-				<br>
-				</g:if>
-
-				<g:if test="${links?.size()>0}">
-				<div style="display: table;border: 1px solid #c5c5c5;">
-					<div style="display: table-row; background-color:#b4b8be;color:#fff;">
-					   <span style="display: table-cell;width: 800px;padding-left: 10px;border: 1px #d7ad7b;"><b>Links</b></span>
-					</div>
-					<g:each in="${links}" var="link">
-						<div style="display: table-row; background-color:#fff;">
-						   <span style="display: table-cell;width: 800px;padding-left: 10px;border: 1px #d7ad7b;">${link}</span>
-					    </div>
-					 </g:each>
-				 </div>
-				</g:if>
-				
-				<b>Receives</b>
-				<div style="display: table;border: 1px solid #c5c5c5;">
-					<div style="display: table-row; background-color:#b4b8be;color:#fff;">
-					   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
-					   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
-					   <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
-					   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Required</b></span>
-					    <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
-					</div>
-					<g:each in="${receives}" var="value">
-						<div style="display: table-row;background-color:#fff;">
-						   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${value.paramType}</span>
-						   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${value.name}</span>
-						   <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;">${value.description}</span>
-						   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${value.required}</span>
-						    <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
-					    </div>
-					 </g:each>
+				<g:set var="actionName" value="${action.key}"/>
+				<g:if test="${action.value.path}"><g:set var="path" value="${action.value.path}"/></g:if>
+				<g:if test="${action.value.json}"><g:set var="json" value="${action.value.json}"/></g:if>
+				<g:if test="${action.value.method}"><g:set var="methods" value="${action.value.method}"/></g:if>
+				<g:if test="${action.value.method}"><g:set var="method" value="${action.value.method.replace('[','').replace(']','').split(',').findAll{ it =~ /(GET|PUT|POST|DELETE|PATCH|TRACE)/ }[0].toLowerCase()}"/></g:if> 
+				<g:if test="${action.value.description}"><g:set var="description" value="${action.value.description}"/></g:if>
+				<g:if test="${action.value.receives}"><g:set var="receives" value="${action.value.receives}"/></g:if> 
+				<g:if test="${action.value.returns}"><g:set var="returns" value="${action.value.returns}"/></g:if> 
+				<g:if test="${action.value.errorcodes}"><g:set var="errors" value="${action.value.errorcodes}"/></g:if> 
+				<g:if test="${action.value.links}"><g:set var="links" value="${action.value.links}"/></g:if> 
+				</g:each>
 	
-				 </div>
-				 
-				<g:if test="${returns?.size()>0}">
-				<b>Returns</b>
-				<div style="display: table;border: 1px solid #c5c5c5;">
-					<div style="display: table-row; background-color:#b4b8be;color:#fff;">
-					   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
-					   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
-					   <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
-					   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Required</b></span>
-					    <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
+				<div class="methodList" style="display:none;">
+					<div class="method ${method}Dark"><a href="#" onClick="toggleInfoBox(this);">${method.toUpperCase()}</a></div>
+					<div class="path ${method}Light">${path}/{ID}<img src="/images/pix.gif" class="methodSeparator"/><div class="${method}Desc"">${description}</div></div>
+					<div class="infoBox" style="display:none;">
+						<br/>
+						Example: <div class="json"><%=json%></div>
+						<br/>
+						<g:if test="${links?.size()>0}">
+						<div style="display: table;border: 1px solid #c5c5c5;">
+							<div style="display: table-row; background-color:#b4b8be;color:#fff;">
+							   <span style="display: table-cell;width: 740px;padding-left: 10px;border: 1px #d7ad7b;"><b>Links</b></span>
+							</div>
+							<g:each in="${links}" var="link">
+								<div style="display: table-row; background-color:#fff;">
+								   <span style="display: table-cell;width: 740px;padding-left: 10px;border: 1px #d7ad7b;">${link}</span>
+							    </div>
+							 </g:each>
+						 </div>
+						</g:if>
+						
+						<b>Receives</b>
+						<div style="display: table;border: 1px solid #c5c5c5;">
+							<div style="display: table-row; background-color:#b4b8be;color:#fff;">
+							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
+							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
+							   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
+							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Required</b></span>
+							    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
+							</div>
+							<g:each in="${receives}" var="value">
+								<div style="display: table-row;background-color:#fff;">
+								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${(['PKEY','FKEY','INDEX'].contains(value.paramType.toString()))?'ID':value.paramType}</span>
+								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${value.name}</span>
+								   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">${value.description}</span>
+								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${value.required}</span>
+								    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
+							    </div>
+							 </g:each>
+			
+						 </div>
+						 
+						<g:if test="${returns?.size()>0}">
+						<b>Returns</b>
+						<div style="display: table;border: 1px solid #c5c5c5;">
+							<div style="display: table-row; background-color:#b4b8be;color:#fff;">
+							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
+							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
+							   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
+							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Required</b></span>
+							    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
+							</div>
+							<g:each in="${returns}" var="rturn">
+								<div style="display: table-row; background-color:#fff;">
+								   <span style="display: table-cell;width: 75px;padding-left: 10px;border: 1px #d7ad7b;">${(['PKEY','FKEY','INDEX'].contains(rturn.paramType.toString()))?'ID':rturn.paramType}</span>
+								   <span style="display: table-cell;width: 75px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.name}</span>
+								   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.description}</span>
+								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.required}</span>
+								    <span style="display: table-cell;width:150px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
+							    </div>
+							 </g:each>
+						 </div>
+						 </g:if>
+						
+						<g:if test="${errors?.size()>0}">
+						<b>Errors</b>
+						<div style="display: table;border: 1px solid #c5c5c5;">
+							<div style="display: table-row; background-color:#b4b8be;color:#fff;">
+							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Code</b></span>
+							   <span style="display: table-cell;width: 630px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
+							</div>
+							<g:each in="${errors}" var="error">
+								<div style="display: table-row; background-color:#fff;">
+								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${error.code}</span>
+								   <span style="display: table-cell;width: 630px;padding-left: 10px;border: 1px #d7ad7b;">${error.description}</span>
+							    </div>
+							 </g:each>
+						 </div>
+						 </br>
+						</g:if>
 					</div>
-					<g:each in="${returns}" var="rturn">
-						<div style="display: table-row; background-color:#fff;">
-						   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.paramType}</span>
-						   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.name}</span>
-						   <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.description}</span>
-						   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.required}</span>
-						    <span style="display: table-cell;width: 250px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
-					    </div>
-					 </g:each>
-				 </div>
-				 </g:if>
-				
-				<g:if test="${errors?.size()>0}">
-				<b>Errors</b>
-				<div style="display: table;border: 1px solid #c5c5c5;">
-					<div style="display: table-row; background-color:#b4b8be;color:#fff;">
-					   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Code</b></span>
-					   <span style="display: table-cell;width: 700px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
-					</div>
-					<g:each in="${errors}" var="error">
-						<div style="display: table-row; background-color:#fff;">
-						   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${error.code}</span>
-						   <span style="display: table-cell;width: 700px;padding-left: 10px;border: 1px #d7ad7b;">${error.description}</span>
-					    </div>
-					 </g:each>
-				 </div>
-				</g:if>
+				</div>
+			</g:each>
+			
 			</div>
-
 		</g:each>
 		
-		</div>
+		<script>
+		function toggleControllerList(elem) {
+			if($(elem).parent('.controllerName').parent('.controllerList').find('.methodList').is(':visible')){
+				$(elem).parent('.controllerName').parent('.controllerList').find('.methodList').fadeOut()
+			} else {
+				$(elem).parent('.controllerName').parent('.controllerList').find('.methodList').fadeIn()
+			}
+		}
+		
+		function toggleMethodList(elem) {
+			if($(elem).parent('.functions').parent('.controllerList').find('.methodList').is(':visible')){
+				$(elem).parent('.functions').parent('.controllerList').find('.methodList').fadeOut()
+			} else {
+				$(elem).parent('.functions').parent('.controllerList').find('.methodList').fadeIn()
+			}
+		}
+
+		function toggleInfoBox(elem) {
+			if($(elem).parent('.method').parent('.methodList').find('.infoBox').is(':visible')){
+				$(elem).parent('.method').parent('.methodList').find('.infoBox').fadeOut()
+			} else {
+				$(elem).parent('.method').parent('.methodList').find('.infoBox').fadeIn()
+			}
+		}
+		</script>
 	</body>
 </html>

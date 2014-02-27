@@ -72,23 +72,34 @@ class ApiCacheService{
 				cache["${methodname}"]['receives'] = apidoc.receives
 				cache["${methodname}"]['returns'] = apidoc.returns
 				cache["${methodname}"]['errorcodes'] = apidoc.errorcodes
-				cache["${methodname}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname)
 			}else{
-				log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname}")
+				log.info "[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
 			}
 			return cache
 		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : Exception getting cache for controller ${controllername} : ${e}")
+			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} ")
 		}
 	}
 
+	/*
+	private def setApiCache(String controllername){
+		def temp = grailsCacheManager.getCache('ApiCache')
+		def cache
+		temp.put(controllername,[:])
+		cache = temp.get(controllername).get()
+		return cache
+	}
+	*/
+	
 	def getApiCache(String controllername){
 		try{
 			def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
 			return cache
 		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.getApiCache : Exception getting cache for controller ${controllername} : ${e}")
+			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.getApiCache : No Cache exists for controller ${controllername} ")
 		}
 	}
+	
+
 
 }

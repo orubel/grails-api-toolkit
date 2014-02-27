@@ -37,12 +37,16 @@ import net.nosegrind.apitoolkit.*
 
 import org.springframework.ui.ModelMap
 
+import grails.plugin.cache.GrailsCacheManager
+import org.springframework.cache.Cache
+
 class ApiToolkitService{
 
 	def grailsApplication
 	def springSecurityService
 	def apiCacheService
 	ApiStatuses error = new ApiStatuses()
+	GrailsCacheManager grailsCacheManager
 	
 	static transactional = false
 
@@ -354,14 +358,15 @@ class ApiToolkitService{
 		return err
 	}
 	
-	private Map processJson(ArrayList returns){
+	private String processJson(ArrayList returns){
 		def json = [:]
 		returns.each{ p ->
 			def j = [:]
 			if(p?.values){
 				j["${p.name}"]=[]
 			}else{
-				j = (p?.mockData?.trim())?["${p.name}":"${p.mockData}"]:["${p.name}":"${grailsApplication.config.apitoolkit.defaultData.(p.paramType)}"]
+				def dataName=(['PKEY','FKEY','INDEX'].contains(p.paramType.toString()))?'ID':p.paramType
+				j = (p?.mockData?.trim())?["${p.name}":"${p.mockData}"]:["${p.name}":"${dataName}"]
 			}
 			j.each(){ key,val ->
 				if(val instanceof List){
@@ -379,9 +384,11 @@ class ApiToolkitService{
 		}
 		if(json){
 			json = json as JSON
+			/*
 			json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
 			json = json.toString().replaceAll("}"," </div>}<br>")
 			json = json.toString().replaceAll(",",",<br>")
+			*/
 		}
 		return json
 	}
@@ -463,7 +470,7 @@ class ApiToolkitService{
 					
 					if(cont["${actionname}"]["returns"]){
 						doc[("${actionname}".toString())]["returns"] = processDocValues(cont[("${actionname}".toString())]["returns"] as HashSet)
-						doc[("${actionname}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${actionname}".toString())]["returns"])
+						doc[("${actionname}".toString())]["json"] = processJson(doc[("${actionname}".toString())]["returns"])
 					}
 					
 					if(cont["${actionname}"]["errorcodes"]){
@@ -498,11 +505,15 @@ class ApiToolkitService{
 			if(doc["${actionName}"].returns){
 				newDoc["${actionName}"].returns = []
 				doc["${actionName}"].returns.each(){ v ->
-					if(springSecurityService.principal.authorities*.authority.any { v.roles.contains(it) }){
+					if(v?.roles){
+						if(springSecurityService.principal.authorities*.authority.any { v.roles.contains(it) }){
+							newDoc["${actionName}"].returns.add(v)
+						}
+					}else{
 						newDoc["${actionName}"].returns.add(v)
 					}
 				}
-				newDoc["${actionName}"].json = processJson(newDoc.returns)
+				newDoc["${actionName}"].json = doc["${actionName}"].json
 			}
 			
 			if(doc["${actionName}"].errorcodes){
@@ -787,5 +798,11 @@ class ApiToolkitService{
 			}
 		}
 		return newMap
+	}
+	
+	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc){
+		apiCacheService.setApiCache(controllername,methodname,apidoc)
+		def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
+		cache["${methodname}"]['doc'] = generateApiDoc(controllername, methodname)
 	}
 }
