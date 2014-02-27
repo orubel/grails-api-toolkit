@@ -444,9 +444,9 @@ class ApiToolkitService{
 		def cont = apiCacheService.getApiCache(controllername)
 		String apiPrefix
 		if(grailsApplication.config.apitoolkit.apiName){
-			apiPrefix = "/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/" as String
+			apiPrefix = "${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String
 		}else{
-			apiPrefix = "/v${grailsApplication.metadata['app.version']}/" as String
+			apiPrefix = "v${grailsApplication.metadata['app.version']}" as String
 		}
 		
 		if(cont){
