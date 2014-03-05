@@ -22,6 +22,7 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiName}_v${apiVersion}/**"){
 			 before = { Map model ->
+				 println("##### FILTER (BEFORE)")
 				 params.action = (params.action)?params.action:'index'
 				 
 				 def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -60,9 +61,13 @@ class ApiToolkitFilters {
 			 }
 			 
 			 after = { Map model ->
+				 println("##### FILTER (AFTER)")
 				 if(!model){
 					 return true
 				 }
+				 
+println("##### MODEL :" +model)
+				 
 				 def newModel = apiToolkitService.convertModel(model)
 				 ApiStatuses error = new ApiStatuses()
 				 params.action = (params.action)?params.action:'index'

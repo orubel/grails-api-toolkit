@@ -493,18 +493,18 @@ class ApiToolkitService{
 		def cache = (params.controller)?apiCacheService.getApiCache(controllerName):null
 		if(cache["${actionName}"]?.doc){
 			def doc = cache["${actionName}"].doc
-			def path = doc["${actionName}"].path
-			def method = doc["${actionName}"].method
-			def description = doc["${actionName}"].description
+			def path = doc.path
+			def method = doc.method
+			def description = doc.description
 			
 			newDoc["${actionName}"] = ["path":"${path}","method":method,"description":"${description}"]
-			if(doc["${actionName}"].receives){
-				newDoc["${actionName}"].receives = doc["${actionName}"].receives
+			if(doc.receives){
+				newDoc["${actionName}"].receives = doc.receives
 			}
 	
-			if(doc["${actionName}"].returns){
+			if(doc.returns){
 				newDoc["${actionName}"].returns = []
-				doc["${actionName}"].returns.each(){ v ->
+				doc.returns.each(){ v ->
 					if(v?.roles){
 						if(springSecurityService.principal.authorities*.authority.any { v.roles.contains(it) }){
 							newDoc["${actionName}"].returns.add(v)
@@ -513,11 +513,11 @@ class ApiToolkitService{
 						newDoc["${actionName}"].returns.add(v)
 					}
 				}
-				newDoc["${actionName}"].json = doc["${actionName}"].json
+				newDoc["${actionName}"].json = doc.json
 			}
 			
-			if(doc["${actionName}"].errorcodes){
-				newDoc["${actionName}"].errorcodes = doc["${actionName}"].errorcodes
+			if(doc.errorcodes){
+				newDoc["${actionName}"].errorcodes = doc.errorcodes
 			}
 			
 			def links = generateLinkRels(controllerName, actionName,doc)
