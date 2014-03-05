@@ -462,22 +462,22 @@ class ApiToolkitService{
 				if(method.isAnnotationPresent(Api)) {
 					
 					String path = "/${apiPrefix}/${controllername}/${actionname}"
-					doc[("${actionname}".toString())] = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
+					doc = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
 					
 					if(cont["${actionname}"]["receives"]){
-						doc[("${actionname}".toString())]["receives"] = processDocValues(cont[("${actionname}".toString())]["receives"] as HashSet)
+						doc["receives"] = processDocValues(cont[("${actionname}".toString())]["receives"] as HashSet)
 					}
 					
 					if(cont["${actionname}"]["returns"]){
-						doc[("${actionname}".toString())]["returns"] = processDocValues(cont[("${actionname}".toString())]["returns"] as HashSet)
-						doc[("${actionname}".toString())]["json"] = processJson(doc[("${actionname}".toString())]["returns"])
+						doc["returns"] = processDocValues(cont[("${actionname}".toString())]["returns"] as HashSet)
+						doc["json"] = processJson(doc["returns"])
 					}
 					
 					if(cont["${actionname}"]["errorcodes"]){
-						doc[("${actionname}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
+						doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
 					}
 					List links = generateLinkRels(controllername,actionname,doc)
-					doc[("${actionname}".toString())]["links"] = links
+					doc["links"] = links
 				}else{
 					// ERROR: method at '${controllername}/${actionname}' does not have API annotation
 				}
@@ -540,36 +540,35 @@ class ApiToolkitService{
 	List generateLinkRels(String controllerName, String actionName,Map apidoc){
 		List links = []
 		int inc = 0
-		apidoc.each() { descriptor ->
-			def receives = descriptor.value.receives
-			def path = descriptor.value.path
-			if(receives){
-				receives.each() { param ->
-					def paramType = param?.paramType
-					if(paramType){
-						switch(paramType){
-							case 'PKEY':
-								String uri = "${path}/[ID]?null=${param?.name}"
-								def endChains = getPostChainUri(controllerName,actionName,uri)
-								endChains.each(){ end ->
-									links.add(inc,end)
-									inc++
-								}
-								break
-							case 'FKEY':
-								String uri = "${path}/[ID]?null=${param?.name}"
-								def endChains = getBlankChainUri(controllerName,actionName,uri)
-								endChains.each(){ end ->
-									links.add(inc,end)
-									inc++
-								}
-								break
-						}
+
+		def receives = apidoc.receives
+		def path = apidoc.path
+		if(receives){
+			receives.each() { param ->
+				def paramType = param?.paramType
+				if(paramType){
+					switch(paramType){
+						case 'PKEY':
+							String uri = "${path}/[ID]?null=${param?.name}"
+							def endChains = getPostChainUri(controllerName,actionName,uri)
+							endChains.each(){ end ->
+								links.add(inc,end)
+								inc++
+							}
+							break
+						case 'FKEY':
+							String uri = "${path}/[ID]?null=${param?.name}"
+							def endChains = getBlankChainUri(controllerName,actionName,uri)
+							endChains.each(){ end ->
+								links.add(inc,end)
+								inc++
+							}
+							break
 					}
 				}
 			}
-
 		}
+
 		return links
 	}
 	
@@ -804,5 +803,16 @@ class ApiToolkitService{
 		apiCacheService.setApiCache(controllername,methodname,apidoc)
 		def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
 		cache["${methodname}"]['doc'] = generateApiDoc(controllername, methodname)
+	}
+	
+	
+	/*
+	 * Validates Api Command > apiRoles
+	 */
+	def apiRoles(List list) {
+		if(springSecurityService.principal.authorities*.authority.any { list.contains(it) }){
+			return true
+		}
+		return ['validation.customRuntimeMessage', 'ApiCommandObject does not validate. Check that your data validates or that requesting user has access to api method and all fields in api command object.']
 	}
 }

@@ -64,20 +64,24 @@ class ApiCacheService{
 	
 	@CachePut(value="ApiCache",key="#controllername")
 	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc){
+		def cache = getApiCache(controllername)
 		try{
-			def cache = getApiCache(controllername)
-			if(cache["${methodname}"]){
-				cache["${methodname}"]['name'] = apidoc.name
-				cache["${methodname}"]['description'] = apidoc.description
-				cache["${methodname}"]['receives'] = apidoc.receives
-				cache["${methodname}"]['returns'] = apidoc.returns
-				cache["${methodname}"]['errorcodes'] = apidoc.errorcodes
-			}else{
-				log.info "[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
+			if(!cache){
+				cache = [:]
 			}
+			if(!cache["${methodname}"]){
+				cache["${methodname}"] = [:]
+			}
+
+			cache["${methodname}"]['name'] = apidoc.name
+			cache["${methodname}"]['description'] = apidoc.description
+			cache["${methodname}"]['receives'] = apidoc.receives
+			cache["${methodname}"]['returns'] = apidoc.returns
+			cache["${methodname}"]['errorcodes'] = apidoc.errorcodes
+
 			return cache
 		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} ")
+			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : Error caching ${controllername}/${methodname} pair : ${e}")
 		}
 	}
 
@@ -93,10 +97,13 @@ class ApiCacheService{
 	
 	def getApiCache(String controllername){
 		try{
-			def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
-			return cache
+			def cache = grailsCacheManager.getCache('ApiCache').get(controllername)
+			if(cache){
+				return cache.get()
+			}
+			//return cache
 		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.getApiCache : No Cache exists for controller ${controllername} ")
+			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.getApiCache : No Cache exists for controller ${controllername} : ${e}")
 		}
 	}
 	

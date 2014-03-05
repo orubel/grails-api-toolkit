@@ -15,13 +15,17 @@
  *****************************************************************************/
 package net.nosegrind.apitoolkit
 
-import net.nosegrind.apitoolkit.ParamsDescriptor;
-
+import net.nosegrind.apitoolkit.ParamsDescriptor
+import org.codehaus.groovy.grails.commons.GrailsClass
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import grails.util.Holders
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
 class ApiParams{
 
+	def applicationContext
 	def grailsApplication
+	def apiDocService
 	def springSecurityService
 
 	ParamsDescriptor param
@@ -56,6 +60,39 @@ class ApiParams{
 		return this
 	}
 	
+	boolean validate(){
+		println(this.param)
+		/*
+		switch(this.paramType.toLowerCase()){
+			case 'string':
+			case '_string':
+				break;
+			case 'float':
+			case '_float':
+				break
+			case 'double':
+				break
+			case 'bigdecimal':
+			case '_bigdecimal':
+				break
+			case 'long':
+			case '_long':
+				break;
+			case 'integer':
+				break
+			case 'boolean':
+			case '_boolean':
+				break
+			case 'email':
+			case '_email':
+				break
+			case 'url':
+			case '_url':
+				break
+		}
+		*/
+	}
+	
 	def hasParams(ParamsDescriptor[] values){
 		this.param.values = values
 		return this
@@ -74,6 +111,33 @@ class ApiParams{
 	def _INDEX(String name,String description,String idReference){
 		this.param = new ParamsDescriptor(paramType:"INDEX",name:"${name}",description:"${description}",idReferences:"${idReference}")
 		return this
+	}
+
+	
+	/*
+	private def testKey(){
+		def tmp = this.name.toLowerCase()
+		def tmp2 = tmp.split("_")
+		if(tmp2.count()>1){
+			if(tmp2.last()=='id'){
+				this.isKey = 'FKEY'
+				return this
+			}
+		}else{
+			if(tmp=='id'){
+				this.isKey = 'PKEY'
+				return this
+			}
+		}
+	}
+	*/
+	
+	def _DOMAIN(GrailsClass domain){
+		ParamsDescriptor[] prms
+		//GrailsClass clazz =  grailsApplication.getArtefactByLogicalPropertyName(DomainClassArtefactHandler.TYPE, domainName)
+		//apiDocService.getDomain("${domainName}")
+		
+		//this.param = new ParamsDescriptor(paramType:"STRING",name:"${name}",description:"${description}").validate(this.paramType)
 	}
 	
 	def _STRING(String name,String description){
@@ -98,6 +162,7 @@ class ApiParams{
 	
 	def _LONG(String name,String description){
 		this.param = new ParamsDescriptor(paramType:"LONG",name:"${name}",description:"${description}")
+		testKey()
 		return this
 	}
 	
