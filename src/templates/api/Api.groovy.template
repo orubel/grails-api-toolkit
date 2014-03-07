@@ -1,0 +1,11 @@
+package ${packageName}
+
+import java.util.Date
+
+class ${apiClassName} {
+
+	${apiProperties}
+
+	${apiConstraints}
+
+}

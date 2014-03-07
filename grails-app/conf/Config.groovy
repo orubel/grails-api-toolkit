@@ -10,6 +10,7 @@ log4j = {
           'net.sf.ehcache.hibernate'
 }
 
+grails.converters.default.pretty.print = true
 grails.cache.enabled = true
 grails.cache.clearAtStartup	= true
 grails.cache.config = {

@@ -27,7 +27,6 @@ grails.project.dependency.resolution = {
 		compile ':spring-security-core:2.0-RC2'
 		
 		// used for testing
-		/*
 	    test(":spock:0.7") {
 			export=false
 			exclude "spock-grails-support"
@@ -35,6 +34,5 @@ grails.project.dependency.resolution = {
 		compile(":rest:0.8"){
 			export=false
 		}
-		*/
     }
 }
