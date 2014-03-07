@@ -40,10 +40,6 @@ target(apiObjects: 'Creates api command objects from pre-existing domains') {
 	//depends(checkVersion, configureProxy, packageApp,runApp)
 	createObjects()
 
-
-	
-
-
 	printMessage """
 	*************************************************************
 	* SUCCESS! Created api classes from domains classes.        *
@@ -53,70 +49,29 @@ target(apiObjects: 'Creates api command objects from pre-existing domains') {
 
 //target(createObjects: 'Create api object classes from pre-existing GORM domains'){
 def createObjects(){
-	if (!configureScript()) {
-		exit(1)
-	}
 	String dir = packageToDir('net.nosegrind.apitoolkit')
-	ant.mkdir dir: "$appDir/api/"
-	
-	//def grailsApplication = Holders.getGrailsApplication()
-
-	if(domainPackageName){
-
-		String domainPath = domainPackageName.replace(".","/")
-		println(domainPath)
-
-		if(apiClassName){
-			grailsApp.domainClasses.each { DefaultGrailsDomainClass domainClass ->
-				println(domainClass)
-				domainClass.getProperties().each { property ->
-					if(property.type.name!='java.lang.Object'){
-						if(grailsApp.isDomainClass(property.type)){
-							println("java.lang.Long = ${property.name}_id")
-						}else{
-							println("${property.type.name} = ${property.name}")
-						}
-					}
+	ant.mkdir dir: "$appDir/apiHandlers/"
+	def apiProperties = ''
+	// if it begins java.util or java.lang, then use
+	grailsApp.domainClasses.each { DefaultGrailsDomainClass domainClass ->
+		println("#### ${domainClass}")
+		List methods = []
+		def properties = [:]
+		domainClass.getProperties().each { property ->
+			if(property.type.name!='java.lang.Object'){
+				if(grailsApp.isDomainClass(property.type)){
+					properties["${property.name}_id"] = 'java.lang.Long'
+				}else{
+					properties["${property.name}"] = property.type.name
 				}
 			}
-		}else{
-			// read all files in directory
 		}
-
-	}else{
-	
+		println(properties)
 	}
+
 	//generateFile "$templateDir/hook/Hook.groovy.template", "$appDir/domain/${dir}Hook.groovy"
 
 }
 
-private boolean configureScript() {
-	def argValues = parseArgs()
-	if (!argValues) {
-		return false
-	}
-
-	if (argValues.size() == 2) {
-		(domainPackageName, apiClassName) = argValues
-	}else {
-		return false
-	}
-
-	templateAttributes = [packageName: domainPackageName,apiClassName: apiClassName]
-
-	true
-}
-
-private parseArgs() {
-	def args = argsMap.params
-
-	if ([1,2].contains(args.size())) {
-		printMessage "Creating classes for package ${args[0]}..."
-		return args
-	}
-
-	errorMessage USAGE
-	null
-}
 
 setDefaultTarget('apiObjects')

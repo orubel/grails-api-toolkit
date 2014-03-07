@@ -1,11 +1,28 @@
 package ${packageName}
 
-import java.util.Date
+import grails.validation.Validateable
+import java.util.*
 
-class ${apiClassName} {
+@Validateable
+class ${apiClassName}ApiCommand {
 
+	/*
+	 * Roles as key with properties as list of values to be excluded
+	 *
+	 * if no exclusions, leave list blank for role. 
+	 * ex. roleExclude = ['ROLE_ADMIN':[],'ROLE_USER':['password']]
+	 *
+	 * if no roles, leave map blank
+	 * ex. roleExclude = [:]
+	 */
+	def roleExclude = [:]
+	
 	${apiProperties}
 
-	${apiConstraints}
-
+    static constraints = {
+		// import validation from Domain
+		importFrom ${apiClassName}
+		
+		id blank:false
+    }
 }
