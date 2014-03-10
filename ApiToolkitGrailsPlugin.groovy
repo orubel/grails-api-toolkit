@@ -1,3 +1,5 @@
+import net.nosegrind.apitoolkit.ApiHandlerArtefactHandler
+
 class ApiToolkitGrailsPlugin {
     def version = "1.0.18"
     def grailsVersion = "2.3 > *"

@@ -1,10 +1,10 @@
-package ${packageName}
+package	net.nosegrind.apitoolkit;
 
 import grails.validation.Validateable
 import java.util.*
 
 @Validateable
-class ${apiClassName}ApiCommand {
+class ${apiClassName}ApiHandler implements ApiHandler {
 
 	/*
 	 * Roles as key with properties as list of values to be excluded
