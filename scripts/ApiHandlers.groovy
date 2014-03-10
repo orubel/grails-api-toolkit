@@ -48,12 +48,11 @@ def createObjects(){
 	
 	// if it begins java.util or java.lang, then use
 	grailsApp.domainClasses.each { DefaultGrailsDomainClass domainClass ->
-		def apiProperties = ''
-		println("#### ${domainClass}")
+		String apiProperties = ''
 		List methods = []
 		def properties = [:]
+		String apiClassName = domainClass.name
 		domainClass.getProperties().each { property ->
-			//println(property)
 			if(property.type.name!='java.lang.Object'){
 				if(grailsApp.isDomainClass(property.type)){
 					apiProperties += "Long ${property.name}_id\n"
@@ -65,12 +64,11 @@ def createObjects(){
 				}
 			}
 		}
-		println(apiProperties)
+		templateAttributes = [apiClassName: apiClassName,apiProperties:apiProperties]
+		generateFile "$templateDir/api/Api.groovy.template", "$appDir/apiHandlers/${apiClassName}ApiHandler.groovy"
 	}
-	//templateAttributes = [apiClassName: apiClassName,apiProperties:apiProperties]
-	//generateFile "$templateDir/hook/Hook.groovy.template", "$appDir/domain/${dir}Hook.groovy"
+
 
 }
-
 
 setDefaultTarget('apiHandlers')
