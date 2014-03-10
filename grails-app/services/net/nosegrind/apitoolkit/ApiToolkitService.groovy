@@ -68,11 +68,19 @@ class ApiToolkitService{
 		List tempType = request.getHeader('Content-Type')?.split(';')
 		String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
 		type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
-		if(type=='application/json'){
-			def json = request.JSON
-			json.each() { key,value ->
-				params.put(key,value)
-			}
+		switch(type){
+			case 'application/json':
+				def json = request.JSON
+				json.each() { key,value ->
+					params.put(key,value)
+				}
+				break
+			case 'application/xml':
+				def xml = request.JSON
+				xml.each() { key,value ->
+					params.put(key,value)
+				}
+				break
 		}
 		return params
 	}
