@@ -176,12 +176,119 @@
 			display:inline-box;
 			padding-top:3px;
 		}
-		
-		.json{
-			display: table;border: 1px solid #ff9900;
-			width:730px;
+
+		.table{
+			display: table;
+		}
+		.getTableContrast{
+			border: 1px solid #66cc33;
 			background-color:#fedaa3;
-			color:#cf7c00;
+			width:730px;
+			color:#000;
+			line-height:20px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		.getHeadContrast{
+			background-color:#66cc33;
+			color:#fff;
+			line-height:20px;
+			padding-left:18px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		.getRowContrast{
+			background-color:#fedaa3;
+			color:#000;
+			line-height:20px;
+			padding-left:18px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		
+		.putTableContrast{
+			border: 1px solid #ff9900;
+			background-color:#fedaa3;
+			width:730px;
+			color:#000;
+			line-height:20px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		.putHeadContrast{
+			background-color:#ff9900;
+			color:#fff;
+			line-height:20px;
+			padding-left:18px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		.putRowContrast{
+			background-color:#fedaa3;
+			color:#000;
+			line-height:20px;
+			padding-left:18px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		
+		.postTableContrast{
+			border: 1px solid #6699ff;
+			background-color:#fedaa3;
+			width:730px;
+			color:#000;
+			line-height:20px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		.postHeadContrast{
+			background-color:#6699ff;
+			color:#fff;
+			line-height:20px;
+			padding-left:18px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		.postRowContrast{
+			background-color:#fedaa3;
+			color:#000;
+			line-height:20px;
+			padding-left:18px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		
+		.deleteTableContrast{
+			border: 1px solid #ff3300;
+			background-color:#fedaa3;
+			width:730px;
+			color:#000;
+			line-height:20px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		.deleteHeadContrast{
+			background-color:#ff3300;
+			color:#fff;
+			line-height:20px;
+			padding-left:18px;
+			font-size:15px;
+			font-family: "Droid Sans", sans-serif;
+			font-weight: normal;
+		}
+		.deleteRowContrast{
+			background-color:#fedaa3;
+			color:#000;
 			line-height:20px;
 			padding-left:18px;
 			font-size:15px;
@@ -223,28 +330,29 @@
 				</g:each>
 	
 				<div class="methodList" style="display:none;">
+				
 					<div class="method ${method}Dark"><a href="#" onClick="toggleInfoBox(this);">${method.toUpperCase()}</a></div>
 					<div class="path ${method}Light">${path}/{ID}<img src="/images/pix.gif" class="methodSeparator"/><div class="${method}Desc"">${description}</div></div>
-					<div class="infoBox" style="display:none;">
+					<div class="infoBox ${method}Light" style="display:none;">
 						<br/>
-						Example: <div class="json"><%=json%></div>
+						JSON Example <div class="table ${method}TableContrast"><%=json%></div>
 						<br/>
 						<g:if test="${links?.size()>0}">
-						<div style="display: table;border: 1px solid #c5c5c5;">
-							<div style="display: table-row; background-color:#b4b8be;color:#fff;">
+						<div class="table ${method}TableContrast">
+							<div class="${method}HeadContrast">
 							   <span style="display: table-cell;width: 740px;padding-left: 10px;border: 1px #d7ad7b;"><b>Links</b></span>
 							</div>
 							<g:each in="${links}" var="link">
-								<div style="display: table-row; background-color:#fff;">
+								<div class="${method}RowContrast">
 								   <span style="display: table-cell;width: 740px;padding-left: 10px;border: 1px #d7ad7b;">${link}</span>
 							    </div>
 							 </g:each>
 						 </div>
 						</g:if>
 						
-						<b>Receives</b>
-						<div style="display: table;border: 1px solid #c5c5c5;">
-							<div style="display: table-row; background-color:#b4b8be;color:#fff;">
+						Receives
+						<div class="table ${method}TableContrast">
+							<div class="${method}HeadContrast">
 							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
 							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
 							   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
@@ -252,7 +360,7 @@
 							    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
 							</div>
 							<g:each in="${receives}" var="value">
-								<div style="display: table-row;background-color:#fff;">
+								<div class="${method}RowContrast">
 								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${(['PKEY','FKEY','INDEX'].contains(value.paramType.toString()))?'ID':value.paramType}</span>
 								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${value.name}</span>
 								   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">${value.description}</span>
@@ -264,9 +372,9 @@
 						 </div>
 						 
 						<g:if test="${returns?.size()>0}">
-						<b>Returns</b>
-						<div style="display: table;border: 1px solid #c5c5c5;">
-							<div style="display: table-row; background-color:#b4b8be;color:#fff;">
+						Returns
+						<div class="table ${method}TableContrast">
+							<div class="${method}HeadContrast">
 							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
 							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
 							   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
@@ -274,7 +382,7 @@
 							    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
 							</div>
 							<g:each in="${returns}" var="rturn">
-								<div style="display: table-row; background-color:#fff;">
+								<div class="${method}RowContrast">
 								   <span style="display: table-cell;width: 75px;padding-left: 10px;border: 1px #d7ad7b;">${(['PKEY','FKEY','INDEX'].contains(rturn.paramType.toString()))?'ID':rturn.paramType}</span>
 								   <span style="display: table-cell;width: 75px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.name}</span>
 								   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.description}</span>
@@ -286,14 +394,14 @@
 						 </g:if>
 						
 						<g:if test="${errors?.size()>0}">
-						<b>Errors</b>
-						<div style="display: table;border: 1px solid #c5c5c5;">
-							<div style="display: table-row; background-color:#b4b8be;color:#fff;">
+						Errors
+						<div class="table ${method}TableContrast">
+							<div class="${method}HeadContrast">
 							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Code</b></span>
 							   <span style="display: table-cell;width: 630px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
 							</div>
 							<g:each in="${errors}" var="error">
-								<div style="display: table-row; background-color:#fff;">
+								<div class="${method}RowContrast">
 								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${error.code}</span>
 								   <span style="display: table-cell;width: 630px;padding-left: 10px;border: 1px #d7ad7b;">${error.description}</span>
 							    </div>
