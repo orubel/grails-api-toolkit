@@ -40,6 +40,8 @@ import org.springframework.ui.ModelMap
 import grails.plugin.cache.GrailsCacheManager
 import org.springframework.cache.Cache
 
+import grails.spring.BeanBuilder
+
 class ApiToolkitService{
 
 	def grailsApplication
@@ -84,6 +86,7 @@ class ApiToolkitService{
 		}
 		return params
 	}
+
 	
 	// api call now needs to detect request method and see if it matches anno request method
 	boolean isApiCall(){

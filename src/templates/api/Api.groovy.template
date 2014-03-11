@@ -4,7 +4,7 @@ import grails.validation.Validateable
 import java.util.*
 
 @Validateable
-class ${apiClassName}ApiHandler implements ApiHandler {
+class ${apiClassName}ApiHandler implements ApiHandlerClass {
 
 	/*
 	 * Roles as key with properties as list of values to be excluded

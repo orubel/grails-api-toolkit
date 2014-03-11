@@ -362,7 +362,7 @@ class ApiToolkitFilters {
 				 if(!model){
 					 return true
 				 }
-				 def newModel = apiToolkitService.convertModel(model)
+				 
 				 ApiStatuses error = new ApiStatuses()
 				 params.action = (params.action)?params.action:'index'
 				 def uri = [params.controller,params.action,params.id]
@@ -397,6 +397,7 @@ class ApiToolkitFilters {
  
 				 // api chaining
 				 if(path){
+					 def newModel = apiToolkitService.convertModel(model)
 					 def uri2 = apiToolkitService.isChainedApi(newModel,path as List)
 					 int pos = apiToolkitService.checkChainedMethodPosition(uri,oldPath as List)
 					 if(pos==3){
@@ -466,6 +467,7 @@ class ApiToolkitFilters {
 	 
 							 if(type){
 								 if (apiToolkitService.isApiCall()) {
+									 def newModel = apiToolkitService.convertModel(model)
 									 List methods = []
 									 if(queryString){
 										 def uri2 = apiToolkitService.isChainedApi(newModel,queryString.split('&') as List)
