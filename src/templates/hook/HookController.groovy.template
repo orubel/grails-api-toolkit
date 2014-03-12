@@ -201,7 +201,7 @@ class HookController {
 							return
 						}else{
 							hook.errors.each { 
-								log.info("[Error]: ${packageName}.HookController.update : unable to save Hook : ${it}")
+								log.info("[Error]: ${packageName}.HookController.update : unable to save Hook : \${it}")
 							}
 						}
 						

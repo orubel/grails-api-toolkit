@@ -1,7 +1,7 @@
 import net.nosegrind.apitoolkit.ApiHandlerArtefactHandler
 
 class ApiToolkitGrailsPlugin {
-    def version = "1.0.19"
+    def version = "1.0.20"
     def grailsVersion = "2.3 > *"
     def title = "Api Toolkit"
     def author = "Owen Rubel"
