@@ -72,7 +72,7 @@ private void copyControllersAndViews() {
 	String dir2 = packageToDir(packageName)
 	println("${templateDir}/hook/HookController.groovy.template")
 	println("${appDir}/controllers/${dir2}HookController.groovy")
-	//generateFile "$templateDir/hook/HookController.groovy.template", "$appDir/controllers/${dir2}HookController.groovy"
+	generateFile "$templateDir/hook/HookController.groovy.template", "$appDir/controllers/${dir2}HookController.groovy"
 	printMessage "Controller / Views created..."
 }
 

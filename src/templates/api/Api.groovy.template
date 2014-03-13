@@ -1,21 +1,11 @@
-package	net.nosegrind.apitoolkit;
+package	${packageName}
 
 import grails.validation.Validateable
 import java.util.*
 
 @Validateable
-class ${apiClassName}ApiHandler implements ApiHandlerClass {
+class ${apiClassName}ApiClass{
 
-	/*
-	 * Roles as key with properties as list of values to be excluded
-	 *
-	 * if no exclusions, leave list blank for role. 
-	 * ex. roleExclude = ['ROLE_ADMIN':[],'ROLE_USER':['password']]
-	 *
-	 * if no roles, leave map blank
-	 * ex. roleExclude = [:]
-	 */
-	def roleExclude = [:]
 	
 	${apiProperties}
 
