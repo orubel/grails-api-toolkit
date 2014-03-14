@@ -1,3 +1,18 @@
+/* ****************************************************************************
+ * Copyright 2014 Owen Rubel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *****************************************************************************/
 package net.nosegrind.apitoolkit
 
 import grails.converters.JSON
@@ -9,16 +24,23 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.Map
+import javax.servlet.forward.*
 
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
 
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 
 import net.nosegrind.apitoolkit.*
 
 import org.springframework.ui.ModelMap
+
+import grails.plugin.cache.GrailsCacheManager
+import org.springframework.cache.Cache
+
+import grails.spring.BeanBuilder
 
 class ApiToolkitService{
 
@@ -26,6 +48,7 @@ class ApiToolkitService{
 	def springSecurityService
 	def apiCacheService
 	ApiStatuses error = new ApiStatuses()
+	GrailsCacheManager grailsCacheManager
 	
 	static transactional = false
 
@@ -40,23 +63,38 @@ class ApiToolkitService{
 		return RCH.currentRequestAttributes().currentResponse
 	}
 
-	def getParams(){
-		def params = RCH.currentRequestAttributes().params
+	GrailsParameterMap getParams(){
+		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		def request = getRequest()
-		def json = request.JSON
-		json.each() { key,value ->
-			params[key] = value
+		List formats = ['text/html','application/json','application/xml']
+		List tempType = request.getHeader('Content-Type')?.split(';')
+		String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+		type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
+		switch(type){
+			case 'application/json':
+				def json = request.JSON
+				json.each() { key,value ->
+					params.put(key,value)
+				}
+				break
+			case 'application/xml':
+				def xml = request.JSON
+				xml.each() { key,value ->
+					params.put(key,value)
+				}
+				break
 		}
 		return params
 	}
+
 	
 	// api call now needs to detect request method and see if it matches anno request method
 	boolean isApiCall(){
 		def request = getRequest()
-		def params = getParams()
-		def queryString = request.'javax.servlet.forward.query_string'
-		
-		def uri
+		GrailsParameterMap params = getParams()
+		String queryString = request.'javax.servlet.forward.query_string'
+
+		String uri
 		if(request.isRedirected()){
 			if(params.action=='index'){
 				uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI+'/'+params.action
@@ -67,20 +105,27 @@ class ApiToolkitService{
 			uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI
 		}
 		
-		def api
-		def type = ['XML':'text/html','JSON':'application/json','HTML':'application/xml'].findAll{ request.getHeader('Content-Type')?.startsWith(it.getValue()) }
-
-		if(grailsApplication.config.grails.app.context=='/'){
-			api = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
-		}else if(grailsApplication.config?.grails?.app?.context){
-			api = "${grailsApplication.config.grails.app.context}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
-		}else if(!grailsApplication.config?.grails?.app?.context){
-			api = "/${grailsApplication.metadata['app.name']}/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/"
+		String apiPrefix
+		if(grailsApplication.config.apitoolkit.apiName){
+			apiPrefix = "${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String
+		}else{
+			apiPrefix = "v${grailsApplication.metadata['app.version']}" as String
 		}
 
-		api += "${params.controller}/${params.action}"
-		api += (params.id)?"/${params.id}":""
-		api += (queryString)?"?${queryString}":""
+		String api
+		Map type = ['XML':'text/xml','JSON':'application/json','HTML':'application/html'].findAll{ request.getHeader('Content-Type')?.startsWith(it.getValue()) }
+
+		if(grailsApplication.config.grails.app.context=='/'){
+			api = "/${apiPrefix}/" as String
+		}else if(grailsApplication.config?.grails?.app?.context){
+			api = "/${grailsApplication.config.grails.app.context}/${apiPrefix}/" as String
+		}else if(!grailsApplication.config?.grails?.app?.context){
+			api = "/${grailsApplication.metadata['app.name']}/${apiPrefix}/" as String
+		}
+
+		api += "${params.controller}/${params.action}" as String
+		api += (params.id)?"/${params.id}" as String:""
+		api += (queryString)?"?${queryString}" as String:""
 
 		return uri==api
 	}
@@ -93,7 +138,7 @@ class ApiToolkitService{
 		}else{
 			return false
 		}
-		return 
+		return false
 	}
 	
 	Integer getKey(String key){
@@ -108,7 +153,6 @@ class ApiToolkitService{
 				return 0
 		}
 	}
-	
 	
 	boolean validateUrl(String url){
 		String[] schemes = ["http","https"]
@@ -190,8 +234,8 @@ class ApiToolkitService{
 	}
 	
 	boolean methodCheck(List roles){
-		def optionalMethods = ['OPTIONS','HEAD']
-		def requiredMethods = ['GET','POST','PUT','DELETE','PATCH','TRACE']
+		List optionalMethods = ['OPTIONS','HEAD']
+		List requiredMethods = ['GET','POST','PUT','DELETE','PATCH','TRACE']
 		
 		def temp = roles.removeAll(optionalMethods)
 		if(requiredMethods.contains(temp)){
@@ -279,7 +323,6 @@ class ApiToolkitService{
 		// params.action = temp[1]
 		def uri = SCH.servletContext.getControllerActionUri(request)
 		return uri[1..(uri.size()-1)].split('/')
-
 	}
 	
 	private ArrayList processDocValues(HashSet value){
@@ -287,7 +330,7 @@ class ApiToolkitService{
 		List val2 = []
 		values.each{ v ->
 			Map val = [:]
-			if((v.roles && checkDocAuthority(v.roles)) || !v.roles){
+			//if((v.roles && checkDocAuthority(v.roles)) || !v.roles){
 				val = [
 					"paramType":"${v.paramType}",
 					"name":"${v.name}",
@@ -307,8 +350,11 @@ class ApiToolkitService{
 				if(v.values){
 					val["values"] = processDocValues(v.values)
 				}
+				if(v.roles){
+					val["roles"] = ${v.roles}
+				}
 				val2.add(val)
-			}
+			//}
 		}
 		return val2
 	}
@@ -323,14 +369,15 @@ class ApiToolkitService{
 		return err
 	}
 	
-	private Map processJson(ArrayList returns){
+	private String processJson(ArrayList returns){
 		def json = [:]
 		returns.each{ p ->
 			def j = [:]
 			if(p?.values){
 				j["${p.name}"]=[]
 			}else{
-				j = (p?.mockData?.trim())?["${p.name}":"${p.mockData}"]:["${p.name}":"${grailsApplication.config.apitoolkit.defaultData.(p.paramType)}"]
+				def dataName=(['PKEY','FKEY','INDEX'].contains(p.paramType.toString()))?'ID':p.paramType
+				j = (p?.mockData?.trim())?["${p.name}":"${p.mockData}"]:["${p.name}":"${dataName}"]
 			}
 			j.each(){ key,val ->
 				if(val instanceof List){
@@ -348,41 +395,243 @@ class ApiToolkitService{
 		}
 		if(json){
 			json = json as JSON
+			/*
 			json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
 			json = json.toString().replaceAll("}"," </div>}<br>")
 			json = json.toString().replaceAll(",",",<br>")
+			*/
 		}
 		return json
+	}
+	
+	Map getApiDoc(){
+		def params = getParams()
+		def newDoc = [:]
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
+		if(controller){
+			def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
+			if(cache){
+				if(cache["${params.action}"]){
+
+					def doc = cache["${params.action}"].doc
+					def path = doc["${params.action}"].path
+					def method = doc["${params.action}"].method
+					def description = doc["${params.action}"].description
+					
+					newDoc["${params.action}"] = ["path":"${path}","method":method,"description":"${description}"]
+					if(doc["${params.action}"].receives){
+						newDoc["${params.action}"].receives = doc["${params.action}"].receives
+					}
+			
+					if(doc["${params.action}"].returns){
+						newDoc["${params.action}"].returns = []
+						doc["${params.action}"].returns.each(){ v ->
+							if(springSecurityService.principal.authorities*.authority.any { v.roles.contains(it) }){
+								newDoc["${params.action}"].returns.add(v)
+							}
+						}
+						newDoc["${params.action}"].json = processJson(newDoc.returns)
+					}
+					
+					if(doc["${params.action}"].errorcodes){
+						newDoc["${params.action}"].errorcodes = doc["${params.action}"].errorcodes
+					}
+					
+					def links = generateLinkRels(params.controller, params.action,doc)
+					if(links){
+						newDoc["${params.action}"].links = []
+						links.each(){ role ->
+							role.each(){ v ->
+								if(springSecurityService.principal.authorities*.authority.any { v.key }){
+									newDoc["${params.action}"].links.add(v.value)
+								}
+							}
+						}
+						newDoc["${params.action}"].links.unique()
+					}
+
+					return newDoc
+				}
+			}
+		}
+		return [:]
 	}
 	
 	Map generateApiDoc(String controllername, String actionname){
 		Map doc = [:]
 		def cont = apiCacheService.getApiCache(controllername)
+		String apiPrefix
+		if(grailsApplication.config.apitoolkit.apiName){
+			apiPrefix = "${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String
+		}else{
+			apiPrefix = "v${grailsApplication.metadata['app.version']}" as String
+		}
+		
 		if(cont){
 			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
 			for (Method method : controller.getClazz().getDeclaredMethod(actionname)){
 				if(method.isAnnotationPresent(Api)) {
-					String path = "/${grailsApplication.config.apitoolkit.apiName}_${grailsApplication.metadata['app.version']}/JSON/${controllername}/${actionname}"
-					doc[("${actionname}".toString())] = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
+					
+					String path = "/${apiPrefix}/${controllername}/${actionname}"
+					doc = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
 					
 					if(cont["${actionname}"]["receives"]){
-						doc[("${actionname}".toString())]["receives"] = processDocValues(cont[("${actionname}".toString())]["receives"] as HashSet)
+						doc["receives"] = processDocValues(cont[("${actionname}".toString())]["receives"] as HashSet)
 					}
 					
 					if(cont["${actionname}"]["returns"]){
-						doc[("${actionname}".toString())]["returns"] = processDocValues(cont[("${actionname}".toString())]["returns"] as HashSet)
-						doc[("${actionname}".toString())]["json"] = processJson(doc[("${controllername}".toString())][("${actionname}".toString())]["returns"])
+						doc["returns"] = processDocValues(cont[("${actionname}".toString())]["returns"] as HashSet)
+						doc["json"] = processJson(doc["returns"])
 					}
 					
 					if(cont["${actionname}"]["errorcodes"]){
-						doc[("${actionname}".toString())]["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
+						doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
 					}
+					List links = generateLinkRels(controllername,actionname,doc)
+					doc["links"] = links
 				}else{
 					// ERROR: method at '${controllername}/${actionname}' does not have API annotation
 				}
 			}
 		}
+
 		return doc
+	}
+	
+	def Map generateDoc(String controllerName, String actionName){
+		def newDoc = [:]
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
+		def cache = (params.controller)?apiCacheService.getApiCache(controllerName):null
+		if(cache["${actionName}"]?.doc){
+			def doc = cache["${actionName}"].doc
+			def path = doc.path
+			def method = doc.method
+			def description = doc.description
+			
+			newDoc["${actionName}"] = ["path":"${path}","method":method,"description":"${description}"]
+			if(doc.receives){
+				newDoc["${actionName}"].receives = doc.receives
+			}
+	
+			if(doc.returns){
+				newDoc["${actionName}"].returns = []
+				doc.returns.each(){ v ->
+					if(v?.roles){
+						if(springSecurityService.principal.authorities*.authority.any { v.roles.contains(it) }){
+							newDoc["${actionName}"].returns.add(v)
+						}
+					}else{
+						newDoc["${actionName}"].returns.add(v)
+					}
+				}
+				newDoc["${actionName}"].json = doc.json
+			}
+			
+			if(doc.errorcodes){
+				newDoc["${actionName}"].errorcodes = doc.errorcodes
+			}
+			
+			def links = generateLinkRels(controllerName, actionName,doc)
+			if(links){
+				newDoc["${actionName}"].links = []
+				links.each(){ role ->
+					role.each(){ v ->
+						if(springSecurityService.principal.authorities*.authority.any { v.key }){
+							newDoc["${actionName}"].links.add(v.value)
+						}
+					}
+				}
+				
+				newDoc["${actionName}"].links.unique()
+			}
+		}
+		return newDoc
+	}
+	
+	List generateLinkRels(String controllerName, String actionName,Map apidoc){
+		List links = []
+		int inc = 0
+
+		def receives = apidoc.receives
+		def path = apidoc.path
+		if(receives){
+			receives.each() { param ->
+				def paramType = param?.paramType
+				if(paramType){
+					switch(paramType){
+						case 'PKEY':
+							String uri = "${path}/[ID]?null=${param?.name}"
+							def endChains = getPostChainUri(controllerName,actionName,uri)
+							endChains.each(){ end ->
+								links.add(inc,end)
+								inc++
+							}
+							break
+						case 'FKEY':
+							String uri = "${path}/[ID]?null=${param?.name}"
+							def endChains = getBlankChainUri(controllerName,actionName,uri)
+							endChains.each(){ end ->
+								links.add(inc,end)
+								inc++
+							}
+							break
+					}
+				}
+			}
+		}
+
+		return links
+	}
+	
+	private List getBlankChainUri(String controllername,String actionname,String uri){
+		def paths = []
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+		Map methods = [:]
+		controller.getClazz().methods.each { Method method ->
+			String action = method.getName()
+			if(action!=actionname){
+				if(method.isAnnotationPresent(Api)) {
+					def api = method.getAnnotation(Api)
+					if(api.method().contains('GET')){
+						def roles = api.apiRoles() as List
+						roles.each(){
+							if(!path["${it}"]){
+								path["${it}"] = [:]
+							}
+							path["${it}"] = "${uri}&${controllername}/${action}=return"
+						}
+						paths.add(path)
+					}
+				}
+			}
+		}
+		return paths
+	}
+	
+	private List getPostChainUri(String controllername,String actionname,String uri){
+		def paths = []
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
+		Map methods = [:]
+		Map path = [:]
+		controller.getClazz().methods.each { Method method ->
+			String action = method.getName()
+			if(action!=actionname){
+				if(method.isAnnotationPresent(Api)) {
+					def api = method.getAnnotation(Api)
+					if(api.method().contains('POST') || api.method().contains('PUT') || api.method().contains('DELETE')){
+						def roles = api.apiRoles() as List
+						roles.each(){
+							if(!path["${it}"]){
+								path["${it}"] = [:]
+							}
+							path["${it}"] = "${uri}&${controllername}/${action}=return"
+						}
+						paths.add(path)
+					}
+				}
+			}
+		}
+		return paths
 	}
 	
 	Map isChainedApi(Map map,List path){
@@ -436,8 +685,6 @@ class ApiToolkitService{
 			}
 		}
 	}
-	
-	
 	
 	/*
 	 * Returns chainType
@@ -561,5 +808,22 @@ class ApiToolkitService{
 			}
 		}
 		return newMap
+	}
+	
+	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc){
+		apiCacheService.setApiCache(controllername,methodname,apidoc)
+		def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
+		cache["${methodname}"]['doc'] = generateApiDoc(controllername, methodname)
+	}
+	
+	
+	/*
+	 * Validates Api Command > apiRoles
+	 */
+	def apiRoles(List list) {
+		if(springSecurityService.principal.authorities*.authority.any { list.contains(it) }){
+			return true
+		}
+		return ['validation.customRuntimeMessage', 'ApiCommandObject does not validate. Check that your data validates or that requesting user has access to api method and all fields in api command object.']
 	}
 }
