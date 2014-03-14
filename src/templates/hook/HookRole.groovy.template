@@ -5,7 +5,7 @@ import java.util.Date
 
 class HookRole implements Serializable {
 	Hook hook
-	Role role
+	${roleClassName} role
 	Date dateCreated
 	Date lastModified = new Date()
 

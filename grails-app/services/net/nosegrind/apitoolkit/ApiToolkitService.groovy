@@ -536,7 +536,7 @@ class ApiToolkitService{
 				newDoc["${actionName}"].links = []
 				links.each(){ role ->
 					role.each(){ v ->
-						if(springSecurityService.principal.authorities*.authority.any { v.key }){
+						if(springSecurityService?.principal?.authorities*.authority.any { v.key }){
 							newDoc["${actionName}"].links.add(v.value)
 						}
 					}

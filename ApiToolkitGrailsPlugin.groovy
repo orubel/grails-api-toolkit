@@ -1,5 +1,5 @@
 class ApiToolkitGrailsPlugin {
-    def version = "1.0.22"
+    def version = "1.0.23"
     def grailsVersion = "2.3 > *"
     def title = "Api Toolkit"
     def author = "Owen Rubel"
