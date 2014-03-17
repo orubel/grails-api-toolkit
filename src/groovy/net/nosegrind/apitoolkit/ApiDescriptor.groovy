@@ -1,8 +1,10 @@
-package net.nosegrind.apitoolkit;
+package net.nosegrind.apitoolkit
 
-import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
-import net.nosegrind.apitoolkit.ParamsDescriptor;
+import net.nosegrind.apitoolkit.ErrorCodeDescriptor
+import net.nosegrind.apitoolkit.ParamsDescriptor
 import grails.validation.Validateable
+
+// name is name of the object used
 
 //@grails.validation.Validateable
 @Validateable
@@ -10,7 +12,6 @@ class ApiDescriptor {
 
 	String method
 	List apiRoles
-	List hookRoles
 	String name
     String description
 	Map doc
@@ -21,7 +22,7 @@ class ApiDescriptor {
 	static constraints = { 
 		method(nullable:true,inList: ["GET","POST","PUT","DELETE"])
 		apiRoles(nullable:true)
-		name(nullable:true,maxSize:500)
+		name(nullable:true,maxSize:200)
 		description(nullable:true,maxSize:1000)
 		doc(nullable:true)
 		receives(nullable:true)

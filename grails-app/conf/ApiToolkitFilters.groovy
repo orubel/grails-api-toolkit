@@ -60,7 +60,7 @@ class ApiToolkitFilters {
 								return false
 							}
 							// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
-							def method = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+							def method = cache["${params.action}"]['method'].trim()
 							def uri = [params.controller,params.action,params.id]
 							// DOES api.methods.contains(request.method)
 							if(!apiToolkitService.isRequestMatch(method)){

@@ -130,10 +130,10 @@ class ApiToolkitService{
 		return uri==api
 	}
 
-	boolean isRequestMatch(List protocol){
+	boolean isRequestMatch(String protocol){
 		def request = getRequest()
 		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
-		if(protocol.contains(method)){
+		if(protocol == method){
 			return true
 		}else{
 			return false
@@ -231,23 +231,6 @@ class ApiToolkitService{
 	void callHook(String service, Object data, String state) {
 		data = formatDomainObject(data)
 		send(data, state, service)
-	}
-	
-	boolean methodCheck(List roles){
-		List optionalMethods = ['OPTIONS','HEAD']
-		List requiredMethods = ['GET','POST','PUT','DELETE','PATCH','TRACE']
-		
-		def temp = roles.removeAll(optionalMethods)
-		if(requiredMethods.contains(temp)){
-			if(temp.size()>1){
-				// ERROR: too many non-optional methods; only one is permitted
-				return false
-			}
-		}else{
-			// ERROR: unrecognized method
-			return false
-		}
-		return true
 	}
 	
 	private boolean send(Map data, String state, String service) {
@@ -395,11 +378,6 @@ class ApiToolkitService{
 		}
 		if(json){
 			json = json as JSON
-			/*
-			json = json.toString().replaceAll("\\{\n","\\{<br><div style='padding-left:2em;'>")
-			json = json.toString().replaceAll("}"," </div>}<br>")
-			json = json.toString().replaceAll(",",",<br>")
-			*/
 		}
 		return json
 	}
@@ -592,7 +570,7 @@ class ApiToolkitService{
 			if(action!=actionname){
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
-					if(api.method().contains('GET')){
+					if(api.method() == 'GET'){
 						def roles = api.apiRoles() as List
 						roles.each(){
 							if(!path["${it}"]){
@@ -618,7 +596,7 @@ class ApiToolkitService{
 			if(action!=actionname){
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
-					if(api.method().contains('POST') || api.method().contains('PUT') || api.method().contains('DELETE')){
+					if(api.method() == 'POST' || api.method() == 'PUT' || api.method() == 'DELETE'){
 						def roles = api.apiRoles() as List
 						roles.each(){
 							if(!path["${it}"]){
@@ -703,11 +681,11 @@ class ApiToolkitService{
 		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
 		def cache = apiCacheService.getApiCache(uri[0])
 		//def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-		def methods = cache["${uri[1]}"]['method'][1..-2].split(',')*.trim() as List
+		def methods = cache["${uri[1]}"]['method'].trim()
 		if(method=='GET'){
-			if(!methods.contains(method)){ preMatch = true }
+			if(!methods == method){ preMatch = true }
 		}else{
-			if(methods.contains(method)){ preMatch = true }
+			if(methods == method){ preMatch = true }
 		}
 		
 		// postmatch check
@@ -717,11 +695,11 @@ class ApiToolkitService{
 				List last2 = last[0].split('/')
 				cache = apiCacheService.getApiCache(last2[0])
 				//methods = cache["${last2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-				methods = cache["${last2[1]}"]['method'][1..-2].split(',')*.trim() as List
+				methods = cache["${last2[1]}"]['method'].trim() as List
 				if(method=='GET'){
-					if(!methods.contains(method)){ postMatch = true }
+					if(!methods == method){ postMatch = true }
 				}else{
-					if(methods.contains(method)){ postMatch = true }
+					if(methods == method){ postMatch = true }
 				}
 			}
 		}
@@ -736,11 +714,11 @@ class ApiToolkitService{
 					List temp2 = temp[0].split('/')
 					cache = apiCacheService.getApiCache(temp2[0])
 					//methods = cache["${temp2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-					methods = cache["${temp2[1]}"]['method'][1..-2].split(',')*.trim() as List
+					methods = cache["${temp2[1]}"]['method'].trim() as List
 					if(method=='GET'){
-						if(!methods.contains(method)){ pathMatch = true }
+						if(!methods == method){ pathMatch = true }
 					}else{
-						if(methods.contains(method)){ pathMatch = true }
+						if(methods == method){ pathMatch = true }
 					}
 				}
 			}

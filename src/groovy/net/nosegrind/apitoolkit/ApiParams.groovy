@@ -46,6 +46,16 @@ class ApiParams{
 		return this
 	}
 
+	def hasAlias(String data){
+		this.param.alias = data
+		return this
+	}
+	
+	def exposeToService(boolean data){
+		this.param.expose = data
+		return this
+	}
+	
 	def _PKEY(String name,String description,String idReference){
 		this.param = new ParamsDescriptor(paramType:"PKEY",name:"${name}",description:"${description}",idReferences:"${idReference}")
 		return this

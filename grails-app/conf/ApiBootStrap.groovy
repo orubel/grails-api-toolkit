@@ -40,11 +40,12 @@ class ApiBootStrap {
 						"receives":[],
 						"doc":[:]
 					)
+					/*
 					service['apiRoles'] = api.apiRoles()
 					if(api.hookRoles()){
 						service['hookRoles'] = api.hookRoles()
 					}
-					
+					*/
 					methods["${actionname}"] = service
 				}
 			}
