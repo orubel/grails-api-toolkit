@@ -16,44 +16,13 @@ import net.nosegrind.apitoolkit.ApiToolkitService
 
 class ApiBootStrap {
 	
-	def springSecurityService
 	def grailsApplication
-	def apiCacheService
-	def apiToolkitService
+	def apiObjectService
 	
 	def init = { servletContext ->
-		grailsApplication.controllerClasses.each { DefaultGrailsControllerClass controllerClass ->
-			String controllername = controllerClass.logicalPropertyName
-			Map methods = [:]
-			controllerClass.getClazz().methods.each { Method method ->
-				String actionname = method.getName()
-				
-				if(method.isAnnotationPresent(Api)) {
-					def api = method.getAnnotation(Api)
-					
-					ApiStatuses error = new ApiStatuses()
-					ApiParams param = new ApiParams()
-
-					ApiDescriptor service = new ApiDescriptor(
-						"method":"${api.method()}",
-						"description":'',
-						"receives":[],
-						"doc":[:]
-					)
-					/*
-					service['apiRoles'] = api.apiRoles()
-					if(api.hookRoles()){
-						service['hookRoles'] = api.hookRoles()
-					}
-					*/
-					methods["${actionname}"] = service
-				}
-			}
-			if(methods){
-				apiCacheService.setApiCache("${controllername}".toString(),methods)
-			}
-		}
+		apiObjectService.initApiCache()
 	}
+
 
     def destroy = {}
 

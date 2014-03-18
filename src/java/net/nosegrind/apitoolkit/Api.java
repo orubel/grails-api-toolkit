@@ -16,8 +16,7 @@ import java.util.List;
 @Documented
 public @interface Api{
 	String method();
-	String name() default "";
+	String[] roles();
+	String name();
 	String description() default "";
-	String[] receives();
-	String[] returns();
 }

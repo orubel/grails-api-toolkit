@@ -45,11 +45,6 @@ class ApiParams{
 		this.param.values = values
 		return this
 	}
-
-	def hasAlias(String data){
-		this.param.alias = data
-		return this
-	}
 	
 	def exposeToService(boolean data){
 		this.param.expose = data

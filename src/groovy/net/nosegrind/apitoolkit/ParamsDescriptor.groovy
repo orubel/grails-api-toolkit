@@ -9,7 +9,6 @@ class ParamsDescriptor {
 
 	String paramType
 	String name
-	String alias
 	String idReferences
 	String description
 	boolean expose = true
@@ -21,7 +20,6 @@ class ParamsDescriptor {
 	static constraints = { 
 		paramType(nullable:false,maxSize:100,inList: ["PKEY", "FKEY", "INDEX","STRING","LONG","BOOLEAN","FLOAT","BIGDECIMAL","EMAIL","URL"])
 		name(nullable:false,maxSize:100)
-		alias(nullable:true,maxSize:100)
 		idReferences(maxSize:100, validator: { val, obj ->
 			if (paramType!="PKEY" && paramType!="FKEY") {
 			  return ['nullable']

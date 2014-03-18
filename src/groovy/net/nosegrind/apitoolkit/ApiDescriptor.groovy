@@ -11,7 +11,7 @@ import grails.validation.Validateable
 class ApiDescriptor {
 
 	String method
-	List apiRoles
+	List roles
 	String name
     String description
 	Map doc
@@ -20,9 +20,9 @@ class ApiDescriptor {
     ErrorCodeDescriptor[] errorcodes
 
 	static constraints = { 
-		method(nullable:true,inList: ["GET","POST","PUT","DELETE"])
-		apiRoles(nullable:true)
-		name(nullable:true,maxSize:200)
+		method(nullable:false,inList: ["GET","POST","PUT","DELETE"])
+		roles(nullable:true)
+		name(nullable:false,maxSize:200)
 		description(nullable:true,maxSize:1000)
 		doc(nullable:true)
 		receives(nullable:true)
