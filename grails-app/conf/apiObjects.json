@@ -1,0 +1,98 @@
+/* JSON API Object
+*
+* simple json object that can be defined outside of any application
+* whose definition and rules can apply universally to request and
+* response api object thus allowing interpretation/application of
+* the object to happen in the application itself and enable definition
+* to happen externally.
+*
+* This enables all definitions to be read in, applied, interpreted
+* and used without tying them to any particular framework or language.
+*
+* RULES:
+*
+* 'required' is data required from incoming request to validate api object for PUT and POST. defaults to FALSE
+* 'expose' exposes to value to the service; in methods, only applies to keytypes. defaults to TRUE
+*     except in methods where it defaults to FALSE
+* 'visible' makes data visible/invisible to user; in methods, only applies to keytypes.
+*     default to TRUE except in methods where it defaults to FALSE
+* 'roles' allows you to set privileges on individual variables to return partial datasets
+* 'mockData' allows you to set default data on the variable. This can be dynamic or static
+*
+* RULES GROUPS:
+*
+* 'default' is the default grouping of rules. Beyond that you can define additional groups such as:
+* 'methods' : rules which set default rules in methods
+* 'actions' : rules which override default for each controller / action
+* 
+ex. 
+
+{
+    "Test": {
+        "values": {
+            "id": {"Long": "PKEY"},
+            "testdata": {"String": "VAR"}
+        },
+        "rules": {
+        	"methods":{
+        		"default":{"required":"false","expose":"true","visible":"false"}
+        	    "GET": {},
+                "PUT": {"required":"true",
+                "POST": {"required":"true"},
+                "DELETE": {}
+        	},
+            "default": {
+                "id": {
+                    "required": "false",
+                    "expose": "true",
+                    "visible": "false",
+                    "mockData": "13"
+                },
+                "testdata": {
+                    "required": "true",
+                    "expose": "true",
+                    "mockData": "blahblahblah",
+                    "roles": ["ADMIN","USER"]
+                }
+            },
+            "actions": {
+                "action": {}
+            }
+        }
+    }
+}
+
+*/
+
+{
+    "Test": {
+        "values": {
+            "id": {"Long": "PKEY"},
+            "testdata": {"String": "VAR"}
+        },
+        "rules": {
+        	"methods":{
+        		"default":{"required":"false","expose":"true","visible":"false"}
+                "PUT": {"required":"true",
+                "POST": {"required":"true"},
+        	},
+        	"values":
+                "id": {
+                    "required": "false",
+                    "expose": "true",
+                    "visible": "false",
+                    "mockData": "13"
+                },
+                "testdata": {
+                    "required": "true",
+                    "expose": "true",
+                    "mockData": "blahblahblah",
+                    "roles": ["ADMIN","USER"]
+                }
+            },
+            "actions": {
+                "actionName": {}
+            }
+        }
+    }
+}

@@ -46,16 +46,53 @@ class ApiObjectService{
 			controllerClass.getClazz().methods.each { Method method ->
 				String actionname = method.getName()
 				
+				ApiStatuses error = new ApiStatuses()
+				ApiParams param = new ApiParams()
+				
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
 
 					ApiDescriptor service = new ApiDescriptor(
 						"method":"${api.method()}",
 						"description":"${api.description()}",
-						"receives":[],
 						"doc":[:]
 					)
-
+					
+					/*
+					* 'required' is data required from incoming request to validate api object for PUT and POST
+					* 'expose' exposes to value to the service; defaults to true on all keyTypes.else true
+					* 'visible' makes data visible/invisible to user; defaults to false on all keyTypes.
+					* 'roles' allows you to set prics on individual variables to return partial datasets
+					* 'mockData' allows you to set default data on the variable. This can be dynamic or static
+					*/
+					def rules = [
+						'GET':['required':false,'expose':true,'visible':]
+					]
+					json["${actionname}"].values.each{ val ->
+						switch(val){
+							case 'PKEY':
+								break
+							case 'FKEY':
+								break
+							case 'INDEX':
+								break
+							case 'STRING':
+								break
+							case 'BOOLEAN':
+								break
+							case 'FLOAT':
+								break
+							case 'BIGDECIMAL':
+								break
+							case 'LONG':
+								break
+							case 'EMAIL':
+								break
+							case 'URL':
+								break
+						}
+					}
+					
 					service['roles'] = api.roles()
 					
 					methods["${actionname}"] = service
