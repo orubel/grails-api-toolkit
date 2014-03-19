@@ -59,11 +59,13 @@ class ApiCacheService{
 				cache["${methodname}"]['errorcodes'] = apidoc.errorcodes
 				cache["${methodname}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname)
 			}else{
-				log.info "[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
+				//log.info 
+				println "[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
 			}
 			return cache
 		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} ")
+			//log.info
+			println("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
 		}
 	}
 

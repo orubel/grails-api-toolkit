@@ -334,7 +334,7 @@ class ApiToolkitService{
 					val["values"] = processDocValues(v.values)
 				}
 				if(v.roles){
-					val["roles"] = ${v.roles}
+					val["roles"] = v.roles
 				}
 				val2.add(val)
 			//}
@@ -788,10 +788,12 @@ class ApiToolkitService{
 		return newMap
 	}
 	
-	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc){
-		apiCacheService.setApiCache(controllername,methodname,apidoc)
+	def setApiCache(String controllername,Map apidoc){
+		apiCacheService.setApiCache(controllername,apidoc)
 		def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
-		cache["${methodname}"]['doc'] = generateApiDoc(controllername, methodname)
+		apidoc.each{ k,v ->
+			cache["${k}"]['doc'] = generateApiDoc(controllername, k)
+		}
 	}
 	
 	

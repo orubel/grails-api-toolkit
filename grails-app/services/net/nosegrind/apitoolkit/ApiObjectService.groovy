@@ -173,13 +173,19 @@ class ApiObjectService{
 					)
 
 					service['roles'] = api.roles()
-					
 					methods["${actionname}"] = service
 				}
 			}
+			
 			if(methods){
-				apiCacheService.setApiCache("${controllername}".toString(),methods)
+				println("has methods")
+				String controller = controllername.toString()
+				apiToolkitService.setApiCache(controller,methods)
 			}
+			
+			def cache = apiCacheService.getApiCache(controllername)
+			println("cache : ${cache}")
+		
 		}
 	}
 }
