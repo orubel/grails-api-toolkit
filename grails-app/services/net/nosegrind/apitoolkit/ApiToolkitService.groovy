@@ -597,7 +597,7 @@ class ApiToolkitService{
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
 					if(api.method() == 'POST' || api.method() == 'PUT' || api.method() == 'DELETE'){
-						def roles = api.apiRoles() as List
+						def roles = api.roles() as List
 						roles.each(){
 							if(!path["${it}"]){
 								path["${it}"] = [:]

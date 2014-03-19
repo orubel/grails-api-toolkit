@@ -42,12 +42,13 @@ class ApiObjectService{
 		return keyType
 	}
 	
-	Map createApiParams(Map methodRule, Map actionRule, JSONObject values, String controllername){
+	Map createApiParams(Map actionRule, JSONObject values, String controllername){
 		Map apiParams = [
 			'receives':[],
 			'returns':[]
 		]
 		ApiParams param = new ApiParams()
+		def booleans = ['true','false']
 		
 		values.each{ k,v ->
 			boolean expose = true
@@ -55,57 +56,48 @@ class ApiObjectService{
 			boolean visible = true
 			
 			v.type = (v.key)?getKeyType(v.key, v.type):v.type
-			println "${k} -> ${v}"
 
 			// Create Param (and edit rule defaults for keys)
 			switch(v.type.toLowerCase()){
 				case 'pkey':
 					param._PKEY("${v.key}","${v.description}","${controllername}")
-					required = "true"
-					visible = "false"
+					required = true
 					break
 				case 'fkey':
 					param._FKEY("${v.key}","${v.description}","${controllername}")
-					visible = "false"
+					visible = false
 					break
 				case 'index':
 					param._INDEX("${v.key}","${v.description}","${controllername}")
-					visible = "false"
+					visible = false
 					break
 				case 'long':
 					param._LONG("${v.key}","${v.description}")
-					expose = "true"
 					break
 				case 'string':
 					param._STRING("${v.key}","${v.description}")
-					expose = "true"
 					break
 				case 'boolean':
 					param._BOOLEAN("${v.key}","${v.description}")
-					expose = "true"
 					break
 				case 'bigdecimal':
 					param._BIGDECIMAL("${v.key}","${v.description}")
-					expose = "true"
 					break
 				case 'float':
 					param._FLOAT("${v.key}","${v.description}")
-					expose = "true"
 					break
 				case 'email':
 					param._EMAIL("${v.key}","${v.description}")
-					expose = "true"
 					break
 				case 'url':
 					param._URL("${v.key}","${v.description}")
-					expose = "true"
 					break
 			}
 
 			/*
 			 * Apply Rules
 			 */
-			def booleans = ['true','false']
+			
 			
 			// Mockdata Rule
 			if(v.mockData){
@@ -118,15 +110,16 @@ class ApiObjectService{
 			}
 			
 			// Expose/ExposeToService Rule
-			expose = (booleans.contains(v?.expose))?v.expose:((booleans.contains(actionRule?.expose))?actionRule.expose:((booleans.contains(methodRule?.expose))?methodRule.expose:true))
+			expose = (booleans.contains(v?.expose))?v.expose:((booleans.contains(actionRule?.expose))?actionRule.expose:expose)
 			param.exposeToService(expose)
 
 			// Required Rule
-			required = (booleans.contains(v?.required))?v.expose:((booleans.contains(actionRule?.required))?actionRule.required:((booleans.contains(methodRule?.required))?methodRule.required:false))
+			required = (booleans.contains(v?.required))?v.expose:((booleans.contains(actionRule?.required))?actionRule.required:required)
 			param.isRequired(required)
 			
+			
 			// Visible Rule
-			visible = (booleans.contains(v?.visible))?v.expose:((booleans.contains(actionRule?.visible))?actionRule.required:((booleans.contains(methodRule?.visible))?methodRule.visible:true))
+			visible = (booleans.contains(v?.visible))?v.expose:((booleans.contains(actionRule?.visible))?actionRule.required:visible)
 			param.isVisible(visible)
 			
 			ParamsDescriptor paramObject = param.toObject()
@@ -143,7 +136,7 @@ class ApiObjectService{
 	
 	def initApiCache(){
 		JSONObject json = readObjectFile()
-		//println(json)
+
 		grailsApplication.controllerClasses.each { DefaultGrailsControllerClass controllerClass ->
 			String controllername = controllerClass.logicalPropertyName
 			
@@ -159,11 +152,12 @@ class ApiObjectService{
 					ApiParams param
 					Map apiParams
 					if(json["${controllername.capitalize()}"]){
-						def methodRule = (json["${controllername.capitalize()}"].rules?.methods?."${api.method()}")?json["${controllername.capitalize()}"].rules.methods."${api.method()}":grailsApplication.config.apitoolkit.rules."${api.method()}"
 						def actionRule = (json["${controllername.capitalize()}"].rules?.actions?."${actionname}")?json["${controllername.capitalize()}"].rules.actions."${actionname}":[:]
-						apiParams = createApiParams(methodRule, actionRule, json["${controllername.capitalize()}"].values, controllername)
+						apiParams = createApiParams(actionRule, json["${controllername.capitalize()}"].values, controllername)
 					}
 					
+					println("receives : ${apiParams?.receives}")
+					println("returns : ${apiParams?.returns}")
 					ApiDescriptor service = new ApiDescriptor(
 						"method":"${api.method()}",
 						"description":"${api.description()}",
@@ -184,8 +178,7 @@ class ApiObjectService{
 			}
 			
 			def cache = apiCacheService.getApiCache(controllername)
-			println("cache : ${cache}")
-		
+
 		}
 	}
 }
