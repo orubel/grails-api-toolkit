@@ -9,55 +9,55 @@
 * This enables all definitions to be read in, applied, interpreted
 * and used without tying them to any particular framework or language.
 *
+* KEYS
+* 
+* 'key':'self'(evaluates as LONG) > primary key, reference to self
+* 'key':'table/domain reference'(evaluates as LONG) > foreign key and referenced table/domain
+* 'key' : 'self or table/domain reference(OTHER)' > index;reference to self,table or domain
+*
 * RULES:
 *
 * 'required' is data required from incoming request to validate api object for PUT and POST. defaults to FALSE
 * 'expose' exposes to value to the service; in methods, only applies to keytypes. defaults to TRUE
-*     except in methods where it defaults to FALSE
-* 'visible' makes data visible/invisible to user; in methods, only applies to keytypes.
-*     default to TRUE except in methods where it defaults to FALSE
-* 'roles' allows you to set privileges on individual variables to return partial datasets
+* 'visible' makes data visible/invisible to user; in methods, only applies to keytypes. default to TRUE
+* 'roles' allows you to set privileges on individual variables to return partial datasets. roles considered 
+*    a 'local' rule but inherits 'roles' from 'parent' (cannot use a role that parent doesnt have as well)
 * 'mockData' allows you to set default data on the variable. This can be dynamic or static
 *
 * RULES GROUPS:
 *
-* 'default' is the default grouping of rules. Beyond that you can define additional groups such as:
-* 'methods' : rules which set default rules in methods
-* 'actions' : rules which override default for each controller / action
+* 'actions' : default rules for each controller / action; value rule always override
+*
+* The override atomicity for rules is:
+*
+* method > action > value
+* 
+* with 'values' rules having the final override. (request)Methods rule are set in the config and can be overridden
+* but shouldn't need to be as you can override at the action
 * 
 ex. 
 
 {
     "Test": {
         "values": {
-            "id": {"Long": "PKEY"},
-            "testdata": {"String": "VAR"}
+            "id": {
+            	"key" : "self",
+            	"type":"Long",
+            	"description":"",
+            	"required": "false",
+            	"visible": "false",
+            	"mockData": "13"
+            },
+            "testdata": {
+            	"type":"String",
+            	"description":"",
+            	"required": "true",
+            	"roles": ["ADMIN","USER"]
+            }
         },
         "rules": {
-        	"methods":{
-        		"default":{"required":"false","expose":"true","visible":"false"}
-        	    "GET": {},
-                "PUT": {"required":"true",
-                "POST": {"required":"true"},
-                "DELETE": {}
-        	},
-            "default": {
-                "id": {
-                    "required": "false",
-                    "expose": "true",
-                    "visible": "false",
-                    "mockData": "13"
-                },
-                "testdata": {
-                    "required": "true",
-                    "expose": "true",
-                    "mockData": "blahblahblah",
-                    "roles": ["ADMIN","USER"]
-                }
-            },
-            "actions": {
-                "action": {}
-            }
+        	"methods": {}
+			"actions": {}
         }
     }
 }
@@ -67,29 +67,23 @@ ex.
 {
     "Test": {
         "values": {
-            "id": {"Long": "PKEY"},
-            "testdata": {"String": "VAR"}
+            "id": {
+            	"key" : "self",
+            	"type":"Long",
+            	"description":"",
+            	"required": "false",
+            	"visible": "false",
+            	"mockData": "13"
+            },
+            "testdata": {
+            	"type":"String",
+            	"description":"",
+            	"required": "true",
+            	"mockData": "blahblahblah",
+            	"roles": ["ADMIN","USER"]
+            }
         },
         "rules": {
-        	"methods":{
-        		"default":{"required":"false","expose":"true","visible":"false"}
-                "PUT": {"required":"true",
-                "POST": {"required":"true"},
-        	},
-        	"values":
-                "id": {
-                    "required": "false",
-                    "expose": "true",
-                    "visible": "false",
-                    "mockData": "13"
-                },
-                "testdata": {
-                    "required": "true",
-                    "expose": "true",
-                    "mockData": "blahblahblah",
-                    "roles": ["ADMIN","USER"]
-                }
-            },
             "actions": {
                 "actionName": {}
             }

@@ -36,6 +36,13 @@ apitoolkit.defaultData.LONG = '18926'
 apitoolkit.defaultData.EMAIL = 'example@yoursite.com'
 apitoolkit.defaultData.URL = 'http://www.yoursite.com'
 
+apitoolkit.rules = [
+	'GET':['required':false,'expose':true,'visible':true],
+	'PUT':['required':false,'expose':true,'visible':true],
+	'POST':['required':false,'expose':true,'visible':true],
+	'DELETE':['required':false,'expose':true,'visible':true]
+]
+
 grails.plugin.springsecurity.filterChain.chainMap = [
 	"/${apiName}_${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
 ]

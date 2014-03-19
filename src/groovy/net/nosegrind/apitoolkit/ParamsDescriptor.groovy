@@ -12,8 +12,9 @@ class ParamsDescriptor {
 	String idReferences
 	String description
 	boolean expose = true
-	List roles = []
+	boolean visible = true
 	boolean required = true
+	List roles = []
 	String mockData
 	ParamsDescriptor[] values = []
 
@@ -28,6 +29,9 @@ class ParamsDescriptor {
 			}
 		})
 		description(nullable:false,maxSize:1000)
+		expose(nullable:false)
+		visible(nullable:false)
+		required(nullable:false)
 		roles(nullable:true)
 		mockData(nullable:true)
 		values(nullable:true)

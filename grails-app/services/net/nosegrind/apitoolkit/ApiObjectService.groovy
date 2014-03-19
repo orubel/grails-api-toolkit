@@ -34,65 +34,144 @@ class ApiObjectService{
 		def filePath = "apiObjects.json"
 		def text = grailsApplication.getParentContext().getResource("classpath:$filePath").getInputStream().getText()
 		def json = JSON.parse(text)
-		println(json)
 		return json
+	}
+	
+	String getKeyType(String reference, String type){
+		String keyType = (reference.toLowerCase()=='self')?((type.toLowerCase()=='long')?'PKEY':'INDEX'):((type.toLowerCase()=='long')?'FKEY':'INDEX')
+		return keyType
+	}
+	
+	Map createApiParams(Map methodRule, Map actionRule, JSONObject values, String controllername){
+		Map apiParams = [
+			'receives':[],
+			'returns':[]
+		]
+		ApiParams param = new ApiParams()
+		
+		values.each{ k,v ->
+			boolean expose = true
+			boolean required = false
+			boolean visible = true
+			
+			v.type = (v.key)?getKeyType(v.key, v.type):v.type
+			println "${k} -> ${v}"
+
+			// Create Param (and edit rule defaults for keys)
+			switch(v.type.toLowerCase()){
+				case 'pkey':
+					param._PKEY("${v.key}","${v.description}","${controllername}")
+					required = "true"
+					visible = "false"
+					break
+				case 'fkey':
+					param._FKEY("${v.key}","${v.description}","${controllername}")
+					visible = "false"
+					break
+				case 'index':
+					param._INDEX("${v.key}","${v.description}","${controllername}")
+					visible = "false"
+					break
+				case 'long':
+					param._LONG("${v.key}","${v.description}")
+					expose = "true"
+					break
+				case 'string':
+					param._STRING("${v.key}","${v.description}")
+					expose = "true"
+					break
+				case 'boolean':
+					param._BOOLEAN("${v.key}","${v.description}")
+					expose = "true"
+					break
+				case 'bigdecimal':
+					param._BIGDECIMAL("${v.key}","${v.description}")
+					expose = "true"
+					break
+				case 'float':
+					param._FLOAT("${v.key}","${v.description}")
+					expose = "true"
+					break
+				case 'email':
+					param._EMAIL("${v.key}","${v.description}")
+					expose = "true"
+					break
+				case 'url':
+					param._URL("${v.key}","${v.description}")
+					expose = "true"
+					break
+			}
+
+			/*
+			 * Apply Rules
+			 */
+			def booleans = ['true','false']
+			
+			// Mockdata Rule
+			if(v.mockData){
+				param.hasMockData("${v.mockData}")
+			}
+			
+			// Roles Rule
+			if(v?.roles){
+				param.hasRoles(v.roles)
+			}
+			
+			// Expose/ExposeToService Rule
+			expose = (booleans.contains(v?.expose))?v.expose:((booleans.contains(actionRule?.expose))?actionRule.expose:((booleans.contains(methodRule?.expose))?methodRule.expose:true))
+			param.exposeToService(expose)
+
+			// Required Rule
+			required = (booleans.contains(v?.required))?v.expose:((booleans.contains(actionRule?.required))?actionRule.required:((booleans.contains(methodRule?.required))?methodRule.required:false))
+			param.isRequired(required)
+			
+			// Visible Rule
+			visible = (booleans.contains(v?.visible))?v.expose:((booleans.contains(actionRule?.visible))?actionRule.required:((booleans.contains(methodRule?.visible))?methodRule.visible:true))
+			param.isVisible(visible)
+			
+			ParamsDescriptor paramObject = param.toObject()
+			if(required){
+				apiParams.receives.add(paramObject)
+			}
+			if(visible){
+				apiParams.returns.add(paramObject)
+			}
+		}
+		
+		return apiParams
 	}
 	
 	def initApiCache(){
 		JSONObject json = readObjectFile()
+		//println(json)
 		grailsApplication.controllerClasses.each { DefaultGrailsControllerClass controllerClass ->
 			String controllername = controllerClass.logicalPropertyName
+			
 			Map methods = [:]
 			controllerClass.getClazz().methods.each { Method method ->
 				String actionname = method.getName()
 				
 				ApiStatuses error = new ApiStatuses()
-				ApiParams param = new ApiParams()
 				
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
 
+					ApiParams param
+					Map apiParams
+					if(json["${controllername.capitalize()}"]){
+						def methodRule = (json["${controllername.capitalize()}"].rules?.methods?."${api.method()}")?json["${controllername.capitalize()}"].rules.methods."${api.method()}":grailsApplication.config.apitoolkit.rules."${api.method()}"
+						def actionRule = (json["${controllername.capitalize()}"].rules?.actions?."${actionname}")?json["${controllername.capitalize()}"].rules.actions."${actionname}":[:]
+						apiParams = createApiParams(methodRule, actionRule, json["${controllername.capitalize()}"].values, controllername)
+					}
+					
 					ApiDescriptor service = new ApiDescriptor(
 						"method":"${api.method()}",
 						"description":"${api.description()}",
-						"doc":[:]
+						"doc":[:],
+						"receives":(apiParams?.receives)?apiParams?.receives:[],
+						"returns":(apiParams?.returns)?apiParams?.returns:[]
 					)
-					
-					/*
-					* 'required' is data required from incoming request to validate api object for PUT and POST
-					* 'expose' exposes to value to the service; defaults to true on all keyTypes.else true
-					* 'visible' makes data visible/invisible to user; defaults to false on all keyTypes.
-					* 'roles' allows you to set prics on individual variables to return partial datasets
-					* 'mockData' allows you to set default data on the variable. This can be dynamic or static
-					*/
-					def rules = [
-						'GET':['required':false,'expose':true,'visible':]
-					]
-					json["${actionname}"].values.each{ val ->
-						switch(val){
-							case 'PKEY':
-								break
-							case 'FKEY':
-								break
-							case 'INDEX':
-								break
-							case 'STRING':
-								break
-							case 'BOOLEAN':
-								break
-							case 'FLOAT':
-								break
-							case 'BIGDECIMAL':
-								break
-							case 'LONG':
-								break
-							case 'EMAIL':
-								break
-							case 'URL':
-								break
-						}
-					}
-					
+
 					service['roles'] = api.roles()
 					
 					methods["${actionname}"] = service
@@ -101,57 +180,6 @@ class ApiObjectService{
 			if(methods){
 				apiCacheService.setApiCache("${controllername}".toString(),methods)
 			}
-		}
-	}
-
-	def flushAllApiCache(){
-		grailsApplication.controllerClasses.each { controllerClass ->
-			String controllername = controllerClass.logicalPropertyName
-			if(controllername!='aclClass'){
-				flushApiCache(controllername)
-			}
-		}
-	}
-	
-	@CacheEvict(value="ApiCache",key="#controllername")
-	def flushApiCache(String controllername){} 
-	
-	@CacheEvict(value="ApiCache",key="#controllername")
-	def resetApiCache(String controllername,String method,ApiDescriptor apidoc){
-		setApiCache(controllername,method,apidoc)
-	}
-	
-	@CachePut(value="ApiCache",key="#controllername")
-	def setApiCache(String controllername,Map apidoc){
-		return apidoc
-	}
-	
-	@CachePut(value="ApiCache",key="#controllername")
-	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc){
-		try{
-			def cache = getApiCache(controllername)
-			if(cache["${methodname}"]){
-				cache["${methodname}"]['name'] = apidoc.name
-				cache["${methodname}"]['description'] = apidoc.description
-				cache["${methodname}"]['receives'] = apidoc.receives
-				cache["${methodname}"]['returns'] = apidoc.returns
-				cache["${methodname}"]['errorcodes'] = apidoc.errorcodes
-				cache["${methodname}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname)
-			}else{
-				log.info "[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
-			}
-			return cache
-		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} ")
-		}
-	}
-
-	def getApiCache(String controllername){
-		try{
-			def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
-			return cache
-		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.getApiCache : No Cache exists for controller ${controllername} ")
 		}
 	}
 }

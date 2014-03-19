@@ -31,13 +31,8 @@ class ApiParams{
 		return this
 	}
 	
-	def isRequired(){
-		this.param.required = true
-		return this
-	}
-	
-	def isNotRequired(){
-		this.param.required = false
+	def isRequired(boolean data){
+		this.param.required = data
 		return this
 	}
 	
@@ -48,6 +43,11 @@ class ApiParams{
 	
 	def exposeToService(boolean data){
 		this.param.expose = data
+		return this
+	}
+	
+	def isVisible(boolean data){
+		this.param.visible = data
 		return this
 	}
 	
