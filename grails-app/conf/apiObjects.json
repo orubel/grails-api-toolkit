@@ -13,15 +13,15 @@
 * 
 * 'key':'self'(evaluates as LONG) > primary key, reference to self
 * 'key':'table/domain reference'(evaluates as LONG) > foreign key and referenced table/domain
-* 'key' : 'self or table/domain reference(OTHER)' > index;reference to self,table or domain
+* 'key' : 'self or table/domain reference(STRING)' > index;reference to self,table or domain
 *
 * RULES:
 *
 * 'required' is data required from incoming request to validate api object for PUT and POST. defaults to FALSE
 * 'expose' exposes to value to the service; in methods, only applies to keytypes. defaults to TRUE
 * 'visible' makes data visible/invisible to user; in methods, only applies to keytypes. default to TRUE
-* 'roles' allows you to set privileges on individual variables to return partial datasets. roles considered 
-*    a 'local' rule but inherits 'roles' from 'parent' (cannot use a role that parent doesnt have as well)
+* 'roles' allows you to set privileges on individual variables to return partial datasets. 'actions' 
+*    can use this rule too but is not overridden; is considered a 'local' rule.
 * 'mockData' allows you to set default data on the variable. This can be dynamic or static
 *
 * RULES GROUPS:
@@ -30,63 +30,49 @@
 *
 * The override atomicity for rules is:
 *
-* method > action > value
+* action > value
 * 
-* with 'values' rules having the final override. (request)Methods rule are set in the config and can be overridden
-* but shouldn't need to be as you can override at the action
+* with 'values' rules having the final override. 
 * 
-ex. 
-
-{
-    "Test": {
-        "values": {
-            "id": {
-            	"key" : "self",
-            	"type":"Long",
-            	"description":"",
-            	"required": "false",
-            	"visible": "false",
-            	"mockData": "13"
-            },
-            "testdata": {
-            	"type":"String",
-            	"description":"",
-            	"required": "true",
-            	"roles": ["ADMIN","USER"]
-            }
-        },
-        "rules": {
-        	"methods": {}
-			"actions": {}
-        }
-    }
-}
-
 */
 
 {
     "Test": {
-        "values": {
+        "VALUES": {
             "id": {
             	"key" : "self",
             	"type":"Long",
             	"description":"",
-            	"required": "false",
             	"visible": "false",
             	"mockData": "13"
             },
             "testdata": {
             	"type":"String",
             	"description":"",
-            	"required": "true",
             	"mockData": "blahblahblah",
-            	"roles": ["ADMIN","USER"]
+            	"roles": ["ROLE_ADMIN","ROLE_USER"]
             }
         },
         "rules": {
-            "actions": {
-                "actionName": {}
-            }
+        	"GET":{
+        		"id":{"required": "true"},
+        		"testdata":{"visible":"true"},
+        		"ACTIONS": {}
+        	},
+        	"PUT":{
+        		"id":{"required": "false"},
+        		"testdata":{"required":"true"},
+        		"ACTIONS": {}
+        	},
+        	"POST":{
+        		"id":{"required": "true"},
+        		"testdata":{"required":"true"},
+        		"ACTIONS": {}
+        	},
+        	"DELETE":{
+        		"id":{"required": "true"},
+        		"ACTIONS": {}
+        	}
         }
     }
 }

@@ -44,8 +44,8 @@ class ApiObjectService{
 	
 	Map createApiParams(Map actionRule, JSONObject values, String controllername){
 		Map apiParams = [
-			'receives':[],
-			'returns':[]
+			'receives':[:],
+			'returns':[:]
 		]
 		ApiParams param = new ApiParams()
 		def booleans = ['true','false']
@@ -111,20 +111,26 @@ class ApiObjectService{
 			// Required Rule
 			required = (booleans.contains(v?.required))?v.expose:((booleans.contains(actionRule?.required))?actionRule.required:required)
 			param.isRequired(required)
-			
+			if(required){
+				println("required : ${param.param.name}")
+				if(param.roles){
+					apiParams.receives["${param.roles}"] = param.toObject()
+				}else{
+					apiParams.receives["permitAll"] = param.toObject()
+				}
+			}
 			
 			// Visible Rule
 			visible = (booleans.contains(v?.visible))?v.expose:((booleans.contains(actionRule?.visible))?actionRule.required:visible)
 			param.isVisible(visible)
-			println("visible : ${visible}")
-			
-			
-			if(required){
-				println("paramName : ${param.param.name}")
-				apiParams.receives.add(param.toObject())
-			}
 			if(visible){
-				apiParams.returns.add(param.toObject())
+				//apiParams.returns.add(param.toObject())
+				println("visible : ${param.param.name}")
+				if(param.roles){
+					apiParams.returns["${param.roles}"] = param.toObject()
+				}else{
+					apiParams.returns["permitAll"] = param.toObject()
+				}
 			}
 		}
 		
@@ -150,7 +156,7 @@ class ApiObjectService{
 					Map apiParams
 					if(json["${controllername.capitalize()}"]){
 						def actionRule = (json["${controllername.capitalize()}"].rules?.actions?."${actionname}")?json["${controllername.capitalize()}"].rules.actions."${actionname}":[:]
-						apiParams = createApiParams(actionRule, json["${controllername.capitalize()}"].values, controllername)
+						apiParams = createApiParams(actionRule, json["${controllername.capitalize()}"].VALUES, controllername)
 					}
 					
 					def receives = apiParams?.receives
