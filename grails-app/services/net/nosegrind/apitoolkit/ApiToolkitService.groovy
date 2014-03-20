@@ -198,32 +198,6 @@ class ApiToolkitService{
 		}
 	}
 	
-	private boolean checkDocAuthority(HashSet role){
-		List roles = role as List
-		if(roles.size()>0 && roles[0].trim()){
-			def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugins.springsecurity.authority.className).clazz.list().authority
-			def finalRoles
-			def userRoles
-			if (springSecurityService.isLoggedIn()){
-				userRoles = springSecurityService.getPrincipal().getAuthorities()
-			}
-			
-			if(userRoles){
-				def temp = roles2.intersect(roles as Set)
-				finalRoles = temp.intersect(userRoles)
-				if(finalRoles){
-					return true
-				}else{
-					return false
-				}
-			}else{
-				return false
-			}
-		}else{
-			return true
-		}
-	}
-	
 	void callHook(String service, Map data, String state) {
 		send(data, state, service)
 	}
@@ -313,7 +287,6 @@ class ApiToolkitService{
 		List val2 = []
 		values.each{ v ->
 			Map val = [:]
-			//if((v.roles && checkDocAuthority(v.roles)) || !v.roles){
 				val = [
 					"paramType":"${v.paramType}",
 					"name":"${v.name}",
@@ -337,8 +310,7 @@ class ApiToolkitService{
 					val["roles"] = v.roles
 				}
 				val2.add(val)
-			//}
-		}
+			}
 		return val2
 	}
 	
@@ -790,9 +762,12 @@ class ApiToolkitService{
 	
 	def setApiCache(String controllername,Map apidoc){
 		apiCacheService.setApiCache(controllername,apidoc)
-		def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
+		//def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
+		
 		apidoc.each{ k,v ->
-			cache["${k}"]['doc'] = generateApiDoc(controllername, k)
+			def doc = generateApiDoc(controllername, k)
+			apiCacheService.setApiDocCache(controllername,k,doc)
+			//cache["${k}"]['doc'] = generateApiDoc(controllername, k,doc)
 		}
 	}
 	

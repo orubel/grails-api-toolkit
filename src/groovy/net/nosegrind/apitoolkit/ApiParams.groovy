@@ -41,11 +41,6 @@ class ApiParams{
 		return this
 	}
 	
-	def exposeToService(boolean data){
-		this.param.expose = data
-		return this
-	}
-	
 	def isVisible(boolean data){
 		this.param.visible = data
 		return this

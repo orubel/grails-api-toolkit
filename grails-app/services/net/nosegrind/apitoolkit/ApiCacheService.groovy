@@ -69,6 +69,23 @@ class ApiCacheService{
 		}
 	}
 
+	@CachePut(value="ApiCache",key="#controllername")
+	def setApiDocCache(String controllername,String methodname,Map apidoc){
+		try{
+			def cache = getApiCache(controllername)
+			if(cache["${methodname}"]){
+				cache["${methodname}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname)
+			}else{
+				//log.info
+				println "[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
+			}
+			return cache
+		}catch(Exception e){
+			//log.info
+			println("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
+		}
+	}
+	
 	def getApiCache(String controllername){
 		try{
 			def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
