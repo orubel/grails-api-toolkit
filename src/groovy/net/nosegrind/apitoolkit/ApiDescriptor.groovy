@@ -15,8 +15,8 @@ class ApiDescriptor {
 	String name
     String description
 	Map doc
-    ParamsDescriptor[] receives
-    ParamsDescriptor[] returns
+    LinkedHashMap<String,ParamsDescriptor> receives
+    LinkedHashMap<String,ParamsDescriptor> returns
     ErrorCodeDescriptor[] errorcodes
 
 	static constraints = { 

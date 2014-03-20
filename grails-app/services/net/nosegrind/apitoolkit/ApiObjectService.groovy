@@ -37,6 +37,11 @@ class ApiObjectService{
 		return json
 	}
 	
+	List getRules(JSONObject values){
+		
+		return rules
+	}
+	
 	String getKeyType(String reference, String type){
 		String keyType = (reference.toLowerCase()=='self')?((type.toLowerCase()=='long')?'PKEY':'INDEX'):((type.toLowerCase()=='long')?'FKEY':'INDEX')
 		return keyType
@@ -113,8 +118,10 @@ class ApiObjectService{
 			param.isRequired(required)
 			if(required){
 				println("required : ${param.param.name}")
-				if(param.roles){
-					apiParams.receives["${param.roles}"] = param.toObject()
+				if(param.param.roles){
+					param.param.roles.each{ role ->
+						apiParams.receives["${role}"] = param.toObject()
+					}
 				}else{
 					apiParams.receives["permitAll"] = param.toObject()
 				}
@@ -126,8 +133,10 @@ class ApiObjectService{
 			if(visible){
 				//apiParams.returns.add(param.toObject())
 				println("visible : ${param.param.name}")
-				if(param.roles){
-					apiParams.returns["${param.roles}"] = param.toObject()
+				if(param.param.roles){
+					param.param.roles.each{ role ->
+						apiParams.returns["${role}"] = param.toObject()
+					}
 				}else{
 					apiParams.returns["permitAll"] = param.toObject()
 				}
@@ -155,15 +164,15 @@ class ApiObjectService{
 					ApiParams param
 					Map apiParams
 					if(json["${controllername.capitalize()}"]){
-						def actionRule = (json["${controllername.capitalize()}"].rules?.actions?."${actionname}")?json["${controllername.capitalize()}"].rules.actions."${actionname}":[:]
+						def actionRule = (json["${controllername.capitalize()}"].RULES?."${actionname}")?json["${controllername.capitalize()}"].RULES."${actionname}":[:]
 						apiParams = createApiParams(actionRule, json["${controllername.capitalize()}"].VALUES, controllername)
 					}
 					
-					def receives = apiParams?.receives
-					def returns = apiParams?.returns
-					returns.each{ it ->
-						println(it.name)
-					}
+					LinkedHashMap receives = apiParams?.receives
+					LinkedHashMap returns = apiParams?.returns
+println("${api.description()}")
+println(receives)
+println(returns)
 					ApiDescriptor service = new ApiDescriptor(
 						"method":"${api.method()}",
 						"description":"${api.description()}",
