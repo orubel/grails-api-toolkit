@@ -11,7 +11,6 @@ class ParamsDescriptor {
 	String name
 	String idReferences
 	String description
-	boolean expose = true
 	boolean visible = true
 	boolean required = true
 	List roles = []
@@ -29,7 +28,6 @@ class ParamsDescriptor {
 			}
 		})
 		description(nullable:false,maxSize:1000)
-		expose(nullable:false)
 		visible(nullable:false)
 		required(nullable:false)
 		roles(nullable:true)

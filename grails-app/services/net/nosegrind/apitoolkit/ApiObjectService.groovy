@@ -51,7 +51,6 @@ class ApiObjectService{
 		def booleans = ['true','false']
 		
 		values.each{ k,v ->
-			boolean expose = true
 			boolean required = false
 			boolean visible = true
 			
@@ -60,37 +59,37 @@ class ApiObjectService{
 			// Create Param (and edit rule defaults for keys)
 			switch(v.type.toLowerCase()){
 				case 'pkey':
-					param._PKEY("${v.key}","${v.description}","${controllername}")
+					param._PKEY("${k}","${v.description}","${controllername}")
 					required = true
 					break
 				case 'fkey':
-					param._FKEY("${v.key}","${v.description}","${controllername}")
+					param._FKEY("${k}","${v.description}","${controllername}")
 					visible = false
 					break
 				case 'index':
-					param._INDEX("${v.key}","${v.description}","${controllername}")
+					param._INDEX("${k}","${v.description}","${controllername}")
 					visible = false
 					break
 				case 'long':
-					param._LONG("${v.key}","${v.description}")
+					param._LONG("${k}","${v.description}")
 					break
 				case 'string':
-					param._STRING("${v.key}","${v.description}")
+					param._STRING("${k}","${v.description}")
 					break
 				case 'boolean':
-					param._BOOLEAN("${v.key}","${v.description}")
+					param._BOOLEAN("${k}","${v.description}")
 					break
 				case 'bigdecimal':
-					param._BIGDECIMAL("${v.key}","${v.description}")
+					param._BIGDECIMAL("${k}","${v.description}")
 					break
 				case 'float':
-					param._FLOAT("${v.key}","${v.description}")
+					param._FLOAT("${k}","${v.description}")
 					break
 				case 'email':
-					param._EMAIL("${v.key}","${v.description}")
+					param._EMAIL("${k}","${v.description}")
 					break
 				case 'url':
-					param._URL("${v.key}","${v.description}")
+					param._URL("${k}","${v.description}")
 					break
 			}
 
@@ -108,10 +107,6 @@ class ApiObjectService{
 			if(v?.roles){
 				param.hasRoles(v.roles)
 			}
-			
-			// Expose/ExposeToService Rule
-			expose = (booleans.contains(v?.expose))?v.expose:((booleans.contains(actionRule?.expose))?actionRule.expose:expose)
-			param.exposeToService(expose)
 
 			// Required Rule
 			required = (booleans.contains(v?.required))?v.expose:((booleans.contains(actionRule?.required))?actionRule.required:required)
@@ -121,13 +116,15 @@ class ApiObjectService{
 			// Visible Rule
 			visible = (booleans.contains(v?.visible))?v.expose:((booleans.contains(actionRule?.visible))?actionRule.required:visible)
 			param.isVisible(visible)
+			println("visible : ${visible}")
 			
-			ParamsDescriptor paramObject = param.toObject()
+			
 			if(required){
-				apiParams.receives.add(paramObject)
+				println("paramName : ${param.param.name}")
+				apiParams.receives.add(param.toObject())
 			}
 			if(visible){
-				apiParams.returns.add(paramObject)
+				apiParams.returns.add(param.toObject())
 			}
 		}
 		
@@ -156,14 +153,17 @@ class ApiObjectService{
 						apiParams = createApiParams(actionRule, json["${controllername.capitalize()}"].values, controllername)
 					}
 					
-					println("receives : ${apiParams?.receives}")
-					println("returns : ${apiParams?.returns}")
+					def receives = apiParams?.receives
+					def returns = apiParams?.returns
+					returns.each{ it ->
+						println(it.name)
+					}
 					ApiDescriptor service = new ApiDescriptor(
 						"method":"${api.method()}",
 						"description":"${api.description()}",
 						"doc":[:],
-						"receives":(apiParams?.receives)?apiParams?.receives:[],
-						"returns":(apiParams?.returns)?apiParams?.returns:[]
+						"receives":receives,
+						"returns":returns
 					)
 
 					service['roles'] = api.roles()
