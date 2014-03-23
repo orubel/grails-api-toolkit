@@ -9,19 +9,19 @@
 * This enables all definitions to be read in, applied, interpreted
 * and used without tying them to any particular framework or language.
 *
-* DEFINITION
+* DEFINITIONS
 * 
 * 'key':'self'(evaluates as LONG) > primary key, reference to self
 * 'key':'table/domain reference'(evaluates as LONG) > foreign key and referenced table/domain
 * 'key':'self/table/domain reference(STRING)' > index;reference to self,table or domain
+* 
 * 'type': Long/String/Boolean/BigDecimal/Float/URL/Email
 * 'description': description of variable, how it is used. mainly for apidocs
 
-* RULES:
+* RULES
 *
-* 'expected' is data required from incoming request to validate api object for PUT and POST. defaults to TRUE with PUT/POST
-* 'required' is data required from outgoing response to validate api object for GET. defaults to TRUE with GET
-* 'visible' makes data visible/invisible to user; in methods, only applies to keytypes. default to TRUE
+* 'expect' is required data for incoming PUT/POST request to validate api object.
+* 'return' is required data for outgoing GET response to validate api object.
 * 'roles' allows you to set privileges on individual variables to return partial datasets. 'actions' 
 *    can use this rule too but is not overridden; is considered a 'local' rule.
 * 'mockData' allows you to set default data on the variable. This can be dynamic or static
@@ -32,7 +32,7 @@
 *
 * The override atomicity for rules is:
 *
-* action < value
+* methods(GET/PUT/POST/DELETE) < action < value
 * 
 * with 'values' rules being overridden by controller action/method rules.
 * 
@@ -41,16 +41,35 @@
 {
     "Test": {
         "VALUES": {
-            "id": {"key":"self","type":"Long","description":"","visible": "false"},
-            "testdata": {"type":"String","description":"","roles": ["ROLE_ADMIN","ROLE_USER"]}
+            "id": {
+            	"key":"self",
+            	"type":"Long",
+            	"description":"",
+            	"expect":"true",
+            	"return":"false",
+            },
+            "testdata": {
+            	"type":"String",
+            	"description":"",
+            	"expect":"true",
+            	"return":"true",
+            	"roles": ["ROLE_ADMIN","ROLE_USER"]
+            }
         },
-        "RULES": {
-			"show":{
-				"testdata":{"mockData": "blahblahblah"}
-			},
-			"create":{
-				"testdata":{"mockData": "createMock"}
-			},
-        }
+        "RULES":{
+        	"METHODS":{
+	        	"PUT":{
+	        		"id":{"expect":"false"},
+	        	},
+	        },
+	        "URI":{
+				"test/show":{
+					"testdata":{"mockData": "blahblahblah"}
+				},
+				"test/create":{
+					"testdata":{"mockData": "createMock"}
+				}
+			}
+		}
     }
 }

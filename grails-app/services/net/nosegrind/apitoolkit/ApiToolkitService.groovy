@@ -282,32 +282,33 @@ class ApiToolkitService{
 		return uri[1..(uri.size()-1)].split('/')
 	}
 	
-	private ArrayList processDocValues(HashSet value){
-		def values = value as List
+	private ArrayList processDocValues(ParamsDescriptor value){
 		List val2 = []
-		values.each{ v ->
+		value.each{ v ->
 			Map val = [:]
 				val = [
-					"paramType":"${v.paramType}",
-					"name":"${v.name}",
-					"description":"${v.description}"
+					"paramType":"${value.paramType}",
+					"name":"${value.name}",
+					"description":"${value.description}"
 				]
 				
-				if(v.paramType=='PKEY' || v.paramType=='FKEY'){
-					val["idReferences"] = "${v.idReferences}"
+				if(value.paramType=='PKEY' || value.paramType=='FKEY'){
+					val["idReferences"] = "${value.idReferences}"
 				}
 		
-				if(v.required==false){
+				if(value.required==false){
 					val["required"] = false
 				}
-				if(v.mockData){
-					val["mockData"] = "${v.mockData}"
+				if(value.mockData){
+					val["mockData"] = "${value.mockData}"
 				}
-				if(v.values){
-					val["values"] = processDocValues(v.values)
+				if(value.values){
+					println(value.values)
+					println(value.values.getClass())
+					val["values"] = processDocValues(value.values)
 				}
-				if(v.roles){
-					val["roles"] = v.roles
+				if(value.roles){
+					val["roles"] = value.roles
 				}
 				val2.add(val)
 			}
@@ -426,12 +427,29 @@ class ApiToolkitService{
 					doc = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
 					
 					if(cont["${actionname}"]["receives"]){
-						doc["receives"] = processDocValues(cont[("${actionname}".toString())]["receives"] as HashSet)
+						if(springSecurityService.principal){
+							for(receiveVal in cont["${actionname}"]["receives"]){
+								if(springSecurityService.principal.authorities*.authority.any { receiveVal.key==it }){
+									doc["receives"] = processDocValues(cont["${actionname}"]["receives"]["${receiveVal}"])
+									break;
+								}
+							}
+						}else{
+							doc["receives"] = processDocValues(cont["${actionname}"]["receives"]['permitAll'])
+						}
 					}
 					
 					if(cont["${actionname}"]["returns"]){
-						doc["returns"] = processDocValues(cont[("${actionname}".toString())]["returns"] as HashSet)
-						doc["json"] = processJson(doc["returns"])
+						if(springSecurityService.principal){
+							for(returnVal in cont["${actionname}"]["returns"]){
+								if(springSecurityService.currentUser.authorities*.authority.any { returnVal.key==it }){
+									doc["returns"] = processDocValues(cont["${actionname}"]["returns"]["${returnVal}"])
+									break;
+								}
+							}
+						}else{
+							doc["returns"] = processDocValues(cont["${actionname}"]["returns"]['permitAll'])
+						}
 					}
 					
 					if(cont["${actionname}"]["errorcodes"]){
