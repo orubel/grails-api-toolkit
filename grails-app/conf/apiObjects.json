@@ -11,17 +11,70 @@
 *
 * DEFINITIONS
 * 
-* 'key':'self'(evaluates as LONG) > primary key, reference to self
-* 'key':'table/domain reference'(evaluates as LONG) > foreign key and referenced table/domain
-* 'key':'self/table/domain reference(STRING)' > index;reference to self,table or domain
+* 'references':'self'(evaluates as LONG) > primary key, reference to self, For all intents and purposes, this acts as ID of this object
+* 'references':'table/domain name'(evaluates as LONG) > foreign key and referenced table/domain
+* 'references':'self'(evaluates to STRING) > index;reference to self
 * 
 * 'type': Long/String/Boolean/BigDecimal/Float/URL/Email
-* 'description': description of variable, how it is used. mainly for apidocs
-
-* RULES
 *
-* 'expect' is required data for incoming PUT/POST request to validate api object.
-* 'return' is required data for outgoing GET response to validate api object.
+* PREDEFINED VALUES
+* These are preset definitions and rules that can be overwritten. They are as follows and have the following rules:
+
+* 'type':'PKEY'
+				***references must be defined
+            	"type":"Long",
+            	"description":"",
+            	"required":{"GET":"true","PUT":"true","POST":"true","DELETE":"true"}
+            	"visible":"true"
+* 'type':'FKEY'
+				***references must be defined
+            	"type":"Long",
+            	"description":"",
+            	"required":{"GET":"true","PUT":"true","POST":"true","DELETE":"true"}
+            	"visible":"true"
+* 'type':'INDEX'
+				***references must be defined
+				"type":"String",
+            	"description":"",
+            	"required":{"GET":"true","PUT":"true","POST":"true","DELETE":"true"}
+            	"visible":"true"
+* 'type':'String'
+            	"description":"",
+            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
+            	"visible":"true"
+* 'type':'Long'
+            	"description":"",
+            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
+            	"visible":"true"
+* 'type':'Boolean'
+            	"description":"",
+            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
+            	"visible":"true"
+* 'type':'BigDecimal'
+            	"description":"",
+            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
+            	"visible":"true"
+* 'type':'Float'
+            	"description":"",
+            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
+            	"visible":"true"
+* 'type':'URL'
+            	"description":"",
+            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
+            	"visible":"true"
+* 'type':'Email'
+            	"description":"",
+            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
+            	"visible":"true"
+*
+*
+* RULES
+* These are definitions/requirements that can be overridden
+*
+* 'description': description of variable, how it is used. mainly for apidocs/OPTIONS
+* 'required' is a boolean describing state of incoming/outgoing variable. If not required, is considered optional.
+* 'visible' is boolean describing whether to show variable. if false, will not show even if roles give access to variable. 
+*    However variable will still be accessible by backend service.
 * 'roles' allows you to set privileges on individual variables to return partial datasets. 'actions' 
 *    can use this rule too but is not overridden; is considered a 'local' rule.
 * 'mockData' allows you to set default data on the variable. This can be dynamic or static
@@ -42,26 +95,15 @@
     "Test": {
         "VALUES": {
             "id": {
-            	"key":"self",
-            	"type":"Long",
-            	"description":"",
-            	"expect":"true",
-            	"return":"false",
+            	"type":"PKEY",
             },
             "testdata": {
             	"type":"String",
-            	"description":"",
-            	"expect":"true",
-            	"return":"true",
             	"roles": ["ROLE_ADMIN","ROLE_USER"]
             }
         },
         "RULES":{
-        	"METHODS":{
-	        	"PUT":{
-	        		"id":{"expect":"false"},
-	        	},
-	        },
+        	"METHODS":{},
 	        "URI":{
 				"test/show":{
 					"testdata":{"mockData": "blahblahblah"}
@@ -69,7 +111,8 @@
 				"test/create":{
 					"testdata":{"mockData": "createMock"}
 				}
-			}
+			},
+			"URL":{}
 		}
     }
 }

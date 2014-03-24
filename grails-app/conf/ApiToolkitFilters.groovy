@@ -45,8 +45,9 @@ class ApiToolkitFilters {
 		String apiName = grailsApplication.config.apitoolkit.apiName
 		String apiVersion = grailsApplication.metadata['app.version']
 		
-		apitoolkit(uri:"/${apiName}_${apiVersion}/**"){
+		apitoolkit(uri:"/${apiName}_v${apiVersion}/**"){
 			before = { Map model ->
+				println("#### filter (BEFORE)")
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -56,7 +57,7 @@ class ApiToolkitFilters {
 					if(cache["${params.action}"]){
 						if (apiToolkitService.isApiCall()) {
 							// USER HAS ACCESS?
-							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['apiRoles'])){
+							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['roles'])){
 								return false
 							}
 							// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
@@ -85,6 +86,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
+				println("#### filter (BEFORE)")
 				if(!model){
 					return true
 				}
@@ -198,7 +200,7 @@ class ApiToolkitFilters {
 									def method = (methods.contains(request.method))?request.method:null
 									
 									response.setHeader('Allow', methods.join(', '))
-									response.setHeader('Authorization', cache["${params.action}"]['apiRoles'].join(', '))
+									response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
 									
 									if(method){
 										switch(request.method) {

@@ -47,7 +47,7 @@ class ApiObjectService{
 		return keyType
 	}
 	
-	Map createApiParams(Map actionRule, JSONObject values, String controllername){
+	Map createApiParams(Map actionRule, JSONObject values, String apiObjectName){
 		Map apiParams = [
 			'receives':[:],
 			'returns':[:]
@@ -64,15 +64,15 @@ class ApiObjectService{
 			// Create Param (and edit rule defaults for keys)
 			switch(v.type.toLowerCase()){
 				case 'pkey':
-					param._PKEY("${k}","${v.description}","${controllername}")
+					param._PKEY("${k}","${v.description}","${apiObjectName}")
 					required = true
 					break
 				case 'fkey':
-					param._FKEY("${k}","${v.description}","${controllername}")
+					param._FKEY("${k}","${v.description}","${apiObjectName}")
 					visible = false
 					break
 				case 'index':
-					param._INDEX("${k}","${v.description}","${controllername}")
+					param._INDEX("${k}","${v.description}","${apiObjectName}")
 					visible = false
 					break
 				case 'long':
@@ -160,12 +160,12 @@ class ApiObjectService{
 				
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
-
 					ApiParams param
 					Map apiParams
-					if(json["${controllername.capitalize()}"]){
-						def actionRule = (json["${controllername.capitalize()}"].RULES?."${actionname}")?json["${controllername.capitalize()}"].RULES."${actionname}":[:]
-						apiParams = createApiParams(actionRule, json["${controllername.capitalize()}"].VALUES, controllername)
+					println(api)
+					if(json["${api.name().capitalize()}"]){
+						def actionRule = (json["${api.name().capitalize()}"].RULES?."${actionname}")?json["${api.name().capitalize()}"].RULES."${actionname}":[:]
+						apiParams = createApiParams(actionRule, json["${api.name().capitalize()}"].VALUES, api.name())
 					}
 					
 					LinkedHashMap receives = apiParams?.receives
@@ -180,7 +180,6 @@ println(returns)
 						"receives":receives,
 						"returns":returns
 					)
-
 					service['roles'] = api.roles()
 					methods["${actionname}"] = service
 				}

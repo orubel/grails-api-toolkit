@@ -37,6 +37,26 @@ apitoolkit.defaultData.LONG = '18926'
 apitoolkit.defaultData.EMAIL = 'example@yoursite.com'
 apitoolkit.defaultData.URL = 'http://www.yoursite.com'
 
+apitoolkit.apiobject.rules = [
+	"GET":["id":["expect":"true"]],
+	"PUT":["id":["expect":"false"]],
+	"POST":["id":["expect":"true"]],
+	"DELETE":["id":["expect":"true"]]
+]
+
+apitoolkit.apiobject.typegroups = [
+	"PKEY":["type":"Long","references":"self","description":"","required":["GET":"true","PUT":"false","POST":"true","DELETE":"true"],"visible":"true"],
+	"FKEY":["type":"Long","description":"","required":["GET":"true","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
+	"INDEX":["type":"String","references":"self","description":"","required":["GET":"true","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
+	"String":["type":"String","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
+	"Long":["type":"Long","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
+	"Boolean":["type":"Boolean","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
+	"Float":["type":"Float","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
+	"BigDecimal":["type":"BigDecimal","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
+	"URL":["type":"URL","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
+	"Email":["type":"Email","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"]
+]
+
 grails.plugin.springsecurity.filterChain.chainMap = [
 	"/${apiName}_${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
 ]
