@@ -49,8 +49,8 @@ class ApiObjectService{
 	
 	private Map createReceivesReturns(String apiname, String actionname, JSONObject json){
 		Map apiParams = [
-			"receives":[],
-			"returns":[]
+			"receives":[:],
+			"returns":[:]
 		]
 		List<ParamsDescriptor> receives = []
 		List<ParamsDescriptor> returns = []
@@ -101,22 +101,28 @@ class ApiObjectService{
 			// Required Rule
 			if(param2.param.required){
 				if(param2.param.roles){
-					receives.putAt(receives.size(),param.toObject())
+					//receives.putAt(receives.size(),param.toObject())
 					param2.param.roles.each{ role ->
 						if(apiParams?.receives["${role}"]){
-							apiParams.receives["${role}"].add(receives)
+							receives = apiParams.receives["${role}"]
+							receives[receives.size()] = param.toObject()
+							apiParams.receives["${role}"] = receives
 					   }else{
 						   apiParams.receives["${role}"] = []
-						   apiParams.receives["${role}"].add(receives)
+						   receives[0] = param.toObject()
+						   apiParams.receives["${role}"] = receives
 					   }
 					}
 				}else{
-					receives.putAt(receives.size(),param.toObject())
+					//receives.putAt(receives.size(),param.toObject())
 					if(apiParams?.receives["permitAll"]){
-						apiParams.receives["permitAll"].add(receives)
+						receives = apiParams.receives["permitAll"]
+						receives[receives.size()] = param.toObject()
+						apiParams.receives["permitAll"] = receives
 					}else{
 						apiParams.receives["permitAll"] = []
-						apiParams.receives["permitAll"].add(receives)
+						receives[0] = param.toObject()
+						apiParams.receives["permitAll"] = receives
 					}
 				}
 			}
@@ -126,31 +132,41 @@ class ApiObjectService{
 			if(param2.param.visible){
 				//apiParams.returns.add(param.toObject())
 				if(param2.param.roles){
-					returns.putAt(returns.size(),param.toObject())
+					//returns.putAt(returns.size(),param.toObject())
 					param2.param.roles.each{ role ->
 						if(apiParams?.returns["${role}"]){
-							 apiParams.returns["${role}"].add(returns)
+							returns = apiParams.returns["${role}"]
+							returns[returns.size()] = param.toObject()
+							 apiParams.returns["${role}"] = returns
 						}else{
 							apiParams.returns["${role}"] = []
-							apiParams.returns["${role}"].add(returns)
+							returns[0] = param.toObject()
+							apiParams.returns["${role}"] = returns
 						}
 					}
 				}else{
-					returns.putAt(returns.size(),param.toObject())
+					//returns.putAt(returns.size(),param.toObject())
 					if(apiParams?.returns["permitAll"]){
-						apiParams.returns["permitAll"].add(returns)
+						returns = apiParams.returns["permitAll"]
+						returns[returns.size()] = param.toObject()
+						apiParams.returns["permitAll"] = returns
 					}else{
 						apiParams.returns["permitAll"] = []
-						apiParams.returns["permitAll"].add(returns)
+						returns[0] = param.toObject()
+						apiParams.returns["permitAll"] = returns
 					}
 				}
 			}else{
-				returns.putAt(returns.size(),param.toObject())
+				//returns.putAt(returns.size(),param.toObject())
 				if(apiParams?.returns["permitAll"]){
-					apiParams.returns["permitAll"].add(returns)
+					returns = apiParams.returns["permitAll"]
+					returns[returns.size()] = param.toObject()
+					apiParams.returns["permitAll"] = returns
 				}else{
 					apiParams.returns["permitAll"] = []
-					apiParams.returns["permitAll"].add(returns)
+					apiParams.returns["permitAll"] = []
+					returns[0] = param.toObject()
+					apiParams.returns["permitAll"] = returns
 				}
 			}
 		}
@@ -241,8 +257,8 @@ class ApiObjectService{
 						apiParams = createReceivesReturns(apiname, actionname, json)
 					}
 					
-					ParamsDescriptor[] receives = apiParams?.receives
-					ParamsDescriptor[] returns = apiParams?.returns
+					LinkedHashMap<String,ParamsDescriptor> receives = apiParams?.receives
+					LinkedHashMap<String,ParamsDescriptor> returns = apiParams?.returns
 					
 println("${api.description()}")
 println("receives : ${receives}")

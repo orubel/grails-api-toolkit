@@ -282,36 +282,34 @@ class ApiToolkitService{
 		return uri[1..(uri.size()-1)].split('/')
 	}
 	
-	private ArrayList processDocValues(ParamsDescriptor[] value){
+	private ArrayList processDocValues(List<ParamsDescriptor> value){
 		List val2 = []
 		value.each{ v ->
 			Map val = [:]
-				val = [
-					"paramType":"${value.paramType}",
-					"name":"${value.name}",
-					"description":"${value.description}"
-				]
-				
-				if(value.paramType=='PKEY' || value.paramType=='FKEY'){
-					val["idReferences"] = "${value.idReferences}"
-				}
-		
-				if(value.required==false){
-					val["required"] = false
-				}
-				if(value.mockData){
-					val["mockData"] = "${value.mockData}"
-				}
-				if(value.values){
-					println(value.values)
-					println(value.values.getClass())
-					val["values"] = processDocValues(value.values)
-				}
-				if(value.roles){
-					val["roles"] = value.roles
-				}
-				val2.add(val)
+			val = [
+				"paramType":"${v.paramType}",
+				"name":"${v.name}",
+				"description":"${v.description}"
+			]
+			
+			if(v.paramType=='PKEY' || v.paramType=='FKEY'){
+				val["idReferences"] = "${v.idReferences}"
 			}
+	
+			if(v.required==false){
+				val["required"] = false
+			}
+			if(v.mockData){
+				val["mockData"] = "${value.mockData}"
+			}
+			if(v.values){
+				val["values"] = processDocValues(v.values)
+			}
+			if(v.roles){
+				val["roles"] = v.roles
+			}
+			val2.add(val)
+		}
 		return val2
 	}
 	
