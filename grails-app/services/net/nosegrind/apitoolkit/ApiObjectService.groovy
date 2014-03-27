@@ -37,113 +37,185 @@ class ApiObjectService{
 		return json
 	}
 	
-	List getRules(JSONObject values){
-		
-		return rules
-	}
+	def validateRequestData(){}
+	
+	def validateResponseData(){}
+	
 	
 	String getKeyType(String reference, String type){
 		String keyType = (reference.toLowerCase()=='self')?((type.toLowerCase()=='long')?'PKEY':'INDEX'):((type.toLowerCase()=='long')?'FKEY':'INDEX')
 		return keyType
 	}
 	
-	Map createApiParams(Map actionRule, JSONObject values, String apiObjectName){
+	private Map createReceivesReturns(String apiname, String actionname, JSONObject json){
 		Map apiParams = [
-			'receives':[:],
-			'returns':[:]
+			"receives":[],
+			"returns":[]
 		]
+		List<ParamsDescriptor> receives = []
+		List<ParamsDescriptor> returns = []
+
 		ApiParams param = new ApiParams()
 		def booleans = ['true','false']
 		
-		values.each{ k,v ->
-			boolean required = false
-			boolean visible = true
-			
-			v.type = (v.key)?getKeyType(v.key, v.type):v.type
+		json["${apiname}"].VALUES.each{ k,v ->
+
+			v.type = (v.references)?getKeyType(v.references, v.type):v.type
 
 			// Create Param (and edit rule defaults for keys)
 			switch(v.type.toLowerCase()){
 				case 'pkey':
-					param._PKEY("${k}","${v.description}","${apiObjectName}")
-					required = true
+					param._PKEY("${k}","${apiname}")
 					break
 				case 'fkey':
-					param._FKEY("${k}","${v.description}","${apiObjectName}")
-					visible = false
+					param._FKEY("${k}","${apiname}")
 					break
 				case 'index':
-					param._INDEX("${k}","${v.description}","${apiObjectName}")
-					visible = false
+					param._INDEX("${k}","${apiname}")
 					break
 				case 'long':
-					param._LONG("${k}","${v.description}")
+					param._LONG("${k}")
 					break
 				case 'string':
-					param._STRING("${k}","${v.description}")
+					param._STRING("${k}")
 					break
 				case 'boolean':
-					param._BOOLEAN("${k}","${v.description}")
+					param._BOOLEAN("${k}")
 					break
 				case 'bigdecimal':
-					param._BIGDECIMAL("${k}","${v.description}")
+					param._BIGDECIMAL("${k}")
 					break
 				case 'float':
-					param._FLOAT("${k}","${v.description}")
+					param._FLOAT("${k}")
 					break
 				case 'email':
-					param._EMAIL("${k}","${v.description}")
+					param._EMAIL("${k}")
 					break
 				case 'url':
-					param._URL("${k}","${v.description}")
+					param._URL("${k}")
 					break
 			}
 
-			/*
-			 * Apply Rules
-			 */
-			
-			
-			// Mockdata Rule
-			if(v.mockData){
-				param.hasMockData("${v.mockData}")
-			}
-			
-			// Roles Rule
-			if(v?.roles){
-				param.hasRoles(v.roles)
-			}
+			ApiParams param2 = checkRules(param, apiname, actionname, json,k)
 
 			// Required Rule
-			required = (booleans.contains(v?.required))?v.expose:((booleans.contains(actionRule?.required))?actionRule.required:required)
-			param.isRequired(required)
-			if(required){
-				println("required : ${param.param.name}")
-				if(param.param.roles){
-					param.param.roles.each{ role ->
-						apiParams.receives["${role}"] = param.toObject()
+			if(param2.param.required){
+				if(param2.param.roles){
+					receives.putAt(receives.size(),param.toObject())
+					param2.param.roles.each{ role ->
+						if(apiParams?.receives["${role}"]){
+							apiParams.receives["${role}"].add(receives)
+					   }else{
+						   apiParams.receives["${role}"] = []
+						   apiParams.receives["${role}"].add(receives)
+					   }
 					}
 				}else{
-					apiParams.receives["permitAll"] = param.toObject()
+					receives.putAt(receives.size(),param.toObject())
+					if(apiParams?.receives["permitAll"]){
+						apiParams.receives["permitAll"].add(receives)
+					}else{
+						apiParams.receives["permitAll"] = []
+						apiParams.receives["permitAll"].add(receives)
+					}
 				}
 			}
 			
 			// Visible Rule
-			visible = (booleans.contains(v?.visible))?v.expose:((booleans.contains(actionRule?.visible))?actionRule.required:visible)
-			param.isVisible(visible)
-			if(visible){
+
+			if(param2.param.visible){
 				//apiParams.returns.add(param.toObject())
-				println("visible : ${param.param.name}")
-				if(param.param.roles){
-					param.param.roles.each{ role ->
-						apiParams.returns["${role}"] = param.toObject()
+				if(param2.param.roles){
+					returns.putAt(returns.size(),param.toObject())
+					param2.param.roles.each{ role ->
+						if(apiParams?.returns["${role}"]){
+							 apiParams.returns["${role}"].add(returns)
+						}else{
+							apiParams.returns["${role}"] = []
+							apiParams.returns["${role}"].add(returns)
+						}
 					}
 				}else{
-					apiParams.returns["permitAll"] = param.toObject()
+					returns.putAt(returns.size(),param.toObject())
+					if(apiParams?.returns["permitAll"]){
+						apiParams.returns["permitAll"].add(returns)
+					}else{
+						apiParams.returns["permitAll"] = []
+						apiParams.returns["permitAll"].add(returns)
+					}
+				}
+			}else{
+				returns.putAt(returns.size(),param.toObject())
+				if(apiParams?.returns["permitAll"]){
+					apiParams.returns["permitAll"].add(returns)
+				}else{
+					apiParams.returns["permitAll"] = []
+					apiParams.returns["permitAll"].add(returns)
 				}
 			}
 		}
 		
 		return apiParams
+	}
+	
+	private ApiParams checkRules(ApiParams param,String apiname, String actionname, JSONObject json,String key){
+		
+		String hasDescription = ""
+		boolean isRequired = false
+		boolean isVisible = true
+		String hasMockData = ""
+		
+		// get grails config variable data
+		def type = grailsApplication.config.apitoolkit.apiobject.type."${param.param.paramType}"
+		hasDescription = (type?.description)?type.description:hasDescription
+		isRequired = (type?.required)?type.required:isRequired
+		isVisible = (type?.visible)?type.visible:isVisible
+		hasMockData = (type?.mockData)?type.mockData:hasMockData
+		
+		// get variable data
+		def value = json["${apiname}"].VALUES.key
+		hasDescription = (value?.description)?value.description:hasDescription
+		isRequired = (value?.required)?value.required:isRequired
+		isVisible = (value?.visible)?value.visible:isVisible
+		hasMockData = (value?.mockData)?value.mockData:hasMockData
+		
+		// get model data
+		
+		// get method data
+		def action = json["${apiname}"].RULES?.actionname?.key
+		if(action){
+			hasDescription = (action?.description)?action.description:hasDescription
+			isRequired = (action?.required)?action.required:isRequired
+			isVisible = (action?.visible)?action.visible:isVisible
+			hasMockData = (action?.mockData)?action.mockData:hasMockData
+		}
+		
+		// get grails config method data
+		def method = grailsApplication.config.apitoolkit.apiobject.method.key
+		if(method){
+			hasDescription = (method?.description)?method.description:hasDescription
+			isRequired = (method?.required)?method.required:isRequired
+			isVisible = (method?.visible)?method.visible:isVisible
+			hasMockData = (method?.mockData)?method.mockData:hasMockData
+		}
+
+		if(hasMockData){
+			param.hasMockData("${hasMockData}")
+		}
+		
+		if(hasDescription){
+			param.hasDescription("${hasMockData}")
+		}
+		
+		if(isVisible){
+			param.isVisible(isRequired)
+		}
+		
+		if(isRequired){
+			param.isRequired(isRequired)
+		}
+		
+		return param
 	}
 	
 	def initApiCache(){
@@ -162,17 +234,19 @@ class ApiObjectService{
 					def api = method.getAnnotation(Api)
 					ApiParams param
 					Map apiParams
-					println(api)
-					if(json["${api.name().capitalize()}"]){
-						def actionRule = (json["${api.name().capitalize()}"].RULES?."${actionname}")?json["${api.name().capitalize()}"].RULES."${actionname}":[:]
-						apiParams = createApiParams(actionRule, json["${api.name().capitalize()}"].VALUES, api.name())
+					
+					String apiname = (api?.name())?api.name().capitalize():controllername.capitalize()
+					if(json["${apiname}"]){
+						//def actionRule = (json["${apiname().capitalize()}"].RULES?."${actionname}")?json["${api.name().capitalize()}"].RULES."${actionname}":[:]
+						apiParams = createReceivesReturns(apiname, actionname, json)
 					}
 					
-					LinkedHashMap receives = apiParams?.receives
-					LinkedHashMap returns = apiParams?.returns
+					ParamsDescriptor[] receives = apiParams?.receives
+					ParamsDescriptor[] returns = apiParams?.returns
+					
 println("${api.description()}")
-println(receives)
-println(returns)
+println("receives : ${receives}")
+println("returns : ${returns}")
 					ApiDescriptor service = new ApiDescriptor(
 						"method":"${api.method()}",
 						"description":"${api.description()}",

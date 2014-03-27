@@ -10,7 +10,7 @@ class ParamsDescriptor {
 	String paramType
 	String name
 	String idReferences
-	String description
+	String description = ""
 	boolean visible = true
 	boolean required = true
 	List roles = []

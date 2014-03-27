@@ -282,7 +282,7 @@ class ApiToolkitService{
 		return uri[1..(uri.size()-1)].split('/')
 	}
 	
-	private ArrayList processDocValues(ParamsDescriptor value){
+	private ArrayList processDocValues(ParamsDescriptor[] value){
 		List val2 = []
 		value.each{ v ->
 			Map val = [:]
@@ -430,11 +430,13 @@ class ApiToolkitService{
 						if(springSecurityService.principal){
 							for(receiveVal in cont["${actionname}"]["receives"]){
 								if(springSecurityService.principal.authorities*.authority.any { receiveVal.key==it }){
+									println(cont["${actionname}"]["receives"]["${receiveVal}"])
 									doc["receives"] = processDocValues(cont["${actionname}"]["receives"]["${receiveVal}"])
 									break;
 								}
 							}
 						}else{
+							println(cont["${actionname}"]["receives"]["permitAll"])
 							doc["receives"] = processDocValues(cont["${actionname}"]["receives"]['permitAll'])
 						}
 					}

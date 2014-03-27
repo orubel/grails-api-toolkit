@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
 import java.util.List;
 
 //name is name of the object used
+// if name is empty, will assume name=controllerName on backend
 
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -17,6 +18,6 @@ import java.util.List;
 public @interface Api{
 	String method();
 	String[] roles();
-	String name();
+	String name() default "";
 	String description() default "";
 }

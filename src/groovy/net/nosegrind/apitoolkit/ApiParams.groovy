@@ -31,6 +31,11 @@ class ApiParams{
 		return this
 	}
 	
+	def hasDescription(String data){
+		this.param.description = data
+		return this
+	}
+	
 	def isRequired(boolean data){
 		this.param.required = data
 		return this
@@ -46,53 +51,53 @@ class ApiParams{
 		return this
 	}
 	
-	def _PKEY(String name,String description,String idReference){
-		this.param = new ParamsDescriptor(paramType:"PKEY",name:"${name}",description:"${description}",idReferences:"${idReference}")
+	def _PKEY(String name,String idReference){
+		this.param = new ParamsDescriptor(paramType:"PKEY",name:"${name}",idReferences:"${idReference}")
 		return this
 	}
 	
-	def _FKEY(String name,String description,String idReference){
-		this.param = new ParamsDescriptor(paramType:"FKEY",name:"${name}",description:"${description}",idReferences:"${idReference}")
+	def _FKEY(String name,String idReference){
+		this.param = new ParamsDescriptor(paramType:"FKEY",name:"${name}",idReferences:"${idReference}")
 		return this
 	}
 
-	def _INDEX(String name,String description,String idReference){
-		this.param = new ParamsDescriptor(paramType:"INDEX",name:"${name}",description:"${description}",idReferences:"${idReference}")
+	def _INDEX(String name,String idReference){
+		this.param = new ParamsDescriptor(paramType:"INDEX",name:"${name}",idReferences:"${idReference}")
 		return this
 	}
 	
-	def _STRING(String name,String description){
-		this.param = new ParamsDescriptor(paramType:"STRING",name:"${name}",description:"${description}")
+	def _STRING(String name){
+		this.param = new ParamsDescriptor(paramType:"STRING",name:"${name}")
 		return this
 	}
 
-	def _BOOLEAN(String name,String description){
-		this.param = new ParamsDescriptor(paramType:"BOOLEAN",name:"${name}",description:"${description}")
+	def _BOOLEAN(String name){
+		this.param = new ParamsDescriptor(paramType:"BOOLEAN",name:"${name}")
 		return this
 	}
 	
-	def _FLOAT(String name,String description){
-		this.param = new ParamsDescriptor(paramType:"FLOAT",name:"${name}",description:"${description}")
+	def _FLOAT(String name){
+		this.param = new ParamsDescriptor(paramType:"FLOAT",name:"${name}")
 		return this
 	}
 	
-	def _BIGDECIMAL(String name,String description){
-		this.param = new ParamsDescriptor(paramType:"BIGDECIMAL",name:"${name}",description:"${description}")
+	def _BIGDECIMAL(String name){
+		this.param = new ParamsDescriptor(paramType:"BIGDECIMAL",name:"${name}")
 		return this
 	}
 	
-	def _LONG(String name,String description){
-		this.param = new ParamsDescriptor(paramType:"LONG",name:"${name}",description:"${description}")
+	def _LONG(String name){
+		this.param = new ParamsDescriptor(paramType:"LONG",name:"${name}")
 		return this
 	}
 	
-	def _EMAIL(String name,String description){
-		this.param = new ParamsDescriptor(paramType:"EMAIL",name:"${name}",description:"${description}")
+	def _EMAIL(String name){
+		this.param = new ParamsDescriptor(paramType:"EMAIL",name:"${name}")
 		return this
 	}
 	
-	def _URL(String name,String description){
-		this.param = new ParamsDescriptor(paramType:"URL",name:"${name}",description:"${description}")
+	def _URL(String name){
+		this.param = new ParamsDescriptor(paramType:"URL",name:"${name}")
 		return this
 	}
 }

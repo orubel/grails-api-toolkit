@@ -37,14 +37,14 @@ apitoolkit.defaultData.LONG = '18926'
 apitoolkit.defaultData.EMAIL = 'example@yoursite.com'
 apitoolkit.defaultData.URL = 'http://www.yoursite.com'
 
-apitoolkit.apiobject.rules = [
-	"GET":["id":["expect":"true"]],
-	"PUT":["id":["expect":"false"]],
-	"POST":["id":["expect":"true"]],
-	"DELETE":["id":["expect":"true"]]
+apitoolkit.apiobject.method = [
+	"GET":["id":["require":"true"]],
+	"PUT":["id":["require":"false"]],
+	"POST":["id":["require":"true"]],
+	"DELETE":["id":["require":"true"]]
 ]
 
-apitoolkit.apiobject.typegroups = [
+apitoolkit.apiobject.type = [
 	"PKEY":["type":"Long","references":"self","description":"","required":["GET":"true","PUT":"false","POST":"true","DELETE":"true"],"visible":"true"],
 	"FKEY":["type":"Long","description":"","required":["GET":"true","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
 	"INDEX":["type":"String","references":"self","description":"","required":["GET":"true","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
