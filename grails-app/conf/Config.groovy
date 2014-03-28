@@ -45,16 +45,16 @@ apitoolkit.apiobject.method = [
 ]
 
 apitoolkit.apiobject.type = [
-	"PKEY":["type":"Long","references":"self","description":"","required":["GET":"true","PUT":"false","POST":"true","DELETE":"true"],"visible":"true"],
-	"FKEY":["type":"Long","description":"","required":["GET":"true","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
-	"INDEX":["type":"String","references":"self","description":"","required":["GET":"true","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
-	"String":["type":"String","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
-	"Long":["type":"Long","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
-	"Boolean":["type":"Boolean","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
-	"Float":["type":"Float","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
-	"BigDecimal":["type":"BigDecimal","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
-	"URL":["type":"URL","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"],
-	"Email":["type":"Email","description":"","required":["GET":"false","PUT":"true","POST":"true","DELETE":"false"],"visible":"true"]
+	"PKEY":["type":"Long","references":"self","description":""],
+	"FKEY":["type":"Long","description":""],
+	"INDEX":["type":"String","references":"self","description":""],
+	"String":["type":"String","description":""],
+	"Long":["type":"Long","description":""],
+	"Boolean":["type":"Boolean","description":""],
+	"Float":["type":"Float","description":""],
+	"BigDecimal":["type":"BigDecimal","description":""],
+	"URL":["type":"URL","description":""],
+	"Email":["type":"Email","description":""]
 ]
 
 grails.plugin.springsecurity.filterChain.chainMap = [

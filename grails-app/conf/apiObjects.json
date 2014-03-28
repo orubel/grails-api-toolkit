@@ -1,95 +1,4 @@
-/* JSON API Object
-*
-* simple json object that can be defined outside of any application
-* whose definition and rules can apply universally to request and
-* response api object thus allowing interpretation/application of
-* the object to happen in the application itself and enable definition
-* to happen externally.
-*
-* This enables all definitions to be read in, applied, interpreted
-* and used without tying them to any particular framework or language.
-*
-* DEFINITIONS
-* 
-* 'references':'self'(evaluates as LONG) > primary key, reference to self, For all intents and purposes, this acts as ID of this object
-* 'references':'table/domain name'(evaluates as LONG) > foreign key and referenced table/domain
-* 'references':'self'(evaluates to STRING) > index;reference to self
-* 
-* 'type': Long/String/Boolean/BigDecimal/Float/URL/Email
-*
-* PREDEFINED VALUES
-* These are preset definitions and rules that can be overwritten. They are as follows and have the following rules:
-
-* 'type':'PKEY'
-				***references must be defined
-            	"type":"Long",
-            	"description":"",
-            	"required":{"GET":"true","PUT":"true","POST":"true","DELETE":"true"}
-            	"visible":"true"
-* 'type':'FKEY'
-				***references must be defined
-            	"type":"Long",
-            	"description":"",
-            	"required":{"GET":"true","PUT":"true","POST":"true","DELETE":"true"}
-            	"visible":"true"
-* 'type':'INDEX'
-				***references must be defined
-				"type":"String",
-            	"description":"",
-            	"required":{"GET":"true","PUT":"true","POST":"true","DELETE":"true"}
-            	"visible":"true"
-* 'type':'String'
-            	"description":"",
-            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
-            	"visible":"true"
-* 'type':'Long'
-            	"description":"",
-            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
-            	"visible":"true"
-* 'type':'Boolean'
-            	"description":"",
-            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
-            	"visible":"true"
-* 'type':'BigDecimal'
-            	"description":"",
-            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
-            	"visible":"true"
-* 'type':'Float'
-            	"description":"",
-            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
-            	"visible":"true"
-* 'type':'URL'
-            	"description":"",
-            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
-            	"visible":"true"
-* 'type':'Email'
-            	"description":"",
-            	"required":{"GET":"false","PUT":"true","POST":"true","DELETE":"false"}
-            	"visible":"true"
-*
-*
-* RULES
-* These are definitions/requirements that can be overridden
-*
-* 'description': description of variable, how it is used. mainly for apidocs/OPTIONS
-* 'required' is a boolean describing state of incoming/outgoing variable. If not required, is considered optional.
-* 'visible' is boolean describing whether to show variable. if false, will not show even if roles give access to variable. 
-*    However variable will still be accessible by backend service.
-* 'roles' allows you to set privileges on individual variables to return partial datasets. 'actions' 
-*    can use this rule too but is not overridden; is considered a 'local' rule.
-* 'mockData' allows you to set default data on the variable. This can be dynamic or static
-*
-* RULES GROUPS:
-*
-* 'actions' : default rules for each controller / action; child is overridden by parent
-*
-* The override atomicity for rules is:
-*
-* methods(GET/PUT/POST/DELETE) < action < value
-* 
-* with 'values' rules being overridden by controller action/method rules.
-* 
-*/
+/* JSON API Object */
 
 {
     "Test": {
@@ -99,20 +8,30 @@
             },
             "testdata": {
             	"type":"String",
-            	"roles": ["ROLE_ADMIN","ROLE_USER"]
+            	"mockData": "blahblahblah"
             }
         },
-        "RULES":{
-        	"METHODS":{},
-	        "URI":{
-				"test/show":{
-					"testdata":{"mockData": "blahblahblah"}
+	    "URI":{
+			"test/show":{
+				"REQUEST":{
+					"permitAll":{"id"},
+					"ROLE_ADMIN":{"testdata"},
+					"ROLE_USER":{"testdata"}
 				},
-				"test/create":{
-					"testdata":{"mockData": "createMock"}
-				}
+				"RESPONSE":
+					"permitAll":{"id"},
+					"ROLE_ADMIN":{"testdata"},
+					"ROLE_USER":{"testdata"}
+				},
 			},
-			"URL":{}
+			"test/create":{
+				"REQUEST":{
+					"permitAll":{"testdata"}
+				},
+				"RESPONSE":
+					"permitAll":{"id"}
+				},
+			},
 		}
     }
 }

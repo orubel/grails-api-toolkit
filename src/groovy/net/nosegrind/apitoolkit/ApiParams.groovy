@@ -46,23 +46,28 @@ class ApiParams{
 		return this
 	}
 	
+	def referencedBy(String data){
+		this.param.idReferences = data
+		return this
+	}
+	
 	def isVisible(boolean data){
 		this.param.visible = data
 		return this
 	}
 	
 	def _PKEY(String name,String idReference){
-		this.param = new ParamsDescriptor(paramType:"PKEY",name:"${name}",idReferences:"${idReference}")
+		this.param = new ParamsDescriptor(paramType:"PKEY",name:"${name}")
 		return this
 	}
 	
 	def _FKEY(String name,String idReference){
-		this.param = new ParamsDescriptor(paramType:"FKEY",name:"${name}",idReferences:"${idReference}")
+		this.param = new ParamsDescriptor(paramType:"FKEY",name:"${name}")
 		return this
 	}
 
 	def _INDEX(String name,String idReference){
-		this.param = new ParamsDescriptor(paramType:"INDEX",name:"${name}",idReferences:"${idReference}")
+		this.param = new ParamsDescriptor(paramType:"INDEX",name:"${name}")
 		return this
 	}
 	

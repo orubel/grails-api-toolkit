@@ -47,7 +47,7 @@ class ApiObjectService{
 		return keyType
 	}
 	
-	private Map createReceivesReturns(String apiname, String actionname, JSONObject json){
+	private Map createReceivesReturns(String apiname, String actionname, String method, JSONObject json){
 		Map apiParams = [
 			"receives":[:],
 			"returns":[:]
@@ -65,13 +65,13 @@ class ApiObjectService{
 			// Create Param (and edit rule defaults for keys)
 			switch(v.type.toLowerCase()){
 				case 'pkey':
-					param._PKEY("${k}","${apiname}")
+					param._PKEY("${k}")
 					break
 				case 'fkey':
-					param._FKEY("${k}","${apiname}")
+					param._FKEY("${k}")
 					break
 				case 'index':
-					param._INDEX("${k}","${apiname}")
+					param._INDEX("${k}")
 					break
 				case 'long':
 					param._LONG("${k}")
@@ -96,7 +96,7 @@ class ApiObjectService{
 					break
 			}
 
-			ApiParams param2 = checkRules(param, apiname, actionname, json,k)
+			ApiParams param2 = checkRules(method, param, apiname, actionname, json,k)
 
 			// Required Rule
 			if(param2.param.required){
@@ -174,26 +174,35 @@ class ApiObjectService{
 		return apiParams
 	}
 	
-	private ApiParams checkRules(ApiParams param,String apiname, String actionname, JSONObject json,String key){
+	private ApiParams checkRules(String restMethod, ApiParams param,String apiname, String actionname, JSONObject json,String key){
 		
+		def value = json["${apiname}"].VALUES["${key}"]
+		def type = value.type
+		
+		String references = ""
 		String hasDescription = ""
 		boolean isRequired = false
 		boolean isVisible = true
 		String hasMockData = ""
 		
 		// get grails config variable data
-		def type = grailsApplication.config.apitoolkit.apiobject.type."${param.param.paramType}"
-		hasDescription = (type?.description)?type.description:hasDescription
-		isRequired = (type?.required)?type.required:isRequired
-		isVisible = (type?.visible)?type.visible:isVisible
-		hasMockData = (type?.mockData)?type.mockData:hasMockData
+		def configType = grailsApplication.config.apitoolkit.apiobject.type."${type}"
+		hasDescription = (configType?.description)?configType.description:hasDescription
+		isRequired = (configType?.required["${restMethod}"])?configType.required["${restMethod}"].toBoolean():isRequired
+		isVisible = (configType?.visible)?configType.visible.toBoolean():isVisible
+		hasMockData = (configType?.mockData)?configType.mockData:hasMockData
+		references = (configType?.references)?configType.references:""
+		
+		println("(${key}) required = ${isRequired}")
 		
 		// get variable data
-		def value = json["${apiname}"].VALUES.key
 		hasDescription = (value?.description)?value.description:hasDescription
 		isRequired = (value?.required)?value.required:isRequired
 		isVisible = (value?.visible)?value.visible:isVisible
 		hasMockData = (value?.mockData)?value.mockData:hasMockData
+		references = (value?.references)?value.references:references
+		
+		println("(${key}) required = ${isRequired}")
 		
 		// get model data
 		
@@ -204,7 +213,10 @@ class ApiObjectService{
 			isRequired = (action?.required)?action.required:isRequired
 			isVisible = (action?.visible)?action.visible:isVisible
 			hasMockData = (action?.mockData)?action.mockData:hasMockData
+			references = (action?.references)?action.references:references
 		}
+		
+		println("(${key}) required = ${isRequired}")
 		
 		// get grails config method data
 		def method = grailsApplication.config.apitoolkit.apiobject.method.key
@@ -213,8 +225,11 @@ class ApiObjectService{
 			isRequired = (method?.required)?method.required:isRequired
 			isVisible = (method?.visible)?method.visible:isVisible
 			hasMockData = (method?.mockData)?method.mockData:hasMockData
+			references = (method?.references)?method.references:references
 		}
-
+		
+		println("(${key}) required = ${isRequired}")
+		
 		if(hasMockData){
 			param.hasMockData("${hasMockData}")
 		}
@@ -229,6 +244,10 @@ class ApiObjectService{
 		
 		if(isRequired){
 			param.isRequired(isRequired)
+		}
+		
+		if(references){
+			param.referencedBy(references)
 		}
 		
 		return param
@@ -254,15 +273,19 @@ class ApiObjectService{
 					String apiname = (api?.name())?api.name().capitalize():controllername.capitalize()
 					if(json["${apiname}"]){
 						//def actionRule = (json["${apiname().capitalize()}"].RULES?."${actionname}")?json["${api.name().capitalize()}"].RULES."${actionname}":[:]
-						apiParams = createReceivesReturns(apiname, actionname, json)
+						apiParams = createReceivesReturns(apiname, actionname, api.method(), json)
 					}
 					
 					LinkedHashMap<String,ParamsDescriptor> receives = apiParams?.receives
 					LinkedHashMap<String,ParamsDescriptor> returns = apiParams?.returns
 					
+println("############## ${actionname}")
+println("${api.method()}")
 println("${api.description()}")
 println("receives : ${receives}")
 println("returns : ${returns}")
+
+					
 					ApiDescriptor service = new ApiDescriptor(
 						"method":"${api.method()}",
 						"description":"${api.description()}",
