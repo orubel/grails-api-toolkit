@@ -8,6 +8,7 @@ import grails.converters.JSON
 import grails.converters.XML
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 
 import grails.plugin.cache.CacheEvict
 import grails.plugin.cache.Cacheable
@@ -47,14 +48,14 @@ class ApiObjectService{
 		return keyType
 	}
 	
-	private Map createApiDescriptor(String apiname, String uri, JSONObject json){
+	private ApiDescriptor createApiDescriptor(String apiname, String uri, JSONObject json){
 		Map apiParams = [
 			"receives":[:],
 			"returns":[:]
 		]
-		List<ParamsDescriptor> apiObject = []
-		List<ParamsDescriptor> receives = []
-		List<ParamsDescriptor> returns = []
+		LinkedHashMap<String,ParamsDescriptor> apiObject = [:]
+		LinkedHashMap<String,ParamsDescriptor> receives = [:]
+		LinkedHashMap<String,ParamsDescriptor> returns = [:]
 
 		ApiParams param = new ApiParams()
 		def booleans = ['true','false']
@@ -124,14 +125,37 @@ class ApiObjectService{
 			}
 			
 			// collect api vars into list to use in apiDescriptor
-			apiObject.add(param.toObject())
-
-			
+			apiObject["${param.param.name}"] = param.toObject()
 		}
 		def method = json["${apiname}"].URI["${uri}"].METHOD
 		def description = json["${apiname}"].URI["${uri}"]?.DESCRIPTION
 		def roles = json["${apiname}"].URI["${uri}"]?.ROLES
 		
+		// REQUEST
+		def permitAll = []
+		receives['permitAll'] = permitAll
+		json["${apiname}"].URI["${uri}"]?.REQUEST.each{ k, v ->
+			if(!receives["${k}"]){
+				receives["${k}"] = (k!='permitAll')?receives['permitAll']:[]
+			}
+			def roleVars=v.toList()
+			roleVars.each{ val ->
+				receives["${k}"].add(apiObject["${val}"])
+			}
+		}
+		
+		// RESPONSE
+		permitAll = []
+		returns['permitAll'] = permitAll
+		json["${apiname}"].URI["${uri}"]?.RESPONSE.each{ k, v ->
+			if(!returns["${k}"]){
+				returns["${k}"] = (k!='permitAll')?returns['permitAll']:[]
+			}
+			def roleVars=v.toList()
+			roleVars.each{ val ->
+				returns["${k}"].add(apiObject["${val}"])
+			}
+		}
 		
 		// foreach key, is role your current authority or 'permitAll'
 		// if so, add param to list of receives/returns
@@ -143,45 +167,9 @@ class ApiObjectService{
 			"receives":receives,
 			"returns":returns
 		)
-		service['roles'] = api.roles()
-		
-		// send apiObject with json
-		//ApiParams param2 = checkRules(method, param, apiname, actionname, json,k)
+		service['roles'] = roles
 
-			// Required Rule
-			/*
-			if(param2.param.required){
-				if(param2.param.roles){
-					//receives.putAt(receives.size(),param.toObject())
-					param2.param.roles.each{ role ->
-						if(apiParams?.receives["${role}"]){
-							receives = apiParams.receives["${role}"]
-							receives[receives.size()] = param.toObject()
-							apiParams.receives["${role}"] = receives
-					   }else{
-						   apiParams.receives["${role}"] = []
-						   receives[0] = param.toObject()
-						   apiParams.receives["${role}"] = receives
-					   }
-					}
-				}else{
-					//receives.putAt(receives.size(),param.toObject())
-					if(apiParams?.receives["permitAll"]){
-						receives = apiParams.receives["permitAll"]
-						receives[receives.size()] = param.toObject()
-						apiParams.receives["permitAll"] = receives
-					}else{
-						apiParams.receives["permitAll"] = []
-						receives[0] = param.toObject()
-						apiParams.receives["permitAll"] = receives
-					}
-				}
-			}
-			*/
-
-
-		
-		return apiParams
+		return service
 	}
 	
 	private ApiParams checkRules(String restMethod, ApiParams param,String apiname, String actionname, JSONObject json,String key){
@@ -233,7 +221,7 @@ class ApiObjectService{
 				
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
-					ApiParams param
+					ApiDescriptor apiDescriptor
 					Map apiParams
 					
 					String apiname = (api?.name())?api.name().capitalize():controllername.capitalize()
@@ -241,29 +229,11 @@ class ApiObjectService{
 						//def actionRule = (json["${apiname().capitalize()}"].RULES?."${actionname}")?json["${api.name().capitalize()}"].RULES."${actionname}":[:]
 						String uri = controllername+"/"+actionname
 						if(json["${apiname}"].URI?."${uri}"){
-							apiParams = createApiDescriptor(apiname, uri, json)
+							apiDescriptor = createApiDescriptor(apiname, uri, json)
 						}
 					}
-					
-					LinkedHashMap<String,ParamsDescriptor> receives = apiParams?.receives
-					LinkedHashMap<String,ParamsDescriptor> returns = apiParams?.returns
-					
-println("############## ${actionname}")
-println("${api.method()}")
-println("${api.description()}")
-println("receives : ${receives}")
-println("returns : ${returns}")
 
-					
-					ApiDescriptor service = new ApiDescriptor(
-						"method":"${api.method()}",
-						"description":"${api.description()}",
-						"doc":[:],
-						"receives":receives,
-						"returns":returns
-					)
-					service['roles'] = api.roles()
-					methods["${actionname}"] = service
+					methods["${actionname}"] = apiDescriptor
 				}
 			}
 			
