@@ -47,11 +47,12 @@ class ApiObjectService{
 		return keyType
 	}
 	
-	private Map createReceivesReturns(String apiname, String actionname, String method, JSONObject json){
+	private Map createApiDescriptor(String apiname, String uri, JSONObject json){
 		Map apiParams = [
 			"receives":[:],
 			"returns":[:]
 		]
+		List<ParamsDescriptor> apiObject = []
 		List<ParamsDescriptor> receives = []
 		List<ParamsDescriptor> returns = []
 
@@ -60,6 +61,10 @@ class ApiObjectService{
 		
 		json["${apiname}"].VALUES.each{ k,v ->
 
+			String references = ""
+			String hasDescription = ""
+			String hasMockData = ""
+			
 			v.type = (v.references)?getKeyType(v.references, v.type):v.type
 
 			// Create Param (and edit rule defaults for keys)
@@ -95,10 +100,56 @@ class ApiObjectService{
 					param._URL("${k}")
 					break
 			}
+			
+			// get grails config variable data
+			def configType = grailsApplication.config.apitoolkit.apiobject.type."${v.type}"
+			hasDescription = (configType?.description)?configType.description:hasDescription
+			references = (configType?.references)?configType.references:""
+			
+			// get variable data
+			hasDescription = (v?.description)?v.description:hasDescription
+			hasMockData = (v?.mockData)?v.mockData:hasMockData
+			references = (v?.references)?v.references:references
+			
+			if(hasMockData){
+				param.hasMockData("${hasMockData}")
+			}
+			
+			if(hasDescription){
+				param.hasDescription("${hasMockData}")
+			}
+			
+			if(references){
+				param.referencedBy(references)
+			}
+			
+			// collect api vars into list to use in apiDescriptor
+			apiObject.add(param.toObject())
 
-			ApiParams param2 = checkRules(method, param, apiname, actionname, json,k)
+			
+		}
+		def method = json["${apiname}"].URI["${uri}"].METHOD
+		def description = json["${apiname}"].URI["${uri}"]?.DESCRIPTION
+		def roles = json["${apiname}"].URI["${uri}"]?.ROLES
+		
+		
+		// foreach key, is role your current authority or 'permitAll'
+		// if so, add param to list of receives/returns
+		
+		ApiDescriptor service = new ApiDescriptor(
+			"method":"${method}",
+			"description":"${description}",
+			"doc":[:],
+			"receives":receives,
+			"returns":returns
+		)
+		service['roles'] = api.roles()
+		
+		// send apiObject with json
+		//ApiParams param2 = checkRules(method, param, apiname, actionname, json,k)
 
 			// Required Rule
+			/*
 			if(param2.param.required){
 				if(param2.param.roles){
 					//receives.putAt(receives.size(),param.toObject())
@@ -126,50 +177,9 @@ class ApiObjectService{
 					}
 				}
 			}
-			
-			// Visible Rule
+			*/
 
-			if(param2.param.visible){
-				//apiParams.returns.add(param.toObject())
-				if(param2.param.roles){
-					//returns.putAt(returns.size(),param.toObject())
-					param2.param.roles.each{ role ->
-						if(apiParams?.returns["${role}"]){
-							returns = apiParams.returns["${role}"]
-							returns[returns.size()] = param.toObject()
-							 apiParams.returns["${role}"] = returns
-						}else{
-							apiParams.returns["${role}"] = []
-							returns[0] = param.toObject()
-							apiParams.returns["${role}"] = returns
-						}
-					}
-				}else{
-					//returns.putAt(returns.size(),param.toObject())
-					if(apiParams?.returns["permitAll"]){
-						returns = apiParams.returns["permitAll"]
-						returns[returns.size()] = param.toObject()
-						apiParams.returns["permitAll"] = returns
-					}else{
-						apiParams.returns["permitAll"] = []
-						returns[0] = param.toObject()
-						apiParams.returns["permitAll"] = returns
-					}
-				}
-			}else{
-				//returns.putAt(returns.size(),param.toObject())
-				if(apiParams?.returns["permitAll"]){
-					returns = apiParams.returns["permitAll"]
-					returns[returns.size()] = param.toObject()
-					apiParams.returns["permitAll"] = returns
-				}else{
-					apiParams.returns["permitAll"] = []
-					apiParams.returns["permitAll"] = []
-					returns[0] = param.toObject()
-					apiParams.returns["permitAll"] = returns
-				}
-			}
-		}
+
 		
 		return apiParams
 	}
@@ -181,54 +191,18 @@ class ApiObjectService{
 		
 		String references = ""
 		String hasDescription = ""
-		boolean isRequired = false
-		boolean isVisible = true
 		String hasMockData = ""
 		
 		// get grails config variable data
 		def configType = grailsApplication.config.apitoolkit.apiobject.type."${type}"
 		hasDescription = (configType?.description)?configType.description:hasDescription
-		isRequired = (configType?.required["${restMethod}"])?configType.required["${restMethod}"].toBoolean():isRequired
-		isVisible = (configType?.visible)?configType.visible.toBoolean():isVisible
 		hasMockData = (configType?.mockData)?configType.mockData:hasMockData
 		references = (configType?.references)?configType.references:""
 		
-		println("(${key}) required = ${isRequired}")
-		
 		// get variable data
 		hasDescription = (value?.description)?value.description:hasDescription
-		isRequired = (value?.required)?value.required:isRequired
-		isVisible = (value?.visible)?value.visible:isVisible
 		hasMockData = (value?.mockData)?value.mockData:hasMockData
 		references = (value?.references)?value.references:references
-		
-		println("(${key}) required = ${isRequired}")
-		
-		// get model data
-		
-		// get method data
-		def action = json["${apiname}"].RULES?.actionname?.key
-		if(action){
-			hasDescription = (action?.description)?action.description:hasDescription
-			isRequired = (action?.required)?action.required:isRequired
-			isVisible = (action?.visible)?action.visible:isVisible
-			hasMockData = (action?.mockData)?action.mockData:hasMockData
-			references = (action?.references)?action.references:references
-		}
-		
-		println("(${key}) required = ${isRequired}")
-		
-		// get grails config method data
-		def method = grailsApplication.config.apitoolkit.apiobject.method.key
-		if(method){
-			hasDescription = (method?.description)?method.description:hasDescription
-			isRequired = (method?.required)?method.required:isRequired
-			isVisible = (method?.visible)?method.visible:isVisible
-			hasMockData = (method?.mockData)?method.mockData:hasMockData
-			references = (method?.references)?method.references:references
-		}
-		
-		println("(${key}) required = ${isRequired}")
 		
 		if(hasMockData){
 			param.hasMockData("${hasMockData}")
@@ -236,14 +210,6 @@ class ApiObjectService{
 		
 		if(hasDescription){
 			param.hasDescription("${hasMockData}")
-		}
-		
-		if(isVisible){
-			param.isVisible(isRequired)
-		}
-		
-		if(isRequired){
-			param.isRequired(isRequired)
 		}
 		
 		if(references){
@@ -273,7 +239,10 @@ class ApiObjectService{
 					String apiname = (api?.name())?api.name().capitalize():controllername.capitalize()
 					if(json["${apiname}"]){
 						//def actionRule = (json["${apiname().capitalize()}"].RULES?."${actionname}")?json["${api.name().capitalize()}"].RULES."${actionname}":[:]
-						apiParams = createReceivesReturns(apiname, actionname, api.method(), json)
+						String uri = controllername+"/"+actionname
+						if(json["${apiname}"].URI?."${uri}"){
+							apiParams = createApiDescriptor(apiname, uri, json)
+						}
 					}
 					
 					LinkedHashMap<String,ParamsDescriptor> receives = apiParams?.receives

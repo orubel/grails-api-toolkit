@@ -56,17 +56,17 @@ class ApiParams{
 		return this
 	}
 	
-	def _PKEY(String name,String idReference){
+	def _PKEY(String name){
 		this.param = new ParamsDescriptor(paramType:"PKEY",name:"${name}")
 		return this
 	}
 	
-	def _FKEY(String name,String idReference){
+	def _FKEY(String name){
 		this.param = new ParamsDescriptor(paramType:"FKEY",name:"${name}")
 		return this
 	}
 
-	def _INDEX(String name,String idReference){
+	def _INDEX(String name){
 		this.param = new ParamsDescriptor(paramType:"INDEX",name:"${name}")
 		return this
 	}

@@ -45,16 +45,16 @@ apitoolkit.apiobject.method = [
 ]
 
 apitoolkit.apiobject.type = [
-	"PKEY":["type":"Long","references":"self","description":""],
+	"PKEY":["type":"Long","references":"self","description":"Primary Key"],
 	"FKEY":["type":"Long","description":""],
-	"INDEX":["type":"String","references":"self","description":""],
-	"String":["type":"String","description":""],
-	"Long":["type":"Long","description":""],
-	"Boolean":["type":"Boolean","description":""],
-	"Float":["type":"Float","description":""],
-	"BigDecimal":["type":"BigDecimal","description":""],
-	"URL":["type":"URL","description":""],
-	"Email":["type":"Email","description":""]
+	"INDEX":["type":"String","references":"self","description":"Foreign Key"],
+	"String":["type":"String","description":"String"],
+	"Long":["type":"Long","description":"Long"],
+	"Boolean":["type":"Boolean","description":"Boolean"],
+	"Float":["type":"Float","description":"Floating Point"],
+	"BigDecimal":["type":"BigDecimal","description":"Big Decimal"],
+	"URL":["type":"URL","description":"URL"],
+	"Email":["type":"Email","description":"Email"]
 ]
 
 grails.plugin.springsecurity.filterChain.chainMap = [

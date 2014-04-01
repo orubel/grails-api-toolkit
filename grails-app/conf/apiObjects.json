@@ -4,34 +4,39 @@
     "Test": {
         "VALUES": {
             "id": {
-            	"type":"PKEY",
+                "type": "PKEY"
             },
             "testdata": {
-            	"type":"String",
-            	"mockData": "blahblahblah"
+                "type": "String",
+                "mockData": "blahblahblah"
             }
         },
-	    "URI":{
-			"test/show":{
-				"REQUEST":{
-					"permitAll":{"id"},
-					"ROLE_ADMIN":{"testdata"},
-					"ROLE_USER":{"testdata"}
-				},
-				"RESPONSE":
-					"permitAll":{"id"},
-					"ROLE_ADMIN":{"testdata"},
-					"ROLE_USER":{"testdata"}
-				},
-			},
-			"test/create":{
-				"REQUEST":{
-					"permitAll":{"testdata"}
-				},
-				"RESPONSE":
-					"permitAll":{"id"}
-				},
-			},
-		}
+        "URI": {
+            "test/show": {
+            	"METHOD":"GET",
+            	"DESCRIPTION":"Get test data",
+            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
+                "REQUEST": {
+                    "permitAll":["id"]
+                },
+                "RESPONSE": {
+                	"permitAll":["id"],
+                    "ROLE_ADMIN":["testdata"],
+                    "ROLE_USER":["testdata"]
+                }
+            },
+            "test/create": {
+            	"METHOD":"POST",
+            	"DESCRIPTION":"Create test data",
+            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
+                "REQUEST": {
+                    "permitAll":["testdata"]
+                },
+                "RESPONSE": {
+                    "permitAll":["id"]
+                },
+                "ERROR":{"304_NOT_MODIFIED":""}
+            }
+        }
     }
 }
