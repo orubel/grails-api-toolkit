@@ -781,11 +781,13 @@ class ApiToolkitService{
 	def setApiCache(String controllername,Map apidoc){
 		apiCacheService.setApiCache(controllername,apidoc)
 		//def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
-		
+
 		apidoc.each{ k,v ->
-			def doc = generateApiDoc(controllername, k)
-			apiCacheService.setApiDocCache(controllername,k,doc)
-			//cache["${k}"]['doc'] = generateApiDoc(controllername, k,doc)
+			if(v){
+				def doc = generateApiDoc(controllername, k)
+				apiCacheService.setApiDocCache(controllername,k,doc)
+				//cache["${k}"]['doc'] = generateApiDoc(controllername, k,doc)
+			}
 		}
 	}
 	
