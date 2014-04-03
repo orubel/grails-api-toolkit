@@ -56,53 +56,8 @@ class ApiParams{
 		return this
 	}
 	
-	def _PKEY(String name){
-		this.param = new ParamsDescriptor(paramType:"PKEY",name:"${name}")
-		return this
-	}
-	
-	def _FKEY(String name){
-		this.param = new ParamsDescriptor(paramType:"FKEY",name:"${name}")
-		return this
-	}
-
-	def _INDEX(String name){
-		this.param = new ParamsDescriptor(paramType:"INDEX",name:"${name}")
-		return this
-	}
-	
-	def _STRING(String name){
-		this.param = new ParamsDescriptor(paramType:"STRING",name:"${name}")
-		return this
-	}
-
-	def _BOOLEAN(String name){
-		this.param = new ParamsDescriptor(paramType:"BOOLEAN",name:"${name}")
-		return this
-	}
-	
-	def _FLOAT(String name){
-		this.param = new ParamsDescriptor(paramType:"FLOAT",name:"${name}")
-		return this
-	}
-	
-	def _BIGDECIMAL(String name){
-		this.param = new ParamsDescriptor(paramType:"BIGDECIMAL",name:"${name}")
-		return this
-	}
-	
-	def _LONG(String name){
-		this.param = new ParamsDescriptor(paramType:"LONG",name:"${name}")
-		return this
-	}
-	
-	def _EMAIL(String name){
-		this.param = new ParamsDescriptor(paramType:"EMAIL",name:"${name}")
-		return this
-	}
-	
-	def _URL(String name){
-		this.param = new ParamsDescriptor(paramType:"URL",name:"${name}")
+	def setParam(String type,String name){
+		this.param = new ParamsDescriptor(paramType:"${type}",name:"${name}")
 		return this
 	}
 }

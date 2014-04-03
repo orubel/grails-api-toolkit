@@ -68,39 +68,7 @@ class ApiObjectService{
 			
 			v.type = (v.references)?getKeyType(v.references, v.type):v.type
 
-			// Create Param (and edit rule defaults for keys)
-			switch(v.type.toLowerCase()){
-				case 'pkey':
-					param._PKEY("${k}")
-					break
-				case 'fkey':
-					param._FKEY("${k}")
-					break
-				case 'index':
-					param._INDEX("${k}")
-					break
-				case 'long':
-					param._LONG("${k}")
-					break
-				case 'string':
-					param._STRING("${k}")
-					break
-				case 'boolean':
-					param._BOOLEAN("${k}")
-					break
-				case 'bigdecimal':
-					param._BIGDECIMAL("${k}")
-					break
-				case 'float':
-					param._FLOAT("${k}")
-					break
-				case 'email':
-					param._EMAIL("${k}")
-					break
-				case 'url':
-					param._URL("${k}")
-					break
-			}
+			param.setParam(v.type,"${k}")
 			
 			// get grails config variable data
 			def configType = grailsApplication.config.apitoolkit.apiobject.type."${v.type}"

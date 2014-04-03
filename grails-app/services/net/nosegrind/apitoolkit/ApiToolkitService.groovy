@@ -424,39 +424,27 @@ class ApiToolkitService{
 					String path = "/${apiPrefix}/${controllername}/${actionname}"
 					doc = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
 					
+					// if(springSecurityService.principal.authorities*.authority.any { receiveVal.key==it }){
 					if(cont["${actionname}"]["receives"]){
-						if(springSecurityService.principal){
-							for(receiveVal in cont["${actionname}"]["receives"]){
-								if(springSecurityService.principal.authorities*.authority.any { receiveVal.key==it }){
-									println(cont["${actionname}"]["receives"]["${receiveVal}"])
-									doc["receives"] = processDocValues(cont["${actionname}"]["receives"]["${receiveVal}"])
-									break;
-								}
-							}
-						}else{
-							println(cont["${actionname}"]["receives"]["permitAll"])
-							doc["receives"] = processDocValues(cont["${actionname}"]["receives"]['permitAll'])
+						doc["receives"] = [:]
+						for(receiveVal in cont["${actionname}"]["receives"]){
+							doc["receives"]["${receiveVal.key}"] = receiveVal.value
 						}
 					}
 					
 					if(cont["${actionname}"]["returns"]){
-						if(springSecurityService.principal){
-							for(returnVal in cont["${actionname}"]["returns"]){
-								if(springSecurityService.currentUser.authorities*.authority.any { returnVal.key==it }){
-									doc["returns"] = processDocValues(cont["${actionname}"]["returns"]["${returnVal}"])
-									break;
-								}
-							}
-						}else{
-							doc["returns"] = processDocValues(cont["${actionname}"]["returns"]['permitAll'])
+						doc["returns"] = [:]
+						for(returnVal in cont["${actionname}"]["returns"]){
+							println("returnval : ${returnVal}")
+							doc["returns"]["${returnVal.key}"] = returnVal.value
 						}
 					}
 					
 					if(cont["${actionname}"]["errorcodes"]){
 						doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
 					}
-					List links = generateLinkRels(controllername,actionname,doc)
-					doc["links"] = links
+					//List links = generateLinkRels(controllername,actionname,doc)
+					//doc["links"] = links
 				}else{
 					// ERROR: method at '${controllername}/${actionname}' does not have API annotation
 				}
@@ -468,6 +456,7 @@ class ApiToolkitService{
 	
 	def Map generateDoc(String controllerName, String actionName){
 		def newDoc = [:]
+		String authority = springSecurityService.principal.authorities*.authority[0]
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
 		def cache = (params.controller)?apiCacheService.getApiCache(controllerName):null
 		if(cache["${actionName}"]?.doc){
@@ -478,19 +467,24 @@ class ApiToolkitService{
 			
 			newDoc["${actionName}"] = ["path":"${path}","method":method,"description":"${description}"]
 			if(doc.receives){
-				newDoc["${actionName}"].receives = doc.receives
+				if(!newDoc["${actionName}"].receives){
+					newDoc["${actionName}"].receives = []
+				}
+				if(doc.receives?."${authority}"){
+					newDoc["${actionName}"].receives.add(doc.receives["${authority}"])
+				}else{
+					newDoc["${actionName}"].receives.add(doc.receives["permitAll"])
+				}
 			}
 	
 			if(doc.returns){
-				newDoc["${actionName}"].returns = []
-				doc.returns.each(){ v ->
-					if(v?.roles){
-						if(springSecurityService.principal.authorities*.authority.any { v.roles.contains(it) }){
-							newDoc["${actionName}"].returns.add(v)
-						}
-					}else{
-						newDoc["${actionName}"].returns.add(v)
-					}
+				if(!newDoc["${actionName}"].returns){
+					newDoc["${actionName}"].returns = []
+				}
+				if(doc.returns?."${authority}"){
+					newDoc["${actionName}"].returns.add(doc.returns["${authority}"])
+				}else{
+					newDoc["${actionName}"].returns.add(doc.returns["permitAll"])
 				}
 				newDoc["${actionName}"].json = doc.json
 			}
@@ -499,6 +493,7 @@ class ApiToolkitService{
 				newDoc["${actionName}"].errorcodes = doc.errorcodes
 			}
 			
+			/*
 			def links = generateLinkRels(controllerName, actionName,doc)
 			if(links){
 				newDoc["${actionName}"].links = []
@@ -512,10 +507,12 @@ class ApiToolkitService{
 				
 				newDoc["${actionName}"].links.unique()
 			}
+			*/
 		}
 		return newDoc
 	}
 	
+	/*
 	List generateLinkRels(String controllerName, String actionName,Map apidoc){
 		List links = []
 		int inc = 0
@@ -550,6 +547,7 @@ class ApiToolkitService{
 
 		return links
 	}
+	*/
 	
 	private List getBlankChainUri(String controllername,String actionname,String uri){
 		def paths = []
