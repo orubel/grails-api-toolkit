@@ -48,14 +48,44 @@ class ApiObjectService{
 		return keyType
 	}
 	
+	private LinkedHashMap getIOSet(JSONObject io,LinkedHashMap apiObject){
+		LinkedHashMap<String,ParamsDescriptor> ioSet = [:]
+		/* 
+		 * REQUEST/RESPONSE
+		 */
+		io.each{ k, v ->
+			// init
+			if(!ioSet["${k}"]){
+				ioSet["${k}"] = []
+			}
+
+			def roleVars=v.toList()
+			roleVars.each{ val ->
+				if(v.contains(val)){
+					if(!ioSet["${k}"].contains(apiObject["${val}"])){
+						ioSet["${k}"].add(apiObject["${val}"])
+					}
+				}
+			}
+		}
+		// add permitAll vars to other roles after processing
+		ioSet.each(){ key, val ->
+			if(key!='permitAll'){
+				ioSet["permitAll"].each(){ it ->
+						ioSet["${key}"].add(it)
+				}
+			}
+		}
+		
+		return ioSet
+	}
+	
 	private ApiDescriptor createApiDescriptor(String apiname, String uri, JSONObject json){
 		Map apiParams = [
 			"receives":[:],
 			"returns":[:]
 		]
 		LinkedHashMap<String,ParamsDescriptor> apiObject = [:]
-		LinkedHashMap<String,ParamsDescriptor> receives = [:]
-		LinkedHashMap<String,ParamsDescriptor> returns = [:]
 
 		ApiParams param = new ApiParams()
 		def booleans = ['true','false']
@@ -85,7 +115,7 @@ class ApiObjectService{
 			}
 			
 			if(hasDescription){
-				param.hasDescription("${hasMockData}")
+				param.hasDescription("${hasDescription}")
 			}
 			
 			if(references){
@@ -100,61 +130,11 @@ class ApiObjectService{
 		def description = json["${apiname}"].URI["${uri}"]?.DESCRIPTION
 		def roles = json["${apiname}"].URI["${uri}"]?.ROLES
 		
-		// REQUEST
-		json["${apiname}"].URI["${uri}"]?.REQUEST.each{ k, v ->
-			
-			// init
-			if(!receives["${k}"]){
-				receives["${k}"] = []
-			}
-
-			def roleVars=v.toList()
-			roleVars.each{ val ->
-				if(v.contains(val)){
-					if(!receives["${k}"].contains(apiObject["${val}"])){
-						receives["${k}"].add(apiObject["${val}"])
-					}
-				}
-			}
-		}
-		// add permitAll vars to other roles after processing
-		receives.each(){ key, val ->
-			if(key!='permitAll'){
-				receives["permitAll"].each(){ it ->
-						receives["${key}"].add(it)
-				}
-			}
-		}
+		LinkedHashMap receives = getIOSet(json["${apiname}"].URI["${uri}"]?.REQUEST,apiObject)
+		LinkedHashMap returns = getIOSet(json["${apiname}"].URI["${uri}"]?.RESPONSE,apiObject)
 		
-		// RESPONSE
-		json["${apiname}"].URI["${uri}"]?.RESPONSE.each{ k, v ->
-			
-			// init
-			if(!returns["${k}"]){
-				returns["${k}"] = []
-			}
-			
-			def roleVars=v.toList()
-			roleVars.each{ val ->
-				if(v.contains(val)){
-					if(!returns["${k}"].contains(apiObject["${val}"] as Object)){
-						returns["${k}"].add(apiObject["${val}"])
-					}
-				}
-			}
-			
-			
-		}
-		// add permitAll vars to other roles after processing
-		returns.each(){ key, val ->
-			if(key!='permitAll'){
-				returns["permitAll"].each(){ it ->
-						println("adding to ${key} : ${it}")
-						returns["${key}"].add(it)
-				}
-			}
-		}
 		
+		// build object to return
 		ApiDescriptor service = new ApiDescriptor(
 			"method":"${method}",
 			"description":"${description}",

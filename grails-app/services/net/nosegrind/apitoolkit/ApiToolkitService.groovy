@@ -471,9 +471,13 @@ class ApiToolkitService{
 					newDoc["${actionName}"].receives = []
 				}
 				if(doc.receives?."${authority}"){
-					newDoc["${actionName}"].receives.add(doc.receives["${authority}"])
+					doc.receives["${authority}"].each{ it ->
+						newDoc["${actionName}"].receives.add(it)
+					}
 				}else{
-					newDoc["${actionName}"].receives.add(doc.receives["permitAll"])
+					doc.receives["permitAll"].each{ it ->
+						newDoc["${actionName}"].receives.add(it)
+					}
 				}
 			}
 	
@@ -482,9 +486,13 @@ class ApiToolkitService{
 					newDoc["${actionName}"].returns = []
 				}
 				if(doc.returns?."${authority}"){
-					newDoc["${actionName}"].returns.add(doc.returns["${authority}"])
+					doc.returns["${authority}"].each{ it ->
+						newDoc["${actionName}"].returns.add(it)
+					}
 				}else{
-					newDoc["${actionName}"].returns.add(doc.returns["permitAll"])
+					doc.returns["permitAll"].each{ it ->
+						newDoc["${actionName}"].returns.add(it)
+					}
 				}
 				newDoc["${actionName}"].json = doc.json
 			}
