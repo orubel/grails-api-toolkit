@@ -17,7 +17,7 @@ import java.util.List;
 @Documented
 public @interface Api{
 	String method();
-	String[] roles();
+	String[] roles() default {"permitAll"};
 	String name() default "";
 	String description() default "";
 }

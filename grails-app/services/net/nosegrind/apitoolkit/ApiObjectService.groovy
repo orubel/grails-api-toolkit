@@ -50,9 +50,7 @@ class ApiObjectService{
 	
 	private LinkedHashMap getIOSet(JSONObject io,LinkedHashMap apiObject){
 		LinkedHashMap<String,ParamsDescriptor> ioSet = [:]
-		/* 
-		 * REQUEST/RESPONSE
-		 */
+
 		io.each{ k, v ->
 			// init
 			if(!ioSet["${k}"]){
@@ -68,6 +66,7 @@ class ApiObjectService{
 				}
 			}
 		}
+		
 		// add permitAll vars to other roles after processing
 		ioSet.each(){ key, val ->
 			if(key!='permitAll'){
@@ -80,18 +79,11 @@ class ApiObjectService{
 		return ioSet
 	}
 	
-	private ApiDescriptor createApiDescriptor(String apiname, String uri, JSONObject json){
-		Map apiParams = [
-			"receives":[:],
-			"returns":[:]
-		]
+	private ApiDescriptor createApiDescriptor(String apiname,String apiMethod, String apiDescription, List apiRoles, String uri, JSONObject json){
 		LinkedHashMap<String,ParamsDescriptor> apiObject = [:]
-
 		ApiParams param = new ApiParams()
-		def booleans = ['true','false']
 		
 		json["${apiname}"].VALUES.each{ k,v ->
-
 			String references = ""
 			String hasDescription = ""
 			String hasMockData = ""
@@ -100,86 +92,36 @@ class ApiObjectService{
 
 			param.setParam(v.type,"${k}")
 			
-			// get grails config variable data
 			def configType = grailsApplication.config.apitoolkit.apiobject.type."${v.type}"
+			
 			hasDescription = (configType?.description)?configType.description:hasDescription
-			references = (configType?.references)?configType.references:""
-			
-			// get variable data
 			hasDescription = (v?.description)?v.description:hasDescription
-			hasMockData = (v?.mockData)?v.mockData:hasMockData
+			if(hasDescription){ param.hasDescription("${hasDescription}") }
+			
+			references = (configType?.references)?configType.references:""
 			references = (v?.references)?v.references:references
+			if(references){ param.referencedBy(references) }
 			
-			if(hasMockData){
-				param.hasMockData("${hasMockData}")
-			}
-			
-			if(hasDescription){
-				param.hasDescription("${hasDescription}")
-			}
-			
-			if(references){
-				param.referencedBy(references)
-			}
-			
+			hasMockData = (v?.mockData)?v.mockData:hasMockData
+			if(hasMockData){ param.hasMockData("${hasMockData}") }
+
 			// collect api vars into list to use in apiDescriptor
 			apiObject["${param.param.name}"] = param.toObject()
 		}
 		
-		def method = json["${apiname}"].URI["${uri}"].METHOD
-		def description = json["${apiname}"].URI["${uri}"]?.DESCRIPTION
-		def roles = json["${apiname}"].URI["${uri}"]?.ROLES
-		
 		LinkedHashMap receives = getIOSet(json["${apiname}"].URI["${uri}"]?.REQUEST,apiObject)
 		LinkedHashMap returns = getIOSet(json["${apiname}"].URI["${uri}"]?.RESPONSE,apiObject)
 		
-		
-		// build object to return
 		ApiDescriptor service = new ApiDescriptor(
-			"method":"${method}",
-			"description":"${description}",
+			"method":"${apiMethod}",
+			"description":"${apiDescription}",
 			"doc":[:],
 			"receives":receives,
 			"returns":returns
 		)
-		service['roles'] = roles
+		service['roles'] = apiRoles
 
 		return service
-	}
-	
-	private ApiParams checkRules(String restMethod, ApiParams param,String apiname, String actionname, JSONObject json,String key){
-		
-		def value = json["${apiname}"].VALUES["${key}"]
-		def type = value.type
-		
-		String references = ""
-		String hasDescription = ""
-		String hasMockData = ""
-		
-		// get grails config variable data
-		def configType = grailsApplication.config.apitoolkit.apiobject.type."${type}"
-		hasDescription = (configType?.description)?configType.description:hasDescription
-		hasMockData = (configType?.mockData)?configType.mockData:hasMockData
-		references = (configType?.references)?configType.references:""
-		
-		// get variable data
-		hasDescription = (value?.description)?value.description:hasDescription
-		hasMockData = (value?.mockData)?value.mockData:hasMockData
-		references = (value?.references)?value.references:references
-		
-		if(hasMockData){
-			param.hasMockData("${hasMockData}")
-		}
-		
-		if(hasDescription){
-			param.hasDescription("${hasMockData}")
-		}
-		
-		if(references){
-			param.referencedBy(references)
-		}
-		
-		return param
 	}
 	
 	def initApiCache(){
@@ -196,15 +138,25 @@ class ApiObjectService{
 				
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
+
 					ApiDescriptor apiDescriptor
 					Map apiParams
 					
-					String apiname = (api?.name())?api.name().capitalize():controllername.capitalize()
-					if(json["${apiname}"]){
-						//def actionRule = (json["${apiname().capitalize()}"].RULES?."${actionname}")?json["${api.name().capitalize()}"].RULES."${actionname}":[:]
+					String apiName = (api?.name())?api.name().capitalize():controllername.capitalize()
+					String apiMethod = api.method()
+					String apiDescription = api.description()
+					List apiRoles = []
+					println(actionname)
+					if(api?.roles()){
+						apiRoles = api?.roles()
+					}else{
+						apiRoles = ['permitAll']
+					}
+					
+					if(json["${apiName}"]){
 						String uri = controllername+"/"+actionname
-						if(json["${apiname}"].URI?."${uri}"){
-							apiDescriptor = createApiDescriptor(apiname, uri, json)
+						if(json["${apiName}"].URI?."${uri}"){
+							apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, json)
 						}
 					}
 
@@ -213,9 +165,7 @@ class ApiObjectService{
 			}
 			
 			if(methods){
-				println("has methods")
-				String controller = controllername.toString()
-				apiToolkitService.setApiCache(controller,methods)
+				apiToolkitService.setApiCache(controllername.toString(),methods)
 			}
 			
 			def cache = apiCacheService.getApiCache(controllername)
