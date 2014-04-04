@@ -174,27 +174,31 @@ class ApiToolkitService{
 	
 	boolean checkAuthority(ArrayList role){
 		List roles = role as List
-		if(roles.size()>0 && roles[0].trim()){
-			def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugin.springsecurity.authority.className).clazz.list().authority
-			def finalRoles
-			def userRoles
-			if (springSecurityService.isLoggedIn()){
-				userRoles = springSecurityService.getPrincipal().getAuthorities()
-			}
-			
-			if(userRoles){
-				def temp = roles2.intersect(roles as Set)
-				finalRoles = temp.intersect(userRoles)
-				if(finalRoles){
-					return true
+		if(roles.size()==1 && roles[0]=='permitAll'){
+			return true
+		}else{
+			if(roles.size()>0 && roles[0].trim()){
+				def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugin.springsecurity.authority.className).clazz.list().authority
+				def finalRoles
+				def userRoles
+				if (springSecurityService.isLoggedIn()){
+					userRoles = springSecurityService.getPrincipal().getAuthorities()
+				}
+				
+				if(userRoles){
+					def temp = roles2.intersect(roles as Set)
+					finalRoles = temp.intersect(userRoles)
+					if(finalRoles){
+						return true
+					}else{
+						return false
+					}
 				}else{
 					return false
 				}
 			}else{
 				return false
 			}
-		}else{
-			return false
 		}
 	}
 	

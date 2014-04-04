@@ -56,8 +56,11 @@ class ApiToolkitFilters {
 				if(cache){
 					if(cache["${params.action}"]){
 						if (apiToolkitService.isApiCall()) {
+							println("is api call")
 							// USER HAS ACCESS?
 							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['roles'])){
+								println(cache["${params.action}"]['roles'])
+								println("no authority")
 								return false
 							}
 							// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?

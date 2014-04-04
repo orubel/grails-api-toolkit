@@ -145,13 +145,7 @@ class ApiObjectService{
 					String apiName = (api?.name())?api.name().capitalize():controllername.capitalize()
 					String apiMethod = api.method()
 					String apiDescription = api.description()
-					List apiRoles = []
-					println(actionname)
-					if(api?.roles()){
-						apiRoles = api?.roles()
-					}else{
-						apiRoles = ['permitAll']
-					}
+					List apiRoles = api?.roles()
 					
 					if(json["${apiName}"]){
 						String uri = controllername+"/"+actionname
