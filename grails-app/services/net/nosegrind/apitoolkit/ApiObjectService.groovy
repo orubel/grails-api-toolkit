@@ -95,38 +95,65 @@ class ApiObjectService{
 			// collect api vars into list to use in apiDescriptor
 			apiObject["${param.param.name}"] = param.toObject()
 		}
+		
 		def method = json["${apiname}"].URI["${uri}"].METHOD
 		def description = json["${apiname}"].URI["${uri}"]?.DESCRIPTION
 		def roles = json["${apiname}"].URI["${uri}"]?.ROLES
 		
 		// REQUEST
-		def permitAll = []
-		receives['permitAll'] = permitAll
 		json["${apiname}"].URI["${uri}"]?.REQUEST.each{ k, v ->
+			
+			// init
 			if(!receives["${k}"]){
-				receives["${k}"] = (k!='permitAll')?receives['permitAll']:[]
+				receives["${k}"] = []
 			}
+
 			def roleVars=v.toList()
 			roleVars.each{ val ->
-				receives["${k}"].add(apiObject["${val}"])
+				if(v.contains(val)){
+					if(!receives["${k}"].contains(apiObject["${val}"])){
+						receives["${k}"].add(apiObject["${val}"])
+					}
+				}
+			}
+		}
+		// add permitAll vars to other roles after processing
+		receives.each(){ key, val ->
+			if(key!='permitAll'){
+				receives["permitAll"].each(){ it ->
+						receives["${key}"].add(it)
+				}
 			}
 		}
 		
 		// RESPONSE
-		permitAll = []
-		returns['permitAll'] = permitAll
 		json["${apiname}"].URI["${uri}"]?.RESPONSE.each{ k, v ->
+			
+			// init
 			if(!returns["${k}"]){
-				returns["${k}"] = (k!='permitAll')?returns['permitAll']:[]
+				returns["${k}"] = []
 			}
+			
 			def roleVars=v.toList()
 			roleVars.each{ val ->
-				returns["${k}"].add(apiObject["${val}"])
+				if(v.contains(val)){
+					if(!returns["${k}"].contains(apiObject["${val}"] as Object)){
+						returns["${k}"].add(apiObject["${val}"])
+					}
+				}
+			}
+			
+			
+		}
+		// add permitAll vars to other roles after processing
+		returns.each(){ key, val ->
+			if(key!='permitAll'){
+				returns["permitAll"].each(){ it ->
+						println("adding to ${key} : ${it}")
+						returns["${key}"].add(it)
+				}
 			}
 		}
-		
-		// foreach key, is role your current authority or 'permitAll'
-		// if so, add param to list of receives/returns
 		
 		ApiDescriptor service = new ApiDescriptor(
 			"method":"${method}",

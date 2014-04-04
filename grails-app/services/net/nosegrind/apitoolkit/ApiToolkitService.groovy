@@ -435,7 +435,7 @@ class ApiToolkitService{
 					if(cont["${actionname}"]["returns"]){
 						doc["returns"] = [:]
 						for(returnVal in cont["${actionname}"]["returns"]){
-							println("returnval : ${returnVal}")
+							println("returnval [${returnVal.key}] : ${returnVal}")
 							doc["returns"]["${returnVal.key}"] = returnVal.value
 						}
 					}
