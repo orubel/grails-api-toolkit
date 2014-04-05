@@ -44,8 +44,9 @@ class ApiToolkitFilters {
 		
 		String apiName = grailsApplication.config.apitoolkit.apiName
 		String apiVersion = grailsApplication.metadata['app.version']
+		String apiDir = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
 		
-		apitoolkit(uri:"/${apiName}_v${apiVersion}/**"){
+		apitoolkit(uri:"/${apiDir}/**"){
 			before = { Map model ->
 				println("#### filter (BEFORE)")
 				params.action = (params.action)?params.action:'index'
@@ -56,11 +57,9 @@ class ApiToolkitFilters {
 				if(cache){
 					if(cache["${params.action}"]){
 						if (apiToolkitService.isApiCall()) {
-							println("is api call")
+							println("is api call : ${params.controller}/${params.action}")
 							// USER HAS ACCESS?
 							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['roles'])){
-								println(cache["${params.action}"]['roles'])
-								println("no authority")
 								return false
 							}
 							// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
@@ -89,7 +88,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				println("#### filter (BEFORE)")
+				println("#### filter (AFTER)")
 				if(!model){
 					return true
 				}
@@ -107,6 +106,8 @@ class ApiToolkitFilters {
 				}else{
 					path = (queryString)?queryString.split('&'):[]
 				}
+
+				println(path)
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
@@ -125,8 +126,11 @@ class ApiToolkitFilters {
 						def uri2 = [:]
 						def inc = 0
 						boolean returnState = false
-						while(uri2['controller'] && returnState==false && grailsApplication.config.apitoolkit.apichain.limit<=inc+1 && uri2['controller']!=path.last().split('=')[0].split('/')[0]){
+
+						while(returnState==false && grailsApplication.config.apitoolkit.apichain.limit>=inc+1 && uri2['controller']!=path.last().split('=')[0].split('/')[0]){
+							println("in while...")
 							uri2 = apiToolkitService.isChainedApi(newModel,path as List)
+							println(uri2)
 							if(uri2){
 								Map query = [:]
 								inc.each{ i ->
@@ -147,7 +151,8 @@ class ApiToolkitFilters {
 								def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 								def method = (methods.contains(request.method))?request.method:null
 								
-								if(apiToolkitService.checkAuthority(cache["${params.action}"]['apiRoles'])){
+								if(apiToolkitService.checkAuthority(cache["${params.action}"]['roles'])){
+									
 									switch(type){
 										case 'application/xml':
 											forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])

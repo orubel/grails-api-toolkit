@@ -221,7 +221,7 @@ class ApiToolkitService{
 			authorities.each{
 				userRoles += it.authority
 			}
-			def roles= cache["${state}"]['hookRoles']
+			def roles= cache["${state}"]['roles']
 			def temp = roles.intersect(userRoles)
 
 			if(temp.size()>0){
@@ -613,6 +613,8 @@ class ApiToolkitService{
 	}
 	
 	Map isChainedApi(Map map,List path){
+		println(map)
+		println(path)
 		def pathSize = path.size()
 		//String uri = ''
 		Map uri = [:]
@@ -695,7 +697,7 @@ class ApiToolkitService{
 				List last2 = last[0].split('/')
 				cache = apiCacheService.getApiCache(last2[0])
 				//methods = cache["${last2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-				methods = cache["${last2[1]}"]['method'].trim() as List
+				methods = cache["${last2[1]}"]['method'].trim()
 				if(method=='GET'){
 					if(!methods == method){ postMatch = true }
 				}else{
@@ -716,9 +718,13 @@ class ApiToolkitService{
 					//methods = cache["${temp2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 					methods = cache["${temp2[1]}"]['method'].trim() as List
 					if(method=='GET'){
-						if(!methods == method){ pathMatch = true }
+						if(methods != method){ 
+							pathMatch = true 
+						}
 					}else{
-						if(methods == method){ pathMatch = true }
+						if(methods == method){ 
+							pathMatch = true 
+						}
 					}
 				}
 			}
