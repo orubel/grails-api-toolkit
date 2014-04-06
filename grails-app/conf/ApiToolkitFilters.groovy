@@ -88,214 +88,265 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				println("#### filter (AFTER)")
-				if(!model){
-					return true
-				}
-				def newModel = apiToolkitService.convertModel(model)
-				ApiStatuses error = new ApiStatuses()
-				params.action = (params.action)?params.action:'index'
-				def uri = [params.controller,params.action,params.id]
-				def queryString = request.'javax.servlet.forward.query_string'
-				List oldPath = (queryString)?queryString.split('&'):[]
-				
-				List path = []
+				 // println("##### FILTER (AFTER)")
+				 if(!model){
+					 return true
+				 }
+				 
 
-				if(params.newPath){
-					path = params.newPath.split('&')
-				}else{
-					path = (queryString)?queryString.split('&'):[]
-				}
+				 /*
+				  * Need to map command object to model, validate roles and data
+				  */
+				 
+				 ApiStatuses error = new ApiStatuses()
+				 params.action = (params.action)?params.action:'index'
+				 def uri = [params.controller,params.action,params.id]
+				 def queryString = request.'javax.servlet.forward.query_string'
+				 List oldPath = (queryString)?queryString.split('&'):[]
+				 
+				 // create response data
+				 List path = []
+				 def newQuery = []
+				 if(params.containsKey("newPath")){
+					 path = params.newPath?.split('&')
+				 }else{
+					 path = (queryString)?queryString.split('&'):[]
+				 }
+				 if(path){
+					 path.remove(0)
+					 Map query = [:]
+					 for(int b = 1;b<path.size();b++){
+						 def temp = path[b].split('=')
+						 query[temp[0]] = temp[1]
+					 }
+					 query.each{ k,v ->
+						 newQuery.add("${k}=${v}")
+					 }
+				 }
+ 
+				 def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
+				 def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
+				 
+				 def tempType = request.getHeader('Content-Type')?.split(';')
+				 def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+ 
+				 // api chaining
+				 if(path){
+					 def newModel = apiToolkitService.convertModel(model)
+					 def uri2 = apiToolkitService.isChainedApi(newModel,path as List)
+					 int pos = apiToolkitService.checkChainedMethodPosition(uri,oldPath as List)
+					 if(pos==3){
+						 log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
+						 return false
+					 }else{
+						 def currentPath = "${uri2['controller']}/${uri2['action']}"
+						 def inc = 0
+						 
+						 if(currentPath!=path.last().split('=')[0]){
+							 if(uri2){
+								 
+								 def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+								 def method = (methods.contains(request.method))?request.method:null
+								 if(apiToolkitService.checkAuthority(cache["${uri2['action']}"]['roles'])){
+									 switch(type){
+										 case 'application/xml':
+											 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+											 break
+										 case 'application/json':
+										 default:
+											 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+											 break
+									 }
+								 }else{
+									 String msg = "User does not have access."
+									 error._403_FORBIDDEN()(msg).send()
+									 return false
+								 }
+								 
+ 
+							 }else{
+								 String msg = "Path was unable to be parsed. Check your path variables and try again."
+								 //redirect(uri: "/")
+								 error._404_NOT_FOUND(msg).send()
+								 return false
+							 }
+							 inc++
+						 }else{
+							 switch(type){
+								 case 'application/xml':
+									 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+									 return false
+									 break
+								 case 'application/json':
+								 default:
+									 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+									 return false
+									 break
+							 }
+						 }
+ 
+					 }
+					 return
+				 }else{
+					 if(cache){
+						 if(cache["${params.action}"]){
+							 
+							 def encoding = null
+							 if(tempType){
+								 encoding = (tempType.size()>1)?tempType[1]:null
+							 }
+							 
+							 // make 'application/json' default
+							 def formats = ['text/html','application/json','application/xml']
+							 type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
+	 
+							 if(type){
+								 if (apiToolkitService.isApiCall()) {
+									 def newModel = apiToolkitService.convertModel(model)
+									 List methods = []
+									 if(queryString){
+										 def uri2 = apiToolkitService.isChainedApi(newModel,queryString.split('&') as List)
+										 methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+									 }else{
+										 methods = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+									 }
+									 
+									 def method = (methods.contains(request.method))?request.method:null
+									 
+									 response.setHeader('Allow', methods.join(', '))
+									 response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
+									 
+									 if(method){
+										 switch(request.method) {
+											 case 'PURGE':
+												 // cleans cache
+												 break;
+											 case 'TRACE':
+												 break;
+											 case 'HEAD':
+												 break;
+											 case 'OPTIONS':
+												 switch(type){
+													 case 'application/xml':
+														 render(text:apiToolkitService.generateDoc(params.controller,params.action) as XML, contentType: "${type}")
+														 break
+													 case 'application/json':
+													 default:
+														 render(text:apiToolkitService.getApiDoc() as JSON, contentType: "${type}")
+														 break
+												 }
+												 return false
+												 break;
+											 case 'GET':
+												 def map = newModel
+												 if(!newModel.isEmpty()){
+													 switch(type){
+														 case 'application/xml':
+															 if(encoding){
+																 render(text:map as XML, contentType: "${type}",encoding:"${encoding}")
+															 }else{
+																 render(text:map as XML, contentType: "${type}")
+															 }
+															 break
+														 case 'text/html':
+															 break
+														 case 'application/json':
+														 default:
+															 if(encoding){
+																 render(text:map as JSON, contentType: "${type}",encoding:"${encoding}")
+															 }else{
+																 render(text:map as JSON, contentType: "${type}")
+															 }
+															 break
+													 }
+													 return false
+												 }
+												 break
+											 case 'POST':
+												 def map = newModel
+												 if(!newModel.isEmpty()){
+													 switch(type){
+														 case 'application/xml':
+															 if(encoding){
+																 render(text:map as XML, contentType: "${type}",encoding:"${encoding}")
+															 }else{
+																 render(text:map as XML, contentType: "${type}")
+															 }
+															 break
+														 case 'application/json':
+														 default:
+															 if(encoding){
+																 render(text:map as JSON, contentType: "${type}",encoding:"${encoding}")
+															 }else{
+																 render(text:map as JSON, contentType: "${type}")
+															 }
+															 break
+													 }
+													 return false
+												 }
+												 break
+											 case 'PUT':
+												 def map = newModel
+												 if(!newModel.isEmpty()){
+													 switch(type){
+														 case 'application/xml':
+															 if(encoding){
+																 render(text:map as XML, contentType: "${type}",encoding:"${encoding}")
+															 }else{
+																 render(text:map as XML, contentType: "${type}")
+															 }
+															 break
+														 case 'application/json':
+														 default:
+															 if(encoding){
+																 render(text:map as JSON, contentType: "${type}",encoding:"${encoding}")
+															 }else{
+																 render(text:map as JSON, contentType: "${type}")
+															 }
+															 break
+													 }
+													 return false
+												 }
+												 break
+											 case 'DELETE':
+												 def map = newModel
+												 if(!newModel.isEmpty()){
+													 switch(type){
+														 case 'application/xml':
+															 if(encoding){
+																 render(text:map as XML, contentType: "${type}",encoding:"${encoding}")
+															 }else{
+																 render(text:map as XML, contentType: "${type}")
+															 }
+															 break
+														 case 'application/json':
+														 default:
+															 if(encoding){
+																 render(text:map as JSON, contentType: "${type}",encoding:"${encoding}")
+															 }else{
+																 render(text:map as JSON, contentType: "${type}")
+															 }
+															 break
+													 }
+													 return false
+												 }
+												 break
+										 }
+									 }
+									 return false
+								 }
+							 }else{
+								 return true
+								 //render(view:params.action,model:model)
+							 }
+						 }else{
+							 return true
+							 //render(view:params.action,model:model)
+						 }
+					 }
+				 }
+			 }
 
-				println(path)
-				
-				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
-				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
-
-				
-				def tempType = request.getHeader('Content-Type')?.split(';')
-				def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
-
-				// api chaining
-				if(path){
-					int pos = apiToolkitService.checkChainedMethodPosition(uri,oldPath as List)
-					if(pos==3){
-						log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
-						return false
-					}else{
-						def uri2 = [:]
-						def inc = 0
-						boolean returnState = false
-
-						while(returnState==false && grailsApplication.config.apitoolkit.apichain.limit>=inc+1 && uri2['controller']!=path.last().split('=')[0].split('/')[0]){
-							println("in while...")
-							uri2 = apiToolkitService.isChainedApi(newModel,path as List)
-							println(uri2)
-							if(uri2){
-								Map query = [:]
-								inc.each{ i ->
-									path.remove(i)
-								}
-								
-								for(int b = inc+1;b<path.size();b++){
-									def temp = path[b].split('=')
-									returnState = (temp[1]='return')?true:false
-									query[temp[0]] = temp[1]
-								}
-
-								def newQuery = []
-								query.each{ k,v ->
-									newQuery.add("${k}=${v}")
-								}
-								
-								def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-								def method = (methods.contains(request.method))?request.method:null
-								
-								if(apiToolkitService.checkAuthority(cache["${params.action}"]['roles'])){
-									
-									switch(type){
-										case 'application/xml':
-											forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
-											break
-										case 'application/json':
-										default:
-											//request.getRequestDispatcher("/${apiName}_${apiVersion}/${uri2['controller']}/${uri2['action']}/${uri2['id']}?${newQuery.join('&')}").forward(request, response)
-											forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
-											break
-									}
-								}else{
-									String msg = "User does not have access."
-									error._403_FORBIDDEN()(msg).send()
-									return false
-								}
-								break
-							}else{
-								String msg = "Path was unable to be parsed. Check your path variables and try again."
-								//redirect(uri: "/")
-								error._404_NOT_FOUND(msg).send()
-								return false
-							}
-							inc++
-						}
-
-					}
-					
-					switch(type){
-						case 'application/xml':
-							render(text:newModel as XML, contentType: "${type}")
-							break
-						case 'application/json':
-						default:
-							render(text:newModel as JSON, contentType: "${type}")
-							break
-					}
-					return false
-				}else{
-					if(cache){
-						if(cache["${params.action}"]){
-							def formats = ['text/html','application/json','application/xml']
-							def encoding = null
-							if(tempType){
-								encoding = (tempType.size()>1)?tempType[1]:null
-							}
-							
-							// make 'application/json' default
-							type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
-	
-							if(type){
-								if (apiToolkitService.isApiCall()) {
-									def methods = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-									def method = (methods.contains(request.method))?request.method:null
-									
-									response.setHeader('Allow', methods.join(', '))
-									response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
-									
-									if(method){
-										switch(request.method) {
-											case 'HEAD':
-												break;
-											case 'OPTIONS':
-												switch(type){
-													case 'application/xml':
-														render(text:cache["${params.action}"]['doc'] as XML, contentType: "${type}")
-														break
-													case 'application/json':
-													default:
-														render(text:cache["${params.action}"]['doc'] as JSON, contentType: "${type}")
-														break
-												}
-												break;
-											case 'GET':
-												def map = newModel
-												if(!newModel.isEmpty()){
-												switch(type){
-													case 'application/xml':
-														if(encoding){
-															render(text:map as XML, contentType: "${type}",encoding:"${encoding}")
-														}else{
-															render(text:map as XML, contentType: "${type}")
-														}
-														break
-													case 'text/html':
-														break
-													case 'application/json':
-													default:
-														if(encoding){
-															render(text:map as JSON, contentType: "${type}",encoding:"${encoding}")
-														}else{
-															render(text:map as JSON, contentType: "${type}")
-														}
-														break
-													}
-												}
-												break
-											case 'POST':
-												switch(type){
-													case 'application/xml':
-														//return response.status
-														break
-													case 'application/json':
-													default:
-														//return response.status
-														break
-												}
-												break
-											case 'PUT':
-												switch(type){
-													case 'application/xml':
-														//return response.status
-														break
-													case 'application/json':
-													default:
-														//return response.status
-														break
-												}
-												break
-											case 'DELETE':
-												switch(type){
-													case 'application/xml':
-														//return response.status
-														break
-													case 'application/json':
-													default:
-														//return response.status
-														break;
-												}
-												break
-										}
-									}
-									return false
-								}	
-							}else{
-								//render(view:params.action,model:model)
-							}
-						}else{
-							//render(view:params.action,model:model)
-						}
-					}
-					return true
-				}
-			}
 		}
 
 	}
