@@ -6,7 +6,13 @@ class ApiToolkitUrlMappings {
 		String apiName = getGrailsApplication().config.apitoolkit.apiName
 		String apiVersion = getGrailsApplication().metadata['app.version']
 		
-		"/$apiName_$apiVersion/$controller/$action?/$id**" {
+		"/$apiName_v$apiVersion/$controller/$action?/$id**" {
+			controller = controller
+			action = action
+			parseRequest = true
+		}
+		
+		"/v$apiVersion/$controller/$action?/$id**" {
 			controller = controller
 			action = action
 			parseRequest = true

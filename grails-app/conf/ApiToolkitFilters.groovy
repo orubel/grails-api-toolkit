@@ -57,7 +57,6 @@ class ApiToolkitFilters {
 				if(cache){
 					if(cache["${params.action}"]){
 						if (apiToolkitService.isApiCall()) {
-							println("is api call : ${params.controller}/${params.action}")
 							// USER HAS ACCESS?
 							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['roles'])){
 								return false
@@ -88,7 +87,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 // println("##### FILTER (AFTER)")
+				 println("##### FILTER (AFTER)")
 				 if(!model){
 					 return true
 				 }
@@ -203,7 +202,9 @@ class ApiToolkitFilters {
 							 if(type){
 								 if (apiToolkitService.isApiCall()) {
 									 def newModel = apiToolkitService.convertModel(model)
-									 List methods = []
+
+									 /*
+									 List methods = ['GET','PUT','POST','DELETE']
 									 if(queryString){
 										 def uri2 = apiToolkitService.isChainedApi(newModel,queryString.split('&') as List)
 										 methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
@@ -212,11 +213,12 @@ class ApiToolkitFilters {
 									 }
 									 
 									 def method = (methods.contains(request.method))?request.method:null
+									 */
 									 
-									 response.setHeader('Allow', methods.join(', '))
+									 //response.setHeader('Allow', methods.join(', '))
 									 response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
 									 
-									 if(method){
+									 //if(method){
 										 switch(request.method) {
 											 case 'PURGE':
 												 // cleans cache
@@ -226,13 +228,17 @@ class ApiToolkitFilters {
 											 case 'HEAD':
 												 break;
 											 case 'OPTIONS':
+											 	LinkedHashMap doc = apiToolkitService.getApiDoc()
+												 println(doc)
+												 println(doc.getClass())
+												 
 												 switch(type){
 													 case 'application/xml':
-														 render(text:apiToolkitService.generateDoc(params.controller,params.action) as XML, contentType: "${type}")
+														 render(text:doc as XML, contentType: "${type}")
 														 break
 													 case 'application/json':
 													 default:
-														 render(text:apiToolkitService.getApiDoc() as JSON, contentType: "${type}")
+														 render(text:doc as JSON, contentType: "${type}")
 														 break
 												 }
 												 return false
@@ -332,7 +338,7 @@ class ApiToolkitFilters {
 												 }
 												 break
 										 }
-									 }
+									 //}
 									 return false
 								 }
 							 }else{

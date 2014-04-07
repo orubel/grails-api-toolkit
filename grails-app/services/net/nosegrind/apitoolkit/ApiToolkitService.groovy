@@ -47,6 +47,7 @@ class ApiToolkitService{
 	def grailsApplication
 	def springSecurityService
 	def apiCacheService
+	
 	ApiStatuses error = new ApiStatuses()
 	GrailsCacheManager grailsCacheManager
 	
@@ -133,10 +134,14 @@ class ApiToolkitService{
 	boolean isRequestMatch(String protocol){
 		def request = getRequest()
 		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
-		if(protocol == method){
+		if(['OPTIONS','TRACE','HEAD'].contains(method)){
 			return true
 		}else{
-			return false
+			if(protocol == method){
+				return true
+			}else{
+				return false
+			}
 		}
 		return false
 	}
@@ -327,39 +332,46 @@ class ApiToolkitService{
 		return err
 	}
 	
-	private String processJson(ArrayList returns){
+	private String processJson(LinkedHashMap returns){
 		def json = [:]
 		returns.each{ p ->
-			def j = [:]
-			if(p?.values){
-				j["${p.name}"]=[]
-			}else{
-				def dataName=(['PKEY','FKEY','INDEX'].contains(p.paramType.toString()))?'ID':p.paramType
-				j = (p?.mockData?.trim())?["${p.name}":"${p.mockData}"]:["${p.name}":"${dataName}"]
-			}
-			j.each(){ key,val ->
-				if(val instanceof List){
-					def child = [:]
-					val.each(){ it ->
-						it.each(){ key2,val2 ->
-							child["${key2}"] ="${val2}"
+			if(springSecurityService.principal.authorities*.authority.any { p.key }){
+				p.value.each{ it ->
+					ParamsDescriptor paramDesc = it
+				
+					def j = [:]
+					if(paramDesc?.values){
+						j["${paramDesc.name}"]=[]
+					}else{
+						String dataName=(['PKEY','FKEY','INDEX'].contains(paramDesc.paramType.toString()))?'ID':paramDesc.paramType
+						j = (paramDesc?.mockData?.trim())?["${paramDesc.name}":"${paramDesc.mockData}"]:["${paramDesc.name}":"${dataName}"]
+					}
+					j.each(){ key,val ->
+						if(val instanceof List){
+							def child = [:]
+							val.each(){ it2 ->
+								it2.each(){ key2,val2 ->
+									child["${key2}"] ="${val2}"
+								}
+							}
+							json["${key}"] = child
+						}else{
+							json["${key}"]=val
 						}
 					}
-					json["${key}"] = child
-				}else{
-					json["${key}"]=val
 				}
 			}
 		}
+
 		if(json){
 			json = json as JSON
 		}
 		return json
 	}
 	
-	Map getApiDoc(){
+	LinkedHashMap getApiDoc(){
 		def params = getParams()
-		def newDoc = [:]
+		LinkedHashMap newDoc = [:]
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 		if(controller){
 			def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
@@ -367,29 +379,39 @@ class ApiToolkitService{
 				if(cache["${params.action}"]){
 
 					def doc = cache["${params.action}"].doc
-					def path = doc["${params.action}"].path
-					def method = doc["${params.action}"].method
-					def description = doc["${params.action}"].description
-					
+					def path = doc?.path
+					def method = doc?.method
+					def description = doc?.description
+
+					def authority = springSecurityService.principal.authorities*.authority[0]
 					newDoc["${params.action}"] = ["path":"${path}","method":method,"description":"${description}"]
-					if(doc["${params.action}"].receives){
-						newDoc["${params.action}"].receives = doc["${params.action}"].receives
-					}
-			
-					if(doc["${params.action}"].returns){
-						newDoc["${params.action}"].returns = []
-						doc["${params.action}"].returns.each(){ v ->
-							if(springSecurityService.principal.authorities*.authority.any { v.roles.contains(it) }){
-								newDoc["${params.action}"].returns.add(v)
+					if(doc.receives){
+						newDoc["${params.action}"].receives = [:]
+						doc.receives.each{ it ->
+							if(authority==it.key){
+								newDoc["${params.action}"].receives["${it.key}"] = it.value
 							}
 						}
-						newDoc["${params.action}"].json = processJson(newDoc.returns)
 					}
-					
-					if(doc["${params.action}"].errorcodes){
-						newDoc["${params.action}"].errorcodes = doc["${params.action}"].errorcodes
+
+					if(doc.returns){
+						newDoc["${params.action}"].returns = [:]
+						doc.returns.each(){ v ->
+							if(authority==v.key){
+								newDoc["${params.action}"].returns["${v.key}"] = v.value
+							}
+						}
+
+						newDoc["${params.action}"].json = processJson(newDoc["${params.action}"].returns)
 					}
-					
+
+					if(doc.errorcodes){
+						doc.errorcodes.each{ it ->
+							newDoc["${params.action}"].errorcodes.add(it)
+						}
+					}
+
+					/*
 					def links = generateLinkRels(params.controller, params.action,doc)
 					if(links){
 						newDoc["${params.action}"].links = []
@@ -402,7 +424,8 @@ class ApiToolkitService{
 						}
 						newDoc["${params.action}"].links.unique()
 					}
-
+					*/
+					
 					return newDoc
 				}
 			}
@@ -439,7 +462,6 @@ class ApiToolkitService{
 					if(cont["${actionname}"]["returns"]){
 						doc["returns"] = [:]
 						for(returnVal in cont["${actionname}"]["returns"]){
-							println("returnval [${returnVal.key}] : ${returnVal}")
 							doc["returns"]["${returnVal.key}"] = returnVal.value
 						}
 					}
