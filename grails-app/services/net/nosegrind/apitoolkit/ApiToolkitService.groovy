@@ -388,7 +388,7 @@ class ApiToolkitService{
 					if(doc.receives){
 						newDoc["${params.action}"].receives = [:]
 						doc.receives.each{ it ->
-							if(authority==it.key){
+							if(authority==it.key || it.key=='permitAll'){
 								newDoc["${params.action}"].receives["${it.key}"] = it.value
 							}
 						}
@@ -397,7 +397,7 @@ class ApiToolkitService{
 					if(doc.returns){
 						newDoc["${params.action}"].returns = [:]
 						doc.returns.each(){ v ->
-							if(authority==v.key){
+							if(authority==v.key || v.key=='permitAll'){
 								newDoc["${params.action}"].returns["${v.key}"] = v.value
 							}
 						}

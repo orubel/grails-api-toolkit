@@ -8,6 +8,7 @@ class ApidocController {
 
 	def apiToolkitService
 	def apiCacheService
+	def springSecurityService
 	
 	def index(){
 		redirect(action:'show')
@@ -20,10 +21,23 @@ class ApidocController {
 			String controllername = controllerClass.logicalPropertyName
 			def cache = apiCacheService.getApiCache(controllername)
 			if(cache){
-				docs["\${controllername}"]=cache
+				
+				cache.each(){ it ->
+					def newDocs=apiToolkitService.generateDoc(controllername, it.key)
+					if(newDocs){
+						if(!docs["\$controllername"]){
+							docs["\${controllername}"] = [:]
+						}
+						docs["\${controllername}"]["\${it.key}"]=newDocs["\${it.key}"]
+					}
+				}
+
 			}
 		}
-		[apiList:docs]
+		
+		String authority = springSecurityService.principal.authorities*.authority[0]
+		authority = (authority=='ROLE_ANONYMOUS')?'permitAll':authority
+		[apiList:docs,authority:authority]
 	}
 
 }

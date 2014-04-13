@@ -4,7 +4,7 @@ class ApiToolkitGrailsPlugin {
     def title = "Api Toolkit"
     def author = "Owen Rubel"
     def authorEmail = "orubel@gmail.com"
-    def description = 'The Grails API Toolkit is a set of tools that automate alot of the tasks needed to build your API by combining the functionality of REST, RPC and HATEOAS. Some included functionality includes api docs, real time notifications / webhooks, generated headers, responsive content type and more.'
+    def description = 'The Grails API Toolkit is a complete set of API tools and an API abstraction layer that automates alot of the tasks needed to build your API like api docs, real time notifications / webhooks, generated headers, responsive content type and more.TYPE This also abstracts the API away from the Controller/model with a more universal API Object that can be defined with roles, rules and definitions for handling the request and response at the front controller.'
     def documentation = "https://github.com/orubel/grails-api-toolkit"
 
     def license = "Apache"
