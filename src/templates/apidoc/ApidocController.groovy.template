@@ -21,7 +21,6 @@ class ApidocController {
 			String controllername = controllerClass.logicalPropertyName
 			def cache = apiCacheService.getApiCache(controllername)
 			if(cache){
-				
 				cache.each(){ it ->
 					def newDocs=apiToolkitService.generateDoc(controllername, it.key)
 					if(newDocs){
@@ -39,6 +38,5 @@ class ApidocController {
 		authority = (authority=='ROLE_ANONYMOUS')?'permitAll':authority
 		[apiList:docs,authority:authority]
 	}
-
 }
 

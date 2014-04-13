@@ -49,7 +49,7 @@ private boolean configure() {
 		return false
 	}
 
-	templateAttributes = [packageName: packageName,userClassName: userClassName,roleClassName:roleClassName]
+	templateAttributes = [packageName: packageName,userClassName: userClassName,roleClassName:roleClassName,apiProperties:'',apiConstraints:'']
 
 	true
 }

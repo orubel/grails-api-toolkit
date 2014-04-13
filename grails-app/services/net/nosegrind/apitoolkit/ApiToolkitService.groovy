@@ -216,6 +216,23 @@ class ApiToolkitService{
 		send(data, state, service)
 	}
 	
+	boolean methodCheck(List roles){
+		List optionalMethods = ['OPTIONS','HEAD']
+		List requiredMethods = ['GET','POST','PUT','DELETE','PATCH','TRACE']
+		
+		def temp = roles.removeAll(optionalMethods)
+		if(requiredMethods.contains(temp)){
+			if(temp.size()>1){
+				// ERROR: too many non-optional methods; only one is permitted
+				return false
+			}
+		}else{
+			// ERROR: unrecognized method
+			return false
+		}
+		return true
+	}
+	
 	private boolean send(Map data, String state, String service) {
 		def hooks = grailsApplication.getClassForName(grailsApplication.config.apitoolkit.domain).findAll("from Hook where service='${service}/${state}'")
 		def cache = apiCacheService.getApiCache(service)
@@ -332,6 +349,7 @@ class ApiToolkitService{
 		return err
 	}
 	
+
 	private String processJson(LinkedHashMap returns){
 		def json = [:]
 		returns.each{ p ->
@@ -369,6 +387,7 @@ class ApiToolkitService{
 		return json
 	}
 	
+
 	LinkedHashMap getApiDoc(){
 		def params = getParams()
 		LinkedHashMap newDoc = [:]
@@ -453,6 +472,7 @@ class ApiToolkitService{
 					
 					// if(springSecurityService.principal.authorities*.authority.any { receiveVal.key==it }){
 					if(cont["${actionname}"]["receives"]){
+
 						doc["receives"] = [:]
 						for(receiveVal in cont["${actionname}"]["receives"]){
 							doc["receives"]["${receiveVal.key}"] = receiveVal.value
@@ -469,8 +489,10 @@ class ApiToolkitService{
 					if(cont["${actionname}"]["errorcodes"]){
 						doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
 					}
+
 					//List links = generateLinkRels(controllername,actionname,doc)
 					//doc["links"] = links
+
 				}else{
 					// ERROR: method at '${controllername}/${actionname}' does not have API annotation
 				}
@@ -482,7 +504,9 @@ class ApiToolkitService{
 	
 	def Map generateDoc(String controllerName, String actionName){
 		def newDoc = [:]
+
 		String authority = springSecurityService.principal.authorities*.authority[0]
+
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
 		def cache = (params.controller)?apiCacheService.getApiCache(controllerName):null
 		if(cache["${actionName}"]?.doc){
@@ -493,6 +517,7 @@ class ApiToolkitService{
 			
 			newDoc["${actionName}"] = ["path":"${path}","method":method,"description":"${description}"]
 			if(doc.receives){
+
 				if(!newDoc["${actionName}"].receives){
 					newDoc["${actionName}"].receives = []
 				}
@@ -518,6 +543,7 @@ class ApiToolkitService{
 				}else{
 					doc.returns["permitAll"].each{ it ->
 						newDoc["${actionName}"].returns.add(it)
+
 					}
 				}
 				newDoc["${actionName}"].json = doc.json
@@ -526,13 +552,15 @@ class ApiToolkitService{
 			if(doc.errorcodes){
 				newDoc["${actionName}"].errorcodes = doc.errorcodes
 			}
-			
+
 			/*
+
 			def links = generateLinkRels(controllerName, actionName,doc)
 			if(links){
 				newDoc["${actionName}"].links = []
 				links.each(){ role ->
 					role.each(){ v ->
+
 						if(springSecurityService.principal.authorities*.authority.any { v.key }){
 							newDoc["${actionName}"].links.add(v.value)
 						}
@@ -541,12 +569,16 @@ class ApiToolkitService{
 				
 				newDoc["${actionName}"].links.unique()
 			}
+
 			*/
+
 		}
 		return newDoc
 	}
 	
+
 	/*
+
 	List generateLinkRels(String controllerName, String actionName,Map apidoc){
 		List links = []
 		int inc = 0
@@ -581,7 +613,9 @@ class ApiToolkitService{
 
 		return links
 	}
+
 	*/
+
 	
 	private List getBlankChainUri(String controllername,String actionname,String uri){
 		def paths = []
@@ -592,6 +626,7 @@ class ApiToolkitService{
 			if(action!=actionname){
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
+
 					if(api.method() == 'GET'){
 						def roles = api.apiRoles() as List
 						roles.each(){
@@ -618,6 +653,7 @@ class ApiToolkitService{
 			if(action!=actionname){
 				if(method.isAnnotationPresent(Api)) {
 					def api = method.getAnnotation(Api)
+
 					if(api.method() == 'POST' || api.method() == 'PUT' || api.method() == 'DELETE'){
 						def roles = api.roles() as List
 						roles.each(){
@@ -635,8 +671,6 @@ class ApiToolkitService{
 	}
 	
 	Map isChainedApi(Map map,List path){
-		println(map)
-		println(path)
 		def pathSize = path.size()
 		//String uri = ''
 		Map uri = [:]
@@ -816,6 +850,7 @@ class ApiToolkitService{
 		return newMap
 	}
 	
+
 	def setApiCache(String controllername,Map apidoc){
 		apiCacheService.setApiCache(controllername,apidoc)
 		//def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
@@ -839,4 +874,6 @@ class ApiToolkitService{
 		}
 		return ['validation.customRuntimeMessage', 'ApiCommandObject does not validate. Check that your data validates or that requesting user has access to api method and all fields in api command object.']
 	}
+
 }
+

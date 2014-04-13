@@ -1,3 +1,18 @@
+/* ****************************************************************************
+ * Copyright 2014 Owen Rubel
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *****************************************************************************/
 package net.nosegrind.apitoolkit
 
 import grails.converters.JSON
@@ -43,13 +58,15 @@ class ApiCacheService{
 	}
 	
 	@CachePut(value="ApiCache",key="#controllername")
-	def setApiCache(String controllername,Map apidoc){
-		return apidoc
+	def setApiCache(String controllername,Map apidesc){
+		return apidesc
 	}
 	
 	@CachePut(value="ApiCache",key="#controllername")
 	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc){
+		def cache = getApiCache(controllername)
 		try{
+
 			def cache = getApiCache(controllername)
 			if(cache["${methodname}"]){
 				cache["${methodname}"]['name'] = apidoc.name
@@ -59,13 +76,21 @@ class ApiCacheService{
 				cache["${methodname}"]['errorcodes'] = apidoc.errorcodes
 				cache["${methodname}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname)
 			}else{
-				//log.info 
-				println "[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
+				log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} ")
 			}
+			if(!cache["${methodname}"]){
+				cache["${methodname}"] = [:]
+			}
+
+			cache["${methodname}"]['name'] = apidoc.name
+			cache["${methodname}"]['description'] = apidoc.description
+			cache["${methodname}"]['receives'] = apidoc.receives
+			cache["${methodname}"]['returns'] = apidoc.returns
+			cache["${methodname}"]['errorcodes'] = apidoc.errorcodes
+
 			return cache
 		}catch(Exception e){
-			//log.info
-			println("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
+			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
 		}
 	}
 
@@ -76,23 +101,23 @@ class ApiCacheService{
 			if(cache["${methodname}"]){
 				cache["${methodname}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname)
 			}else{
-				//log.info
-				println "[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
+				log.info"[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
 			}
 			return cache
 		}catch(Exception e){
-			//log.info
-			println("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
+			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
 		}
 	}
 	
 	def getApiCache(String controllername){
 		try{
-			def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
-			return cache
+			def cache = grailsCacheManager.getCache('ApiCache').get(controllername)
+			if(cache){
+				return cache.get()
+			}
+			//return cache
 		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.getApiCache : No Cache exists for controller ${controllername} ")
+			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.getApiCache : No Cache exists for controller ${controllername} : ${e}")
 		}
 	}
-
 }

@@ -200,7 +200,9 @@ class HookController {
 							chain(controller:'hook',action:'list', params:params)
 							return
 						}else{
-							hook.errors.each { println it }
+							hook.errors.each { 
+								log.info("[Error]: ${packageName}.HookController.update : unable to save Hook : \${it}")
+							}
 						}
 						
 						flash.message = "INVALID/MALFORMED DATA: PLEASE SEE DOCS FOR 'JSON' FORMED STRING AND PLEASE TRY AGAIN."

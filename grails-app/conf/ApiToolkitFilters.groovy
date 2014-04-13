@@ -9,31 +9,6 @@ import net.nosegrind.apitoolkit.Method;
 import net.nosegrind.apitoolkit.ApiStatuses;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingInfo
-import org.codehaus.groovy.grails.web.mapping.UrlMappingData
-import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo
-
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
-import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.springframework.web.context.request.RequestContextHolder
-
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-
-import java.io.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse
-
 class ApiToolkitFilters {
 	
 	def apiToolkitService
@@ -41,14 +16,13 @@ class ApiToolkitFilters {
 	def apiCacheService
 
 	def filters = {
-		
 		String apiName = grailsApplication.config.apitoolkit.apiName
 		String apiVersion = grailsApplication.metadata['app.version']
 		String apiDir = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
 		
 		apitoolkit(uri:"/${apiDir}/**"){
 			before = { Map model ->
-				println("#### filter (BEFORE)")
+				//println("#### filter (BEFORE)")
 				params.action = (params.action)?params.action:'index'
 				
 				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
@@ -87,12 +61,11 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 println("##### FILTER (AFTER)")
+				 //println("##### FILTER (AFTER)")
 				 if(!model){
 					 return true
 				 }
 				 
-
 				 /*
 				  * Need to map command object to model, validate roles and data
 				  */
@@ -146,6 +119,7 @@ class ApiToolkitFilters {
 								 
 								 def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 								 def method = (methods.contains(request.method))?request.method:null
+
 								 if(apiToolkitService.checkAuthority(cache["${uri2['action']}"]['roles'])){
 									 switch(type){
 										 case 'application/xml':
@@ -203,6 +177,7 @@ class ApiToolkitFilters {
 								 if (apiToolkitService.isApiCall()) {
 									 def newModel = apiToolkitService.convertModel(model)
 
+
 									 /*
 									 List methods = ['GET','PUT','POST','DELETE']
 									 if(queryString){
@@ -213,6 +188,7 @@ class ApiToolkitFilters {
 									 }
 									 
 									 def method = (methods.contains(request.method))?request.method:null
+
 									 */
 									 
 									 //response.setHeader('Allow', methods.join(', '))
@@ -228,6 +204,7 @@ class ApiToolkitFilters {
 											 case 'HEAD':
 												 break;
 											 case 'OPTIONS':
+
 											 	LinkedHashMap doc = apiToolkitService.getApiDoc()
 												 println(doc)
 												 println(doc.getClass())
