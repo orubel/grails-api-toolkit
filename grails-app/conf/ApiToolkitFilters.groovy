@@ -206,8 +206,6 @@ class ApiToolkitFilters {
 											 case 'OPTIONS':
 
 											 	LinkedHashMap doc = apiToolkitService.getApiDoc()
-												 println(doc)
-												 println(doc.getClass())
 												 
 												 switch(type){
 													 case 'application/xml':
