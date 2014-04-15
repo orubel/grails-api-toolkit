@@ -2,8 +2,9 @@
 
 To see a example project, go <a href='https://github.com/orubel/api-example'>here</a> to view the code
 
-- <a href='https://github.com/orubel/grails-api-toolkit/wiki/1.0-Documentation'>1.0 Documentation</a>
 - <a href='https://github.com/orubel/grails-api-toolkit/wiki/2.0-Documentation'>2.0 Documentation</a>
+- <a href='https://github.com/orubel/grails-api-toolkit/wiki/1.0-Documentation'>1.0 Documentation (old)</a>
+
 
 Some of the features in the apitoolkit include:
 
