@@ -353,30 +353,18 @@
 						Receives
 						<div class="table ${method}TableContrast">
 							<div class="${method}HeadContrast">
-<<<<<<< HEAD
+
 							   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
 							   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
 							   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
-=======
-							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
-							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
-							   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
-							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Required</b></span>
->>>>>>> d66f5b586d2c6454e2683edcfbcebcfbe781c7dd
 							    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
 							</div>
 							<g:each in="${receives}" var="value">
 								<div class="${method}RowContrast">
-<<<<<<< HEAD
+
 								   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${(['PKEY','FKEY','INDEX'].contains(value.paramType.toString()))?'ID':value.paramType}</span>
 								   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${value.name}</span>
 								   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">${value.description}</span>
-=======
-								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${(['PKEY','FKEY','INDEX'].contains(value.paramType.toString()))?'ID':value.paramType}</span>
-								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${value.name}</span>
-								   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">${value.description}</span>
-								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${value.required}</span>
->>>>>>> d66f5b586d2c6454e2683edcfbcebcfbe781c7dd
 								    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
 							    </div>
 							 </g:each>
@@ -387,7 +375,7 @@
 						Returns
 						<div class="table ${method}TableContrast">
 							<div class="${method}HeadContrast">
-<<<<<<< HEAD
+
 							   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
 							   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
 							   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
@@ -400,21 +388,7 @@
 								   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.name}</span>
 								   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.description}</span>
 								    <span style="display: table-cell;width:200px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
-=======
-							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
-							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
-							   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
-							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Required</b></span>
-							    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
-							</div>
-							<g:each in="${returns}" var="rturn">
-								<div class="${method}RowContrast">
-								   <span style="display: table-cell;width: 75px;padding-left: 10px;border: 1px #d7ad7b;">${(['PKEY','FKEY','INDEX'].contains(rturn.paramType.toString()))?'ID':rturn.paramType}</span>
-								   <span style="display: table-cell;width: 75px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.name}</span>
-								   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.description}</span>
-								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.required}</span>
-								    <span style="display: table-cell;width:150px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
->>>>>>> d66f5b586d2c6454e2683edcfbcebcfbe781c7dd
+
 							    </div>
 							 </g:each>
 						 </div>
