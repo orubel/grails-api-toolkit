@@ -22,10 +22,9 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiDir}/**"){
 			before = { Map model ->
-				//println("#### filter (BEFORE)")
+				//println("#### FILTER (BEFORE)")
 				params.action = (params.action)?params.action:'index'
 				
-				def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 				
 				if(cache){
@@ -35,6 +34,21 @@ class ApiToolkitFilters {
 							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['roles'])){
 								return false
 							}
+							
+							 if(!apiToolkitService.checkURIDefinitions(cache["${params.action}"]['receives'])){
+								 ApiStatuses error = new ApiStatuses()
+								 String msg = 'Expected request variables do not match sent variables'
+								 error._400_BAD_REQUEST(msg).send()
+								 return false
+							 }
+							
+							/*
+							if(!apiToolkitService.checkMethodDefinitions(String method,List definitions){
+								// throw error
+								return false
+							}
+							*/
+							
 							// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
 							def method = cache["${params.action}"]['method'].trim()
 							def uri = [params.controller,params.action,params.id]

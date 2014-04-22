@@ -131,6 +131,21 @@ class ApiToolkitService{
 		return uri==api
 	}
 
+	boolean checkURIDefinitions(LinkedHashMap requestDefinitions){
+		def authority = springSecurityService.principal.authorities*.authority[0]
+		ParamsDescriptor[] temp = (requestDefinitions["${authority}"])?requestDefinitions["${authority}"]:requestDefinitions["permitAll"]
+		List requestList = []
+		temp.each{
+			requestList.add(it.name)
+		}
+		GrailsParameterMap params = RCH.currentRequestAttributes().params
+		List paramsList = params.keySet() as List
+		if(paramsList.containsAll(requestList)){
+			return true
+		}
+		return false
+	}
+	
 	boolean isRequestMatch(String protocol){
 		def request = getRequest()
 		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
@@ -509,6 +524,7 @@ class ApiToolkitService{
 
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
 		def cache = (params.controller)?apiCacheService.getApiCache(controllerName):null
+		
 		if(cache["${actionName}"]?.doc){
 			def doc = cache["${actionName}"].doc
 			def path = doc.path
@@ -573,6 +589,7 @@ class ApiToolkitService{
 			*/
 
 		}
+		
 		return newDoc
 	}
 	
@@ -859,7 +876,6 @@ class ApiToolkitService{
 			if(v){
 				def doc = generateApiDoc(controllername, k)
 				apiCacheService.setApiDocCache(controllername,k,doc)
-				//cache["${k}"]['doc'] = generateApiDoc(controllername, k,doc)
 			}
 		}
 	}

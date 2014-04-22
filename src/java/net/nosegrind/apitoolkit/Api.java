@@ -32,7 +32,7 @@ import java.util.List;
 @Documented
 public @interface Api{
 	String method();
-	String[] roles() default {"permitAll"};
+	String[] roles();
 	String name() default "";
 	String description() default "";
 }

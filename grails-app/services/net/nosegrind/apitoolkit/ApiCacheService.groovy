@@ -64,9 +64,7 @@ class ApiCacheService{
 	
 	@CachePut(value="ApiCache",key="#controllername")
 	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc){
-		def cache = getApiCache(controllername)
 		try{
-
 			def cache = getApiCache(controllername)
 			if(cache["${methodname}"]){
 				cache["${methodname}"]['name'] = apidoc.name
