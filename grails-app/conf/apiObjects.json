@@ -3,7 +3,7 @@
 {
     "Test": {
         "VALUES": {
-            "id": {
+            "id": {                
                 "type": "PKEY"
             },
             "testdata": {
@@ -26,11 +26,23 @@
                 }
             },
             "test/create": {
-            	"METHOD":"POST",
+            	"METHOD":"PUT",
             	"DESCRIPTION":"Create test data",
             	"ROLES":["ROLE_ADMIN","ROLE_USER"],
                 "REQUEST": {
                     "permitAll":["testdata"]
+                },
+                "RESPONSE": {
+                    "permitAll":["id"]
+                },
+                "ERROR":{"304_NOT_MODIFIED":""}
+            },
+             "test/update": {
+            	"METHOD":"POST",
+            	"DESCRIPTION":"Update test data",
+            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
+                "REQUEST": {
+                    "permitAll":["id","testdata"]
                 },
                 "RESPONSE": {
                     "permitAll":["id"]

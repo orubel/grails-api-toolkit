@@ -60,7 +60,11 @@ class ApiToolkitFilters {
 								if(path){
 									int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 									if(pos==3){
-										return true
+										ApiStatuses error = new ApiStatuses()
+										println("bad position (before)")
+										String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
+										error._400_BAD_REQUEST(msg).send()
+										return false
 									}
 								}else{
 									return false
@@ -103,7 +107,13 @@ class ApiToolkitFilters {
 					 Map query = [:]
 					 for(int b = 1;b<path.size();b++){
 						 def temp = path[b].split('=')
-						 query[temp[0]] = temp[1]
+						 if(temp.size()>1){
+							 query[temp[0]] = temp[1]
+						 }else{
+						 	String msg = 'Paths in chain need to all have a value.'
+						 	error._400_BAD_REQUEST(msg).send()
+							return false
+						 }
 					 }
 					 query.each{ k,v ->
 						 newQuery.add("${k}=${v}")
@@ -118,10 +128,12 @@ class ApiToolkitFilters {
  
 				 // api chaining
 				 if(path){
+					 println("has path...")
 					 def newModel = apiToolkitService.convertModel(model)
 					 def uri2 = apiToolkitService.isChainedApi(newModel,path as List)
 					 int pos = apiToolkitService.checkChainedMethodPosition(uri,oldPath as List)
 					 if(pos==3){
+						 println("bad position (after)")
 						 log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
 						 return false
 					 }else{
@@ -146,7 +158,7 @@ class ApiToolkitFilters {
 									 }
 								 }else{
 									 String msg = "User does not have access."
-									 error._403_FORBIDDEN()(msg).send()
+									 error._403_FORBIDDEN(msg).send()
 									 return false
 								 }
 								 

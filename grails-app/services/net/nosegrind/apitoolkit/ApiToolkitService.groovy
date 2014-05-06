@@ -746,6 +746,8 @@ class ApiToolkitService{
 	 * 3 = illegal combination
 	 */
 	int checkChainedMethodPosition(List uri,List path){
+		println(uri)
+		println(path)
 		boolean preMatch = false
 		boolean postMatch = false
 		boolean pathMatch = false
@@ -757,10 +759,15 @@ class ApiToolkitService{
 		def cache = apiCacheService.getApiCache(uri[0])
 		//def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 		def methods = cache["${uri[1]}"]['method'].trim()
+		println(methods)
 		if(method=='GET'){
-			if(!methods == method){ preMatch = true }
+			if(methods != method){
+				preMatch = true
+			}
 		}else{
-			if(methods == method){ preMatch = true }
+			if(methods == method){
+				preMatch = true
+			}
 		}
 		
 		// postmatch check
@@ -772,9 +779,13 @@ class ApiToolkitService{
 				//methods = cache["${last2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 				methods = cache["${last2[1]}"]['method'].trim()
 				if(method=='GET'){
-					if(!methods == method){ postMatch = true }
+					if(methods != method){
+						postMatch = true 
+					}
 				}else{
-					if(methods == method){ postMatch = true }
+					if(methods == method){
+						postMatch = true
+					}
 				}
 			}
 		}
@@ -791,7 +802,7 @@ class ApiToolkitService{
 					//methods = cache["${temp2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 					methods = cache["${temp2[1]}"]['method'].trim() as List
 					if(method=='GET'){
-						if(methods != method){ 
+						if(methods != method){
 							pathMatch = true 
 						}
 					}else{
