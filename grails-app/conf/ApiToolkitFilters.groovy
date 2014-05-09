@@ -119,46 +119,41 @@ class ApiToolkitFilters {
  
 				 // api chaining
 				 if(path){
-					 def newModel = apiToolkitService.convertModel(model)
-					 def uri2 = apiToolkitService.isChainedApi(newModel,path as List)
 					 int pos = apiToolkitService.checkChainedMethodPosition(uri,oldPath as List)
 					 if(pos==3){
 						 log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
 						 return false
 					 }else{
-						 def currentPath = "${uri2['controller']}/${uri2['action']}"
-						 def inc = 0
+					 	 def newModel = apiToolkitService.convertModel(model)
+						 def uri2 = apiToolkitService.isChainedApi(newModel,path as List)
+						 if(!uri2){
+							 String msg = "Path was unable to be parsed. Check your path variables and try again."
+							 //redirect(uri: "/")
+							 error._404_NOT_FOUND(msg).send()
+							 return false
+						 }
 						 
-						 if(currentPath!=path.last().split('=')[0]){
-							 if(uri2){
-								 
-								 def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-								 def method = (methods.contains(request.method))?request.method:null
+						 def currentPath = "${uri2['controller']}/${uri2['action']}"
 
-								 if(apiToolkitService.checkAuthority(cache["${uri2['action']}"]['roles'])){
-									 switch(type){
-										 case 'application/xml':
-											 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
-											 break
-										 case 'application/json':
-										 default:
-											 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
-											 break
-									 }
-								 }else{
-									 String msg = "User does not have access."
-									 error._403_FORBIDDEN(msg).send()
-									 return false
+						 if(currentPath!=path.last().split('=')[0]){
+							 def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+							 def method = (methods.contains(request.method))?request.method:null
+
+							 if(apiToolkitService.checkAuthority(cache["${uri2['action']}"]['roles'])){
+								 switch(type){
+									 case 'application/xml':
+										 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+										 break
+									 case 'application/json':
+									 default:
+										 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+										 break
 								 }
-								 
- 
 							 }else{
-								 String msg = "Path was unable to be parsed. Check your path variables and try again."
-								 //redirect(uri: "/")
-								 error._404_NOT_FOUND(msg).send()
+								 String msg = "User does not have access."
+								 error._403_FORBIDDEN(msg).send()
 								 return false
 							 }
-							 inc++
 						 }else{
 							 switch(type){
 								 case 'application/xml':
@@ -172,7 +167,6 @@ class ApiToolkitFilters {
 									 break
 							 }
 						 }
- 
 					 }
 					 return
 				 }else{
