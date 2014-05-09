@@ -28,42 +28,37 @@ class ApiToolkitFilters {
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 				
 				if(cache){
+					// CHECK IF URI HAS CACHE
 					if(cache["${params.action}"]){
+						// CHECK IF URI IS APICALL
 						if (apiToolkitService.isApiCall()) {
-							// USER HAS ACCESS?
+							// CHECK IF PRINCIPAL HAS ACCESS TO API
 							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['roles'])){
 								return false
 							}
 							
-							 if(!apiToolkitService.checkURIDefinitions(cache["${params.action}"]['receives'])){
-								 ApiStatuses error = new ApiStatuses()
-								 String msg = 'Expected request variables do not match sent variables'
-								 error._400_BAD_REQUEST(msg).send()
-								 return false
-							 }
-							
-							/*
-							if(!apiToolkitService.checkMethodDefinitions(String method,List definitions){
-								// throw error
+							// CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
+							if(!apiToolkitService.checkURIDefinitions(cache["${params.action}"]['receives'])){
+								ApiStatuses error = new ApiStatuses()
+								String msg = 'Expected request variables do not match sent variables'
+								error._400_BAD_REQUEST(msg)?.send()
 								return false
 							}
-							*/
 							
 							// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
-							def method = cache["${params.action}"]['method'].trim()
+							def method = cache["${params.action}"]['method']?.trim()
 							def uri = [params.controller,params.action,params.id]
 							// DOES api.methods.contains(request.method)
 							if(!apiToolkitService.isRequestMatch(method)){
 								// check for apichain
 								def queryString = request.'javax.servlet.forward.query_string'
-								List path = (queryString)?queryString.split('&'):[]
+								List path = (queryString)?queryString?.split('&'):[]
 								if(path){
 									int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 									if(pos==3){
 										ApiStatuses error = new ApiStatuses()
-										println("bad position (before)")
 										String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
-										error._400_BAD_REQUEST(msg).send()
+										error._400_BAD_REQUEST(msg)?.send()
 										return false
 									}
 								}else{

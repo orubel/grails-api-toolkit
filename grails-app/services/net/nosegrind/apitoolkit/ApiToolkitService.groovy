@@ -131,17 +131,28 @@ class ApiToolkitService{
 		return uri==api
 	}
 
+	/*
+	 * TODO: Need to compare multiple authorities
+	 */
 	boolean checkURIDefinitions(LinkedHashMap requestDefinitions){
 		def authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (requestDefinitions["${authority}"])?requestDefinitions["${authority}"]:requestDefinitions["permitAll"]
 		List requestList = []
+		List optionalParams = ['action','controller','apiName_v']
 		temp.each{
 			requestList.add(it.name)
 		}
+
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		List paramsList = params.keySet() as List
+		paramsList.removeAll(optionalParams)
+
 		if(paramsList.containsAll(requestList)){
-			return true
+			paramsList.removeAll(requestList)
+
+			if(!paramsList){
+				return true
+			}
 		}
 		return false
 	}
@@ -364,7 +375,9 @@ class ApiToolkitService{
 		return err
 	}
 	
-
+	/*
+	 * TODO: Need to compare multiple authorities
+	 */
 	private String processJson(LinkedHashMap returns){
 		def json = [:]
 		returns.each{ p ->
@@ -402,7 +415,9 @@ class ApiToolkitService{
 		return json
 	}
 	
-
+	/*
+	 * TODO: Need to compare multiple authorities
+	 */
 	LinkedHashMap getApiDoc(){
 		def params = getParams()
 		LinkedHashMap newDoc = [:]
@@ -517,6 +532,9 @@ class ApiToolkitService{
 		return doc
 	}
 	
+	/*
+	 * TODO: Need to compare multiple authorities
+	 */
 	def Map generateDoc(String controllerName, String actionName){
 		def newDoc = [:]
 
@@ -893,7 +911,7 @@ class ApiToolkitService{
 	
 	
 	/*
-	 * Validates Api Command > apiRoles
+	 * TODO: Need to compare multiple authorities
 	 */
 	def apiRoles(List list) {
 		if(springSecurityService.principal.authorities*.authority.any { list.contains(it) }){
