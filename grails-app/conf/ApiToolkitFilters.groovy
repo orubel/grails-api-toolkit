@@ -78,11 +78,7 @@ class ApiToolkitFilters {
 				 if(!model){
 					 return true
 				 }
-				 
-				 /*
-				  * Need to map command object to model, validate roles and data
-				  */
-				 
+
 				 ApiStatuses error = new ApiStatuses()
 				 params.action = (params.action)?params.action:'index'
 				 def uri = [params.controller,params.action,params.id]
@@ -123,12 +119,10 @@ class ApiToolkitFilters {
  
 				 // api chaining
 				 if(path){
-					 println("has path...")
 					 def newModel = apiToolkitService.convertModel(model)
 					 def uri2 = apiToolkitService.isChainedApi(newModel,path as List)
 					 int pos = apiToolkitService.checkChainedMethodPosition(uri,oldPath as List)
 					 if(pos==3){
-						 println("bad position (after)")
 						 log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
 						 return false
 					 }else{
@@ -197,20 +191,6 @@ class ApiToolkitFilters {
 							 if(type){
 								 if (apiToolkitService.isApiCall()) {
 									 def newModel = apiToolkitService.convertModel(model)
-
-
-									 /*
-									 List methods = ['GET','PUT','POST','DELETE']
-									 if(queryString){
-										 def uri2 = apiToolkitService.isChainedApi(newModel,queryString.split('&') as List)
-										 methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-									 }else{
-										 methods = cache["${params.action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-									 }
-									 
-									 def method = (methods.contains(request.method))?request.method:null
-
-									 */
 									 
 									 //response.setHeader('Allow', methods.join(', '))
 									 response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
