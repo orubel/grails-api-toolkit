@@ -87,18 +87,18 @@ class ApiStatuses{
 
 	// 400 bad request
 	def _400_BAD_REQUEST(String msg){
-		status = new ErrorCodeDescriptor(code:400,description:"[Bad Request] : ${msg}")
+		this.status = new ErrorCodeDescriptor(code:400,description:"[Bad Request] : ${msg}")
 		return this
 	}
 	
 	def _400_BAD_REQUEST(){
-		status = new ErrorCodeDescriptor(code:400,description:"[Bad Request]")
+		this.status = new ErrorCodeDescriptor(code:400,description:"[Bad Request]")
 		return this
 	}
 	
 	// 401 unauthorized
 	def _401_UNAUTHORIZED(String msg){
-		status = new ErrorCodeDescriptor(code:400,description:"[Bad Request] : ${msg}")
+		this.status = new ErrorCodeDescriptor(code:400,description:"[Bad Request] : ${msg}")
 		return this
 	}
 	
@@ -109,91 +109,91 @@ class ApiStatuses{
 	
 	// 403 forbidden
 	def _403_FORBIDDEN(String msg){
-		status = new ErrorCodeDescriptor(code:403,description:"[Forbidden] : ${msg}")
+		this.status = new ErrorCodeDescriptor(code:403,description:"[Forbidden] : ${msg}")
 		return this
 	}
 	def _403_FORBIDDEN(){
-		status = new ErrorCodeDescriptor(code:403,description:"[Forbidden]")
+		this.status = new ErrorCodeDescriptor(code:403,description:"[Forbidden]")
 		return this
 	}
 	
 	// 404 not found
 	def _404_NOT_FOUND(String msg){
-		status = new ErrorCodeDescriptor(code:404,description:"[Not Found] : ${msg}")
+		this.status = new ErrorCodeDescriptor(code:404,description:"[Not Found] : ${msg}")
 		return this
 	}
 	def _404_NOT_FOUND(){
-		status = new ErrorCodeDescriptor(code:404,description:"[Not Found]")
+		this.status = new ErrorCodeDescriptor(code:404,description:"[Not Found]")
 		return
 	}
 
 	// UNSUPPORTED METHOD
 	def _405_UNSUPPORTED_METHOD(String msg){
-		status = new ErrorCodeDescriptor(code:405,description:"[Unsupported Method] : ${msg}")
+		this.status = new ErrorCodeDescriptor(code:405,description:"[Unsupported Method] : ${msg}")
 		return this
 	}
 	def _405_UNSUPPORTED_METHOD(){
-		status = new ErrorCodeDescriptor(code:405,description:"[Unsupported Method]")
+		this.status = new ErrorCodeDescriptor(code:405,description:"[Unsupported Method]")
 		return this
 	}
 	
 	// ACCOUNT CONFLICT
 	def _409_ACCOUNT_CONFLICT(String msg){
-		status = new ErrorCodeDescriptor(code:409,description:"[Account Conflict] : ${msg}")
+		this.status = new ErrorCodeDescriptor(code:409,description:"[Account Conflict] : ${msg}")
 		return this
 	}
 	def _409_ACCOUNT_CONFLICT(){
-		status = new ErrorCodeDescriptor(code:409,description:"[Account Conflict]")
+		this.status = new ErrorCodeDescriptor(code:409,description:"[Account Conflict]")
 		return
 	}
 	
 	// ConditionNotMet
 	def _412_CONDITION_NOT_MET(String msg){
-		status = new ErrorCodeDescriptor(code:412,description:"[Condition Not Met] : ${msg}")
+		this.status = new ErrorCodeDescriptor(code:412,description:"[Condition Not Met] : ${msg}")
 		return this
 	}
 	def _412_CONDITION_NOT_MET(){
-		status = new ErrorCodeDescriptor(code:412,description:"[Condition Not Met] ")
+		this.status = new ErrorCodeDescriptor(code:412,description:"[Condition Not Met] ")
 		return this
 	}
 	
 	// RequestBodyTooLarge
 	def _413_REQUEST_BODY_TOO_LARGE(String msg){
-		status = new ErrorCodeDescriptor(code:413,description:"[Request Body Too Large] : ${msg}")
+		this.status = new ErrorCodeDescriptor(code:413,description:"[Request Body Too Large] : ${msg}")
 		return this
 	}
 	def _413_REQUEST_BODY_TOO_LARGE(){
-		status = new ErrorCodeDescriptor(code:413,description:"[Request Body Too Large]")
+		this.status = new ErrorCodeDescriptor(code:413,description:"[Request Body Too Large]")
 		return this
 	}
 	
 	// InvalidRange
 	def _416_INVALID_RANGE(String msg){
-		status = new ErrorCodeDescriptor(code:416,description:"[Invalid Range] : ${msg}")
+		this.status = new ErrorCodeDescriptor(code:416,description:"[Invalid Range] : ${msg}")
 		return
 	}
 	def _416_INVALID_RANGE(){
-		status = new ErrorCodeDescriptor(code:416,description:"[Invalid Range]")
+		this.status = new ErrorCodeDescriptor(code:416,description:"[Invalid Range]")
 		return this
 	}
 	
 	// SERVER ERROR
 	def _500_SERVER_ERROR(String msg){
-		status = new ErrorCodeDescriptor(code:500,description:"[Server Error] : ${msg}")
+		this.status = new ErrorCodeDescriptor(code:500,description:"[Server Error] : ${msg}")
 		return this
 	}
 	def _500_SERVER_ERROR(){
-		status = new ErrorCodeDescriptor(code:500,description:"[Server Error]")
+		this.status = new ErrorCodeDescriptor(code:500,description:"[Server Error]")
 		return this
 	}
 	
 	// SERVICE UNAVAILABLE
 	def _503_UNAVAILABLE(String msg){
-		status = new ErrorCodeDescriptor(code:503,description:"[Service Unavailable] : ${msg}")
+		this.status = new ErrorCodeDescriptor(code:503,description:"[Service Unavailable] : ${msg}")
 		return this
 	}
 	def _503_UNAVAILABLE(){
-		status = new ErrorCodeDescriptor(code:503,description:"[Service Unavailable]")
+		this.status = new ErrorCodeDescriptor(code:503,description:"[Service Unavailable]")
 		return this
 	}
 

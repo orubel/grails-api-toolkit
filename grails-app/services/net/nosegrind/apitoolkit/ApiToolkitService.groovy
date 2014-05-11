@@ -43,6 +43,7 @@ import org.springframework.cache.Cache
 import grails.spring.BeanBuilder
 
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
+import org.codehaus.groovy.grails.web.util.WebUtils
 
 class ApiToolkitService{
 
@@ -89,7 +90,6 @@ class ApiToolkitService{
 		}
 		return params
 	}
-
 	
 	// api call now needs to detect request method and see if it matches anno request method
 	boolean isApiCall(){
@@ -133,22 +133,39 @@ class ApiToolkitService{
 		return uri==api
 	}
 
+	HashMap getMethodParams(){
+		List optionalParams = ['action','controller','apiName_v']
+		GrailsParameterMap params = RCH.currentRequestAttributes().params
+		Map paramsRequest = params.findAll {
+			return !optionalParams.contains(it.key)
+		}
+		
+		Map paramsGet = WebUtils.fromQueryString(request.getQueryString() ?: "")
+		Map paramsPost = paramsRequest.minus(paramsGet)
+
+		return ['get':paramsGet,'post':paramsPost]
+	}
+	
 	/*
 	 * TODO: Need to compare multiple authorities
 	 */
 	boolean checkURIDefinitions(LinkedHashMap requestDefinitions){
+
 		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (requestDefinitions["${authority}"])?requestDefinitions["${authority}"]:requestDefinitions["permitAll"]
 		List requestList = []
 		List optionalParams = ['action','controller','apiName_v']
 		temp.each{
+			println(it.name)
 			requestList.add(it.name)
 		}
 
-		GrailsParameterMap params = RCH.currentRequestAttributes().params
-		List paramsList = params.keySet() as List
-		paramsList.removeAll(optionalParams)
-
+		HashMap params = getMethodParams()
+		//GrailsParameterMap params = RCH.currentRequestAttributes().params
+		List paramsList = params.post.keySet() as List
+		println("sent : "+paramsList)
+		println("expected : "+requestList)
+		
 		if(paramsList.containsAll(requestList)){
 			paramsList.removeAll(requestList)
 			if(!paramsList){
@@ -234,15 +251,6 @@ class ApiToolkitService{
 		}
 	}
 	
-	void callHook(String service, Map data, String state) {
-		send(data, state, service)
-	}
-	
-	void callHook(String service, Object data, String state) {
-		data = formatDomainObject(data)
-		send(data, state, service)
-	}
-	
 	boolean methodCheck(List roles){
 		List optionalMethods = ['OPTIONS','HEAD']
 		List requiredMethods = ['GET','POST','PUT','DELETE','PATCH','TRACE']
@@ -260,13 +268,22 @@ class ApiToolkitService{
 		return true
 	}
 	
+	void callHook(String service, Map data, String state) {
+		send(data, state, service)
+	}
+	
+	void callHook(String service, Object data, String state) {
+		data = formatDomainObject(data)
+		send(data, state, service)
+	}
+	
 	private boolean send(Map data, String state, String service) {
 		List hooks = grailsApplication.getClassForName(grailsApplication.config.apitoolkit.domain).findAll("from Hook where service='${service}/${state}'")
 		def cache = apiCacheService.getApiCache(service)
 		hooks.each { hook ->
 			// get cache and check each users authority for hook
 			List userRoles = []
-			List authorities = hook.user.getAuthorities()
+			LinkedHashSet authorities = hook.user.getAuthorities()
 			authorities.each{
 				userRoles += it.authority
 			}

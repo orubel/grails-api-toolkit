@@ -37,15 +37,6 @@ class ApiToolkitFilters {
 								return false
 							}
 							
-							// CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
-							if(!apiToolkitService.checkURIDefinitions(cache["${params.action}"]['receives'])){
-								ApiStatuses error = new ApiStatuses()
-								String msg = 'Expected request variables do not match sent variables'
-								println(msg)
-								error._400_BAD_REQUEST(msg)?.send()
-								return false
-							}
-							
 							// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
 							def method = cache["${params.action}"]['method']?.trim()
 							def uri = [params.controller,params.action,params.id]
@@ -64,6 +55,16 @@ class ApiToolkitFilters {
 										return false
 									}
 								}else{
+									return false
+								}
+							}else{
+								// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
+								// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
+								if(!apiToolkitService.checkURIDefinitions(cache["${params.action}"]['receives'])){
+									ApiStatuses error = new ApiStatuses()
+									String msg = 'Expected request variables do not match sent variables'
+									println(msg)
+									error._400_BAD_REQUEST(msg)?.send()
 									return false
 								}
 							}
