@@ -42,6 +42,8 @@ import org.springframework.cache.Cache
 
 import grails.spring.BeanBuilder
 
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
+
 class ApiToolkitService{
 
 	def grailsApplication
@@ -56,31 +58,31 @@ class ApiToolkitService{
 	Long responseCode
 	String responseMessage
 	
-	def getRequest(){
+	SecurityContextHolderAwareRequestWrapper getRequest(){
 		return RCH.currentRequestAttributes().currentRequest
 	}
 
+	/*
 	def getResponse(){
 		return RCH.currentRequestAttributes().currentResponse
 	}
+	*/
 
 	GrailsParameterMap getParams(){
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
-		def request = getRequest()
+		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		List formats = ['text/html','application/json','application/xml']
 		List tempType = request.getHeader('Content-Type')?.split(';')
 		String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
 		type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
 		switch(type){
 			case 'application/json':
-				def json = request.JSON
-				json.each() { key,value ->
+				request.JSON?.each() { key,value ->
 					params.put(key,value)
 				}
 				break
 			case 'application/xml':
-				def xml = request.JSON
-				xml.each() { key,value ->
+				request.XML?.each() { key,value ->
 					params.put(key,value)
 				}
 				break
@@ -91,7 +93,7 @@ class ApiToolkitService{
 	
 	// api call now needs to detect request method and see if it matches anno request method
 	boolean isApiCall(){
-		def request = getRequest()
+		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		GrailsParameterMap params = getParams()
 		String queryString = request.'javax.servlet.forward.query_string'
 
@@ -135,7 +137,7 @@ class ApiToolkitService{
 	 * TODO: Need to compare multiple authorities
 	 */
 	boolean checkURIDefinitions(LinkedHashMap requestDefinitions){
-		def authority = springSecurityService.principal.authorities*.authority[0]
+		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (requestDefinitions["${authority}"])?requestDefinitions["${authority}"]:requestDefinitions["permitAll"]
 		List requestList = []
 		List optionalParams = ['action','controller','apiName_v']
@@ -149,7 +151,6 @@ class ApiToolkitService{
 
 		if(paramsList.containsAll(requestList)){
 			paramsList.removeAll(requestList)
-
 			if(!paramsList){
 				return true
 			}
@@ -158,7 +159,7 @@ class ApiToolkitService{
 	}
 	
 	boolean isRequestMatch(String protocol){
-		def request = getRequest()
+		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
 		if(['OPTIONS','TRACE','HEAD'].contains(method)){
 			return true
@@ -193,7 +194,7 @@ class ApiToolkitService{
 	
 	boolean checkHookAuthority(ArrayList roles){
 		if (springSecurityService.isLoggedIn()){
-			def userRoles = springSecurityService.getPrincipal().getAuthorities()
+			List userRoles = springSecurityService.getPrincipal().getAuthorities()
 			if(userRoles){
 				if(userRoles.intersect(roles)){
 					return true
@@ -209,15 +210,15 @@ class ApiToolkitService{
 			return true
 		}else{
 			if(roles.size()>0 && roles[0].trim()){
-				def roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugin.springsecurity.authority.className).clazz.list().authority
-				def finalRoles
-				def userRoles
+				List roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugin.springsecurity.authority.className).clazz.list().authority
+				List finalRoles = []
+				List userRoles = []
 				if (springSecurityService.isLoggedIn()){
 					userRoles = springSecurityService.getPrincipal().getAuthorities()
 				}
 				
 				if(userRoles){
-					def temp = roles2.intersect(roles as Set)
+					List temp = roles2.intersect(roles as Set)
 					finalRoles = temp.intersect(userRoles)
 					if(finalRoles){
 						return true
@@ -246,7 +247,7 @@ class ApiToolkitService{
 		List optionalMethods = ['OPTIONS','HEAD']
 		List requiredMethods = ['GET','POST','PUT','DELETE','PATCH','TRACE']
 		
-		def temp = roles.removeAll(optionalMethods)
+		List temp = roles.removeAll(optionalMethods)
 		if(requiredMethods.contains(temp)){
 			if(temp.size()>1){
 				// ERROR: too many non-optional methods; only one is permitted
@@ -260,17 +261,17 @@ class ApiToolkitService{
 	}
 	
 	private boolean send(Map data, String state, String service) {
-		def hooks = grailsApplication.getClassForName(grailsApplication.config.apitoolkit.domain).findAll("from Hook where service='${service}/${state}'")
+		List hooks = grailsApplication.getClassForName(grailsApplication.config.apitoolkit.domain).findAll("from Hook where service='${service}/${state}'")
 		def cache = apiCacheService.getApiCache(service)
 		hooks.each { hook ->
 			// get cache and check each users authority for hook
-			def userRoles = []
-			def authorities = hook.user.getAuthorities()
+			List userRoles = []
+			List authorities = hook.user.getAuthorities()
 			authorities.each{
 				userRoles += it.authority
 			}
 			def roles= cache["${state}"]['roles']
-			def temp = roles.intersect(userRoles)
+			List temp = roles.intersect(userRoles)
 
 			if(temp.size()>0){
 				String format = hook.format.toLowerCase()
@@ -280,8 +281,8 @@ class ApiToolkitService{
 				String hookData
 	
 				try{
-					def url = new URL(hook.callback)
-					def conn = url.openConnection()
+					URL url = new URL(hook.callback)
+					URLConnection conn = url.openConnection()
 					conn.setRequestMethod("POST")
 					conn.setRequestProperty("User-Agent",'Mozilla/5.0')
 					conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5")

@@ -22,7 +22,7 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiDir}/**"){
 			before = { Map model ->
-				//println("#### FILTER (BEFORE)")
+				println("#### FILTER (BEFORE)")
 				params.action = (params.action)?params.action:'index'
 				
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
@@ -41,6 +41,7 @@ class ApiToolkitFilters {
 							if(!apiToolkitService.checkURIDefinitions(cache["${params.action}"]['receives'])){
 								ApiStatuses error = new ApiStatuses()
 								String msg = 'Expected request variables do not match sent variables'
+								println(msg)
 								error._400_BAD_REQUEST(msg)?.send()
 								return false
 							}
@@ -58,6 +59,7 @@ class ApiToolkitFilters {
 									if(pos==3){
 										ApiStatuses error = new ApiStatuses()
 										String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
+										println(msg)
 										error._400_BAD_REQUEST(msg)?.send()
 										return false
 									}
@@ -74,7 +76,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 //println("##### FILTER (AFTER)")
+				 println("##### FILTER (AFTER)")
 				 if(!model){
 					 return true
 				 }
