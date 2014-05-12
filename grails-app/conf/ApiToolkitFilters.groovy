@@ -5,6 +5,7 @@ import java.util.Map
 import grails.converters.JSON
 import grails.converters.XML
 import net.nosegrind.apitoolkit.Api;
+
 import net.nosegrind.apitoolkit.Method;
 import net.nosegrind.apitoolkit.ApiStatuses;
 import org.springframework.web.context.request.RequestContextHolder as RCH
@@ -44,13 +45,15 @@ class ApiToolkitFilters {
 							if(!apiToolkitService.isRequestMatch(method)){
 								// check for apichain
 								def queryString = request.'javax.servlet.forward.query_string'
-								List path = (queryString)?queryString?.split('&'):[]
+								List path = apiToolkitService.getPath(params, queryString)
+				 
 								if(path){
+									println(path)
+									println(uri)
 									int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 									if(pos==3){
 										ApiStatuses error = new ApiStatuses()
 										String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
-										println(msg)
 										error._400_BAD_REQUEST(msg)?.send()
 										return false
 									}
@@ -89,17 +92,24 @@ class ApiToolkitFilters {
 				 List oldPath = (queryString)?queryString.split('&'):[]
 				 
 				 // create response data
-				 List path = []
+				 List path = apiToolkitService.getPath(params, queryString)
 				 def newQuery = []
+				 /*
 				 if(params.containsKey("newPath")){
-					 path = params.newPath?.split('&')
+					 if(params.newPath){
+						 path = params.newPath?.split('&')
+					 }else{
+					 	path = (queryString)?queryString.split('&'):[]
+					 }
 				 }else{
 					 path = (queryString)?queryString.split('&'):[]
 				 }
+				 */
 				 if(path){
 					 path.remove(0)
 					 Map query = [:]
-					 for(int b = 1;b<path.size();b++){
+					 for(int b = 0;b<path.size();b++){
+						 println("path : "+path[b])
 						 def temp = path[b].split('=')
 						 if(temp.size()>1){
 							 query[temp[0]] = temp[1]
@@ -109,6 +119,7 @@ class ApiToolkitFilters {
 							return false
 						 }
 					 }
+					 println("query : ${query}")
 					 query.each{ k,v ->
 						 newQuery.add("${k}=${v}")
 					 }
@@ -165,6 +176,9 @@ class ApiToolkitFilters {
 									 break
 								 case 'application/json':
 								 default:
+								 	println("################ last path")
+									 println(newQuery)
+								 	println("test : "+newQuery.join('&'))
 									 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
 									 return false
 									 break

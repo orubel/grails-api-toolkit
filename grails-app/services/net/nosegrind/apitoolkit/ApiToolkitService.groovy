@@ -91,6 +91,28 @@ class ApiToolkitService{
 		return params
 	}
 	
+	GrailsParameterMap setParams(){
+		GrailsParameterMap params = RCH.currentRequestAttributes().params
+		SecurityContextHolderAwareRequestWrapper request = getRequest()
+		List formats = ['text/html','application/json','application/xml']
+		List tempType = request.getHeader('Content-Type')?.split(';')
+		String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+		type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
+		switch(type){
+			case 'application/json':
+				request.JSON?.each() { key,value ->
+					params.put(key,value)
+				}
+				break
+			case 'application/xml':
+				request.XML?.each() { key,value ->
+					params.put(key,value)
+				}
+				break
+		}
+		return params
+	}
+	
 	// api call now needs to detect request method and see if it matches anno request method
 	boolean isApiCall(GrailsParameterMap params){
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
@@ -133,7 +155,7 @@ class ApiToolkitService{
 	}
 
 	HashMap getMethodParams(){
-		List optionalParams = ['action','controller','apiName_v']
+		List optionalParams = ['action','controller','apiName_v','newPath']
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		Map paramsRequest = params.findAll {
 			return !optionalParams.contains(it.key)
@@ -155,7 +177,6 @@ class ApiToolkitService{
 		List requestList = []
 		List optionalParams = ['action','controller','apiName_v']
 		temp.each{
-			println(it.name)
 			requestList.add(it.name)
 		}
 
@@ -663,7 +684,6 @@ class ApiToolkitService{
 	}
 
 	*/
-
 	
 	private List getBlankChainUri(String controllername,String actionname,String uri){
 		def paths = []
@@ -770,6 +790,21 @@ class ApiToolkitService{
 		}
 	}
 	
+	List getPath(GrailsParameterMap params, String queryString){
+		List path = []
+		def newQuery = []
+		if(params.containsKey("newPath")){
+			if(params.newPath){
+				path = params.newPath?.split('&')
+			}else{
+				path = (queryString)?queryString.split('&'):[]
+			}
+		}else{
+			path = (queryString)?queryString.split('&'):[]
+		}
+		return path
+	}
+	
 	/*
 	 * Returns chainType
 	 * 1 = prechain
@@ -791,6 +826,7 @@ class ApiToolkitService{
 		//def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 		def methods = cache["${uri[1]}"]['method'].trim()
 		println(methods)
+		println(method)
 		if(method=='GET'){
 			if(methods != method){
 				preMatch = true
