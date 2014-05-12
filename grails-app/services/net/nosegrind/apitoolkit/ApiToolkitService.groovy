@@ -67,7 +67,8 @@ class ApiToolkitService{
 	def getResponse(){
 		return RCH.currentRequestAttributes().currentResponse
 	}
-
+	*/
+	
 	GrailsParameterMap getParams(){
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
@@ -89,7 +90,6 @@ class ApiToolkitService{
 		}
 		return params
 	}
-	*/
 	
 	// api call now needs to detect request method and see if it matches anno request method
 	boolean isApiCall(GrailsParameterMap params){
@@ -501,12 +501,7 @@ class ApiToolkitService{
 	Map generateApiDoc(String controllername, String actionname){
 		Map doc = [:]
 		def cont = apiCacheService.getApiCache(controllername)
-		String apiPrefix
-		if(grailsApplication.config.apitoolkit.apiName){
-			apiPrefix = "${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String
-		}else{
-			apiPrefix = "v${grailsApplication.metadata['app.version']}" as String
-		}
+		String apiPrefix = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String
 		
 		if(cont){
 			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
@@ -552,6 +547,8 @@ class ApiToolkitService{
 	 * TODO: Need to compare multiple authorities
 	 */
 	def Map generateDoc(String controllerName, String actionName){
+		GrailsParameterMap params = getParams()
+		
 		def newDoc = [:]
 
 		String authority = springSecurityService.principal.authorities*.authority[0]
