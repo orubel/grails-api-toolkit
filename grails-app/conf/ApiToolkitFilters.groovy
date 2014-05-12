@@ -31,7 +31,7 @@ class ApiToolkitFilters {
 					// CHECK IF URI HAS CACHE
 					if(cache["${params.action}"]){
 						// CHECK IF URI IS APICALL
-						if (apiToolkitService.isApiCall()) {
+						if (apiToolkitService.isApiCall(params)) {
 							// CHECK IF PRINCIPAL HAS ACCESS TO API
 							if(!apiToolkitService.checkAuthority(cache["${params.action}"]['roles'])){
 								return false
@@ -186,7 +186,7 @@ class ApiToolkitFilters {
 							 type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
 	 
 							 if(type){
-								 if (apiToolkitService.isApiCall()) {
+								 if (apiToolkitService.isApiCall(params)) {
 									 def newModel = apiToolkitService.convertModel(model)
 									 
 									 //response.setHeader('Allow', methods.join(', '))
@@ -203,7 +203,7 @@ class ApiToolkitFilters {
 												 break;
 											 case 'OPTIONS':
 
-											 	LinkedHashMap doc = apiToolkitService.getApiDoc()
+											 	LinkedHashMap doc = apiToolkitService.getApiDoc(params)
 												 
 												 switch(type){
 													 case 'application/xml':

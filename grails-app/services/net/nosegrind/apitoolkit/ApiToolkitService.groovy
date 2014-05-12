@@ -67,7 +67,6 @@ class ApiToolkitService{
 	def getResponse(){
 		return RCH.currentRequestAttributes().currentResponse
 	}
-	*/
 
 	GrailsParameterMap getParams(){
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
@@ -90,11 +89,11 @@ class ApiToolkitService{
 		}
 		return params
 	}
+	*/
 	
 	// api call now needs to detect request method and see if it matches anno request method
-	boolean isApiCall(){
+	boolean isApiCall(GrailsParameterMap params){
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
-		GrailsParameterMap params = getParams()
 		String queryString = request.'javax.servlet.forward.query_string'
 
 		String uri
@@ -436,8 +435,7 @@ class ApiToolkitService{
 	/*
 	 * TODO: Need to compare multiple authorities
 	 */
-	LinkedHashMap getApiDoc(){
-		def params = getParams()
+	LinkedHashMap getApiDoc(GrailsParameterMap params){
 		LinkedHashMap newDoc = [:]
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 		if(controller){
