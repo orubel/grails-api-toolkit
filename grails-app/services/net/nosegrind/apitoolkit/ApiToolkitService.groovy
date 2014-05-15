@@ -165,10 +165,7 @@ class ApiToolkitService{
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		String  queryString = request.'javax.servlet.forward.query_string'
 		List path = getPath(params, queryString)
-		println("############# POPPATH ######################")
-		println(path)
 		path.remove(0)
-		println(path)
 		path.join('&')
 		params.queryString = path.join('&')
 	}
@@ -202,9 +199,6 @@ class ApiToolkitService{
 		HashMap params = getMethodParams()
 		//GrailsParameterMap params = RCH.currentRequestAttributes().params
 		List paramsList = params.post.keySet() as List
-		println("sent : "+paramsList)
-		println("expected : "+requestList)
-		
 		if(paramsList.containsAll(requestList)){
 			paramsList.removeAll(requestList)
 			if(!paramsList){
@@ -831,8 +825,6 @@ class ApiToolkitService{
 	 * 3 = illegal combination
 	 */
 	int checkChainedMethodPosition(List uri,List path){
-		println("URI:"+uri)
-		println("PATH:"+path)
 		boolean preMatch = false
 		boolean postMatch = false
 		boolean pathMatch = false
@@ -854,7 +846,6 @@ class ApiToolkitService{
 				preMatch = true
 			}
 		}
-		println("PREMATCH : ${preMatch}")
 		
 		// postmatch check
 		if(pathSize>1){
@@ -869,14 +860,12 @@ class ApiToolkitService{
 						postMatch = true 
 					}
 				}else{
-				println("NOGET")
 					if(methods == method){
 						postMatch = true
 					}
 				}
 			}
 		}
-		println("POSTMATCH : ${postMatch}")
 		
 		// path check
 		int start = 1
@@ -901,7 +890,7 @@ class ApiToolkitService{
 				}
 			}
 		}
-		println("PATHMATCH : ${pathMatch}")
+
 		
 		if(pathMatch || (preMatch && postMatch)){
 			return 3
@@ -924,7 +913,6 @@ class ApiToolkitService{
 	
 	Map convertModel(Map map){
 		Map newMap = [:]
-		println("MAP:"+map)
 		String k = map.entrySet().toList().first().key
 		
 		if(map && (!map?.response && !map?.metaClass && !map?.params)){

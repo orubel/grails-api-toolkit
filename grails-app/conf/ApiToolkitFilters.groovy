@@ -23,9 +23,8 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiDir}/**"){
 			before = { Map model ->
-				println("#### FILTER (BEFORE)")
+				//println("#### FILTER (BEFORE)")
 
-				println(params)
 				params.action = (params.action)?params.action:'index'
 				
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
@@ -70,7 +69,6 @@ class ApiToolkitFilters {
 								if(!apiToolkitService.checkURIDefinitions(cache["${params.action}"]['receives'])){
 									ApiStatuses error = new ApiStatuses()
 									String msg = 'Expected request variables do not match sent variables'
-									println(msg)
 									error._400_BAD_REQUEST(msg)?.send()
 									return false
 								}
@@ -84,8 +82,8 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 println("##### FILTER (AFTER)")
-				 println(model)
+				 //println("##### FILTER (AFTER)")
+
 				 ApiStatuses errors = new ApiStatuses()
 
 				 def tempType = request.getHeader('Content-Type')?.split(';')
@@ -119,10 +117,9 @@ class ApiToolkitFilters {
 				 List path = []
 				 if(params.queryString){
 					 apiToolkitService.getPath(params, queryString)
-					 println("in path")
+
 					 Map query = [:]
 					 for(int b = 0;b<path.size();b++){
-						 println("path : "+path[b])
 						 def temp = path[b].split('=')
 						 if(temp.size()>1){
 							 query[temp[0]] = temp[1]
@@ -137,8 +134,6 @@ class ApiToolkitFilters {
 						 newQuery.add("${k}=${v}")
 					 }
 				 }
-
-				 println("newquery = "+newQuery)
 				 
 				 def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				 def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
@@ -149,7 +144,6 @@ class ApiToolkitFilters {
 				 if(path){
 					 int pos = apiToolkitService.checkChainedMethodPosition(uri,oldPath as List)
 					 if(pos==3){
-						 println("########### bad position")
 						 log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
 						 return false
 					 }else{
@@ -165,8 +159,6 @@ class ApiToolkitFilters {
 						 def currentPath = "${uri2['controller']}/${uri2['action']}"
 
 						 if(currentPath!=path.last().split('=')[0]){
-							 println("URI2:"+uri2)
-							 println("CACHE:"+cache["${uri2['action']}"])
 							 def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 							 def method = (methods.contains(request.method))?request.method:null
 
@@ -186,8 +178,6 @@ class ApiToolkitFilters {
 								 return false
 							 }
 						 }else{
-						 	
-						 println("NEWMODEL:"+newModel)
 							 switch(type){
 								 case 'application/xml':
 									 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
@@ -195,9 +185,6 @@ class ApiToolkitFilters {
 									 break
 								 case 'application/json':
 								 default:
-								 	println("################ last path")
-									 println(newQuery)
-								 	println("test : "+newQuery.join('&'))
 									 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
 									 return false
 									 break
