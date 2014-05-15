@@ -12,6 +12,19 @@
             }
         },
         "URI": {
+            "test/fred": {
+            	"METHOD":"GET",
+            	"DESCRIPTION":"Get test data",
+            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
+                "REQUEST": {
+                    "permitAll":["id"]
+                },
+                "RESPONSE": {
+                	"permitAll":["id"],
+                    "ROLE_ADMIN":["testdata"],
+                    "ROLE_USER":["testdata"]
+                }
+            },
             "test/show": {
             	"METHOD":"GET",
             	"DESCRIPTION":"Get test data",

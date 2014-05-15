@@ -63,11 +63,16 @@ class ApiToolkitService{
 		return RCH.currentRequestAttributes().currentRequest
 	}
 
-	/*
+
 	def getResponse(){
 		return RCH.currentRequestAttributes().currentResponse
 	}
-	*/
+
+	def getContentType(){
+		SecurityContextHolderAwareRequestWrapper request = getRequest()
+		def tempType = request.getHeader('Content-Type')?.split(';')
+		def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+	}
 	
 	GrailsParameterMap getParams(){
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
@@ -91,24 +96,32 @@ class ApiToolkitService{
 		return params
 	}
 	
-	GrailsParameterMap setParams(){
+	GrailsParameterMap setParams(HashMap modelMap, boolean matchingPath){
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
-		List formats = ['text/html','application/json','application/xml']
-		List tempType = request.getHeader('Content-Type')?.split(';')
-		String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
-		type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
-		switch(type){
-			case 'application/json':
-				request.JSON?.each() { key,value ->
-					params.put(key,value)
-				}
-				break
-			case 'application/xml':
-				request.XML?.each() { key,value ->
-					params.put(key,value)
-				}
-				break
+		if(matchingPath){
+			List formats = ['text/html','application/json','application/xml']
+			List tempType = request.getHeader('Content-Type')?.split(';')
+			String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+			type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
+			
+			modelMap.each(){ key,value ->
+				params.put(key,value)
+			}
+			
+			switch(type){
+				case 'application/json':
+					request.JSON?.each() { key,value ->
+						params.put(key,value)
+					}
+					break
+				case 'application/xml':
+					request.XML?.each() { key,value ->
+						params.put(key,value)
+					}
+					break
+			}
+			println("PARAMS:"+params)
 		}
 		return params
 	}
@@ -812,8 +825,8 @@ class ApiToolkitService{
 	 * 3 = illegal combination
 	 */
 	int checkChainedMethodPosition(List uri,List path){
-		println(uri)
-		println(path)
+		println("URI:"+uri)
+		println("PATH:"+path)
 		boolean preMatch = false
 		boolean postMatch = false
 		boolean pathMatch = false
@@ -825,8 +838,7 @@ class ApiToolkitService{
 		def cache = apiCacheService.getApiCache(uri[0])
 		//def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 		def methods = cache["${uri[1]}"]['method'].trim()
-		println(methods)
-		println(method)
+
 		if(method=='GET'){
 			if(methods != method){
 				preMatch = true
@@ -900,6 +912,7 @@ class ApiToolkitService{
 	
 	Map convertModel(Map map){
 		Map newMap = [:]
+		println("MAP:"+map)
 		String k = map.entrySet().toList().first().key
 		
 		if(map && (!map?.response && !map?.metaClass && !map?.params)){
@@ -970,4 +983,3 @@ class ApiToolkitService{
 	}
 
 }
-

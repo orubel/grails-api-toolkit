@@ -48,8 +48,6 @@ class ApiToolkitFilters {
 								List path = apiToolkitService.getPath(params, queryString)
 				 
 								if(path){
-									println(path)
-									println(uri)
 									int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 									if(pos==3){
 										ApiStatuses error = new ApiStatuses()
@@ -81,11 +79,17 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 				 println("##### FILTER (AFTER)")
-				 if(!model){
-					 return true
-				 }
+				 ApiStatuses errors = new ApiStatuses()
 
-				 ApiStatuses error = new ApiStatuses()
+				 def tempType = request.getHeader('Content-Type')?.split(';')
+				 def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+
+				 if(!model){
+					 println("no model")
+					 response.flushBuffer()
+					 return null
+				 }
+				 
 				 params.action = (params.action)?params.action:'index'
 				 def uri = [params.controller,params.action,params.id]
 				 def queryString = request.'javax.servlet.forward.query_string'
@@ -106,6 +110,7 @@ class ApiToolkitFilters {
 				 }
 				 */
 				 if(path){
+					 println("in path")
 					 path.remove(0)
 					 Map query = [:]
 					 for(int b = 0;b<path.size();b++){
@@ -115,26 +120,26 @@ class ApiToolkitFilters {
 							 query[temp[0]] = temp[1]
 						 }else{
 						 	String msg = 'Paths in chain need to all have a value.'
-						 	error._400_BAD_REQUEST(msg).send()
+						 	errors._400_BAD_REQUEST(msg).send()
 							return false
 						 }
 					 }
-					 println("query : ${query}")
+
 					 query.each{ k,v ->
 						 newQuery.add("${k}=${v}")
 					 }
 				 }
- 
+				 
 				 def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				 def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 				 
-				 def tempType = request.getHeader('Content-Type')?.split(';')
-				 def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+
  
 				 // api chaining
 				 if(path){
 					 int pos = apiToolkitService.checkChainedMethodPosition(uri,oldPath as List)
 					 if(pos==3){
+						 println("########### bad position")
 						 log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
 						 return false
 					 }else{
@@ -143,13 +148,15 @@ class ApiToolkitFilters {
 						 if(!uri2){
 							 String msg = "Path was unable to be parsed. Check your path variables and try again."
 							 //redirect(uri: "/")
-							 error._404_NOT_FOUND(msg).send()
+							 errors._404_NOT_FOUND(msg).send()
 							 return false
 						 }
 						 
 						 def currentPath = "${uri2['controller']}/${uri2['action']}"
 
 						 if(currentPath!=path.last().split('=')[0]){
+							 println("URI2:"+uri2)
+							 println("CACHE:"+cache["${uri2['action']}"])
 							 def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 							 def method = (methods.contains(request.method))?request.method:null
 
@@ -165,10 +172,12 @@ class ApiToolkitFilters {
 								 }
 							 }else{
 								 String msg = "User does not have access."
-								 error._403_FORBIDDEN(msg).send()
+								 errors._403_FORBIDDEN(msg).send()
 								 return false
 							 }
 						 }else{
+						 	//apiToolkitService.setParams(newModel,true)
+						 println("NEWMODEL:"+newModel)
 							 switch(type){
 								 case 'application/xml':
 									 forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])

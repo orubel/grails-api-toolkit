@@ -18,6 +18,9 @@ package net.nosegrind.apitoolkit
 import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
 
 import org.springframework.web.context.request.RequestContextHolder as RCH
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
+import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
+import javax.servlet.ServletOutputStream
 
 class ApiStatuses{
 
@@ -34,18 +37,29 @@ class ApiStatuses{
 	
 	private ApiStatuses() {}
 	
-	def getResponse(){
+	SecurityContextHolderAwareRequestWrapper getRequest(){
+		return RCH.currentRequestAttributes().currentRequest
+	}
+	
+	GrailsContentBufferingResponse getResponse(){
 		return RCH.currentRequestAttributes().currentResponse
 	}
 
+	String getContentType(){
+		SecurityContextHolderAwareRequestWrapper request = getRequest()
+		def tempType = request.getHeader('Content-Type')?.split(';')
+		def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+		return type
+	}
+	
 	/*
 	 * Error messages
 	 * For complete list of messages, see http://msdn.microsoft.com/en-us/library/windowsazure/dd179357.aspx
 	 */
 	def send(){
+		String type = getContentType()
 		def response = getResponse()
-		response.setStatus(this.status.code.toInteger(),this.status.description)
-		return
+		response.sendError(this.status.code.toInteger(),this.status.description)
 	}
 	
 	def toObject(){
@@ -124,7 +138,7 @@ class ApiStatuses{
 	}
 	def _404_NOT_FOUND(){
 		this.status = new ErrorCodeDescriptor(code:404,description:"[Not Found]")
-		return
+		return this
 	}
 
 	// UNSUPPORTED METHOD
