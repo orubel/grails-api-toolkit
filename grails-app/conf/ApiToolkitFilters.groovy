@@ -24,6 +24,8 @@ class ApiToolkitFilters {
 		apitoolkit(uri:"/${apiDir}/**"){
 			before = { Map model ->
 				println("#### FILTER (BEFORE)")
+
+				println(params)
 				params.action = (params.action)?params.action:'index'
 				
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
@@ -44,10 +46,14 @@ class ApiToolkitFilters {
 							// DOES api.methods.contains(request.method)
 							if(!apiToolkitService.isRequestMatch(method)){
 								// check for apichain
-								def queryString = request.'javax.servlet.forward.query_string'
-								List path = apiToolkitService.getPath(params, queryString)
-				 
-								if(path){
+								if(!params.queryString){
+									params.queryString = request.'javax.servlet.forward.query_string'
+								}
+								
+								// TEST FOR CHAIN PATHS
+								if(params.queryString){
+									apiToolkitService.popPath()
+									List path = apiToolkitService.getPath(params, params.queryString)
 									int pos = apiToolkitService.checkChainedMethodPosition(uri,path as List)
 									if(pos==3){
 										ApiStatuses error = new ApiStatuses()
@@ -79,13 +85,13 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 				 println("##### FILTER (AFTER)")
+				 println(model)
 				 ApiStatuses errors = new ApiStatuses()
 
 				 def tempType = request.getHeader('Content-Type')?.split(';')
 				 def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
 
 				 if(!model){
-					 println("no model")
 					 response.flushBuffer()
 					 return null
 				 }
@@ -96,7 +102,7 @@ class ApiToolkitFilters {
 				 List oldPath = (queryString)?queryString.split('&'):[]
 				 
 				 // create response data
-				 List path = apiToolkitService.getPath(params, queryString)
+				 
 				 def newQuery = []
 				 /*
 				 if(params.containsKey("newPath")){
@@ -109,9 +115,11 @@ class ApiToolkitFilters {
 					 path = (queryString)?queryString.split('&'):[]
 				 }
 				 */
-				 if(path){
+				 //path.remove(0)
+				 List path = []
+				 if(params.queryString){
+					 apiToolkitService.getPath(params, queryString)
 					 println("in path")
-					 path.remove(0)
 					 Map query = [:]
 					 for(int b = 0;b<path.size();b++){
 						 println("path : "+path[b])
@@ -129,6 +137,8 @@ class ApiToolkitFilters {
 						 newQuery.add("${k}=${v}")
 					 }
 				 }
+
+				 println("newquery = "+newQuery)
 				 
 				 def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				 def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
@@ -176,7 +186,7 @@ class ApiToolkitFilters {
 								 return false
 							 }
 						 }else{
-						 	//apiToolkitService.setParams(newModel,true)
+						 	
 						 println("NEWMODEL:"+newModel)
 							 switch(type){
 								 case 'application/xml':

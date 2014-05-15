@@ -43,6 +43,7 @@ import org.springframework.cache.Cache
 import grails.spring.BeanBuilder
 
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
+import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
 import org.codehaus.groovy.grails.web.util.WebUtils
 
 class ApiToolkitService{
@@ -62,13 +63,12 @@ class ApiToolkitService{
 	SecurityContextHolderAwareRequestWrapper getRequest(){
 		return RCH.currentRequestAttributes().currentRequest
 	}
-
-
-	def getResponse(){
+	
+	GrailsContentBufferingResponse getResponse(){
 		return RCH.currentRequestAttributes().currentResponse
 	}
-
-	def getContentType(){
+	
+	void getContentType(){
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		def tempType = request.getHeader('Content-Type')?.split(';')
 		def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
@@ -96,34 +96,27 @@ class ApiToolkitService{
 		return params
 	}
 	
-	GrailsParameterMap setParams(HashMap modelMap, boolean matchingPath){
+	void setParams(){
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
-		if(matchingPath){
-			List formats = ['text/html','application/json','application/xml']
-			List tempType = request.getHeader('Content-Type')?.split(';')
-			String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
-			type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
-			
-			modelMap.each(){ key,value ->
-				params.put(key,value)
-			}
-			
-			switch(type){
-				case 'application/json':
-					request.JSON?.each() { key,value ->
-						params.put(key,value)
-					}
-					break
-				case 'application/xml':
-					request.XML?.each() { key,value ->
-						params.put(key,value)
-					}
-					break
-			}
-			println("PARAMS:"+params)
+
+		List formats = ['text/json','application/json','text/xml','application/xml']
+		List tempType = request.getHeader('Content-Type')?.split(';')
+		String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+		type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
+		
+		switch(type){
+			case 'application/json':
+				request.JSON?.each() { key,value ->
+					params.put(key,value)
+				}
+				break
+			case 'application/xml':
+				request.XML?.each() { key,value ->
+					params.put(key,value)
+				}
+				break
 		}
-		return params
 	}
 	
 	// api call now needs to detect request method and see if it matches anno request method
@@ -167,8 +160,21 @@ class ApiToolkitService{
 		return uri==api
 	}
 
+	void popPath(){
+		SecurityContextHolderAwareRequestWrapper request = getRequest()
+		GrailsParameterMap params = RCH.currentRequestAttributes().params
+		String  queryString = request.'javax.servlet.forward.query_string'
+		List path = getPath(params, queryString)
+		println("############# POPPATH ######################")
+		println(path)
+		path.remove(0)
+		println(path)
+		path.join('&')
+		params.queryString = path.join('&')
+	}
+	
 	HashMap getMethodParams(){
-		List optionalParams = ['action','controller','apiName_v','newPath']
+		List optionalParams = ['action','controller','apiName_v','newPath','queryString']
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		Map paramsRequest = params.findAll {
 			return !optionalParams.contains(it.key)
@@ -848,11 +854,12 @@ class ApiToolkitService{
 				preMatch = true
 			}
 		}
+		println("PREMATCH : ${preMatch}")
 		
 		// postmatch check
 		if(pathSize>1){
 			def last=path.last()?.split('=')
-			if(last[0] && last[0]!='null'){
+			if(last[0] && (last[0]!='null' || last[0]!='return')){
 				List last2 = last[0].split('/')
 				cache = apiCacheService.getApiCache(last2[0])
 				//methods = cache["${last2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
@@ -862,12 +869,14 @@ class ApiToolkitService{
 						postMatch = true 
 					}
 				}else{
+				println("NOGET")
 					if(methods == method){
 						postMatch = true
 					}
 				}
 			}
 		}
+		println("POSTMATCH : ${postMatch}")
 		
 		// path check
 		int start = 1
@@ -892,13 +901,16 @@ class ApiToolkitService{
 				}
 			}
 		}
+		println("PATHMATCH : ${pathMatch}")
 		
 		if(pathMatch || (preMatch && postMatch)){
 			return 3
 		}else{
 			if(preMatch){
+				setParams()
 				return 1
 			}else if(postMatch){
+				setParams()
 				return 2
 			}
 		}

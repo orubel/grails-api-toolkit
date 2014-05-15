@@ -20,7 +20,6 @@ import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
-import javax.servlet.ServletOutputStream
 
 class ApiStatuses{
 
