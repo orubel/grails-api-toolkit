@@ -38,10 +38,6 @@ class ApiObjectService{
 		return json
 	}
 	
-	def validateRequestData(){}
-	
-	def validateResponseData(){}
-	
 	
 	String getKeyType(String reference, String type){
 		String keyType = (reference.toLowerCase()=='self')?((type.toLowerCase()=='long')?'PKEY':'INDEX'):((type.toLowerCase()=='long')?'FKEY':'INDEX')

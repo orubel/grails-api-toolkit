@@ -46,20 +46,20 @@ import org.springframework.security.web.servletapi.SecurityContextHolderAwareReq
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
 import org.codehaus.groovy.grails.web.util.WebUtils
 
-class ApiToolkitService{
+class ApiLayerService{
 
 	def grailsApplication
 	def springSecurityService
 	def apiCacheService
 	
+	static transactional = false
+	
 	ApiStatuses error = new ApiStatuses()
 	GrailsCacheManager grailsCacheManager
 	
-	static transactional = false
 
-	Long responseCode
-	String responseMessage
 	
+	// DEPRECATED
 	SecurityContextHolderAwareRequestWrapper getRequest(){
 		return RCH.currentRequestAttributes().currentRequest
 	}
@@ -67,16 +67,207 @@ class ApiToolkitService{
 	GrailsContentBufferingResponse getResponse(){
 		return RCH.currentRequestAttributes().currentResponse
 	}
+
 	
-	void getContentType(){
-		SecurityContextHolderAwareRequestWrapper request = getRequest()
-		def tempType = request.getHeader('Content-Type')?.split(';')
-		def type = (tempType)?tempType[0]:request.getHeader('Content-Type')
+	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
+		// SET CONTENTTYPE FOR THIS REQUEST
+		if(!params.contentType){
+			List content = getContentType(request)
+			params.contentType = content[0]
+			params.encoding = (content.size()>1)?content[1]:null
+		}
+
+		// CHECK IF URI HAS CACHE
+		if(cache["${params.action}"]){
+			// CHECK IF URI IS APICALL
+			if (isApiCall(request,params)) {
+				// CHECK IF PRINCIPAL HAS ACCESS TO API
+				if(!checkAuthority(cache["${params.action}"]['roles'])){
+					return false
+				}
+				
+				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
+				def method = cache["${params.action}"]['method']?.trim()
+				def uri = [params.controller,params.action,params.id]
+				// DOES api.methods.contains(request.method)
+				if(!isRequestMatch(method,request.method.toString())){
+					// check for apichain
+					if(!params.queryString){
+						params.queryString = request.'javax.servlet.forward.query_string'
+					}
+					
+					// TEST FOR CHAIN PATHS
+					if(params.queryString){
+						popPath()
+						List path = getPath(params, params.queryString)
+						int pos = checkChainedMethodPosition(uri,path as List)
+						if(pos==3){
+							println("bad position")
+							ApiStatuses error = new ApiStatuses()
+							String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
+							println(msg)
+							error._400_BAD_REQUEST(msg)?.send()
+							return false
+						}
+					}else{
+						return true
+					}
+				}else{
+					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
+					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
+					if(!checkURIDefinitions(cache["${params.action}"]['receives'])){
+						ApiStatuses error = new ApiStatuses()
+						String msg = 'Expected request variables do not match sent variables'
+						println(msg)
+						error._400_BAD_REQUEST(msg)?.send()
+						return false
+					}
+				}
+			}else{
+				return true
+			}
+		}
 	}
 	
-	GrailsParameterMap getParams(){
-		GrailsParameterMap params = RCH.currentRequestAttributes().params
-		SecurityContextHolderAwareRequestWrapper request = getRequest()
+	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
+		String type = params.contentType
+		
+
+		def uri = [params.controller,params.action,params.id]
+		def queryString = params.queryString
+		List newPath = (queryString)?queryString.split('&'):[]
+		
+		// create response data
+		
+		def newQuery = []
+		/*
+		if(params.containsKey("newPath")){
+			if(params.newPath){
+				path = params.newPath?.split('&')
+			}else{
+				path = (queryString)?queryString.split('&'):[]
+			}
+		}else{
+			path = (queryString)?queryString.split('&'):[]
+		}
+		*/
+		//path.remove(0)
+	   // List path = []
+		if(newPath){
+			//path = apiToolkitService.getPath(params, queryString)
+
+			Map query = [:]
+			for(int b = 0;b<newPath.size();b++){
+				def temp = newPath[b].split('=')
+				if(temp.size()>1){
+					query[temp[0]] = temp[1]
+				}else{
+					String msg = 'Paths in chain need to all have a value.'
+					errors._400_BAD_REQUEST(msg).send()
+				   return false
+				}
+			}
+
+			query.each{ k,v ->
+				newQuery.add("${k}=${v}")
+			}
+		}
+
+
+		// api chaining
+		if(newPath && (newPath.last().split('=')[1]!='null' && newPath.last().split('=')[1]!='return')){
+			println("######################## "+newPath.last().split('=')[1])
+			int pos = checkChainedMethodPosition(uri,newPath as List)
+			if(pos==3){
+				println("bad path")
+				log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
+				return false
+			}else{
+				def newModel = convertModel(model)
+				def uri2 = isChainedApi(newModel,newPath as List)
+				if(!uri2){
+					String msg = "Path was unable to be parsed. Check your path variables and try again."
+					//redirect(uri: "/")
+					errors._404_NOT_FOUND(msg).send()
+					return false
+				}
+				
+				println("${uri2['controller']}/${uri2['action']}")
+				def currentPath = "${uri2['controller']}/${uri2['action']}"
+
+				if(currentPath!=newPath.last().split('=')[0]){
+					def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+					def method = (methods.contains(request.method))?request.method:null
+
+					if(checkAuthority(cache["${uri2['action']}"]['roles'])){
+						switch(type){
+							case 'application/xml':
+								forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+								break
+							case 'application/json':
+							default:
+								forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+								break
+						}
+					}else{
+						String msg = "User does not have access."
+						errors._403_FORBIDDEN(msg).send()
+						return false
+					}
+				}else{
+					switch(type){
+						case 'application/xml':
+							forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+							return false
+							break
+						case 'application/json':
+						default:
+							forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
+							return false
+							break
+					}
+				}
+			}
+			return
+		}else{
+			if(cache){
+				if(cache["${params.action}"]){
+
+					
+					// make 'application/json' default
+					def formats = ['text/html','application/json','application/xml']
+					type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
+
+					if(type){
+						if (isApiCall(request,params)) {
+							println("is api call")
+							def newModel = convertModel(model)
+							
+							response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
+
+							return newModel
+
+							//return false
+						}
+					}else{
+						//return true
+						//render(view:params.action,model:model)
+					}
+				}else{
+					//return true
+					//render(view:params.action,model:model)
+				}
+			}
+		}
+	}
+	
+	List getContentType(SecurityContextHolderAwareRequestWrapper request){
+		def tempType = request.getHeader('Content-Type')?.split(';')
+		String contentType = (tempType)?tempType[0]:request.getHeader('Content-Type')
+		return tempType
+	}
+	
+	GrailsParameterMap getParams(SecurityContextHolderAwareRequestWrapper request,GrailsParameterMap params){
 		List formats = ['text/html','application/json','application/xml']
 		List tempType = request.getHeader('Content-Type')?.split(';')
 		String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
@@ -96,10 +287,7 @@ class ApiToolkitService{
 		return params
 	}
 	
-	void setParams(){
-		GrailsParameterMap params = RCH.currentRequestAttributes().params
-		SecurityContextHolderAwareRequestWrapper request = getRequest()
-
+	void setParams(SecurityContextHolderAwareRequestWrapper request,GrailsParameterMap params){
 		List formats = ['text/json','application/json','text/xml','application/xml']
 		List tempType = request.getHeader('Content-Type')?.split(';')
 		String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
@@ -120,8 +308,7 @@ class ApiToolkitService{
 	}
 	
 	// api call now needs to detect request method and see if it matches anno request method
-	boolean isApiCall(GrailsParameterMap params){
-		SecurityContextHolderAwareRequestWrapper request = getRequest()
+	boolean isApiCall(SecurityContextHolderAwareRequestWrapper request,GrailsParameterMap params){
 		String queryString = request.'javax.servlet.forward.query_string'
 
 		String uri
@@ -172,6 +359,7 @@ class ApiToolkitService{
 	
 	HashMap getMethodParams(){
 		List optionalParams = ['action','controller','apiName_v','newPath','queryString']
+		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		Map paramsRequest = params.findAll {
 			return !optionalParams.contains(it.key)
@@ -187,11 +375,10 @@ class ApiToolkitService{
 	 * TODO: Need to compare multiple authorities
 	 */
 	boolean checkURIDefinitions(LinkedHashMap requestDefinitions){
-
 		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (requestDefinitions["${authority}"])?requestDefinitions["${authority}"]:requestDefinitions["permitAll"]
 		List requestList = []
-		List optionalParams = ['action','controller','apiName_v']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding']
 		temp.each{
 			requestList.add(it.name)
 		}
@@ -199,6 +386,7 @@ class ApiToolkitService{
 		HashMap params = getMethodParams()
 		//GrailsParameterMap params = RCH.currentRequestAttributes().params
 		List paramsList = params.post.keySet() as List
+		paramsList.removeAll(optionalParams)
 		if(paramsList.containsAll(requestList)){
 			paramsList.removeAll(requestList)
 			if(!paramsList){
@@ -208,9 +396,7 @@ class ApiToolkitService{
 		return false
 	}
 	
-	boolean isRequestMatch(String protocol){
-		SecurityContextHolderAwareRequestWrapper request = getRequest()
-		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
+	boolean isRequestMatch(String protocol,String method){
 		if(['OPTIONS','TRACE','HEAD'].contains(method)){
 			return true
 		}else{
@@ -862,7 +1048,7 @@ class ApiToolkitService{
 					println(last2)
 					if(methods != method){
 						
-						postMatch = true 
+						postMatch = true
 					}
 				}else{
 					println("NOTGET")
@@ -888,11 +1074,11 @@ class ApiToolkitService{
 					methods = cache["${temp2[1]}"]['method'].trim() as List
 					if(method=='GET'){
 						if(methods != method){
-							pathMatch = true 
+							pathMatch = true
 						}
 					}else{
-						if(methods == method){ 
-							pathMatch = true 
+						if(methods == method){
+							pathMatch = true
 						}
 					}
 				}
@@ -921,6 +1107,7 @@ class ApiToolkitService{
 	
 	Map convertModel(Map map){
 		Map newMap = [:]
+		println(map)
 		String k = map.entrySet().toList().first().key
 		
 		if(map && (!map?.response && !map?.metaClass && !map?.params)){
