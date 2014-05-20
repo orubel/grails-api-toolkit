@@ -27,158 +27,150 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiDir}/**"){
 			before = { Map model ->
-
+				println("##### FILTER (BEFORE)")
 				params.action = (params.action)?params.action:'index'
-				
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 
 				if(cache){
 					boolean result = apiLayerService.handleApiRequest(cache,request,params)
-					println("#### FILTER (BEFORE) : ${result}")
+					return result
 				}else{
-					return true
+					return false
 				}
 			}
 			
 			after = { Map model ->
 				 println("##### FILTER (AFTER)")
-
-				 params.action = (params.action)?params.action:'index'
 				 
-				 def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
 				 def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 				 
-				 println("MODEL = "+model)
-				 println(model.getClass())
-				 LinkedHashMap map = apiLayerService.handleApiResponse(cache, request,response,model,params)
+				 if(params?.apiChain?.order){
+					 // return map of variable and POP first variable off chain 'order'
+					 HashMap path = apiLayerService.handleApiChain(cache, request,response,model,params)
+					 forward(controller:"${path['controller']}",action:"${path['action']}",id:"${path['id']}")
+					 return false
+				 }else{
+				 	LinkedHashMap map = apiLayerService.handleApiResponse(cache, request,response,model,params)
 				 
-				 if(!model){
-					 println("######## NO MODEL")
-					 response.flushBuffer()
-					 return null
-				 }
-				 
-				 println("MAP : "+map)
-				 
-				 def encoding = null
-				 def tempType = request.getHeader('Content-Type')?.split(';')
-				 if(tempType){
-					 encoding = (tempType.size()>1)?tempType[1]:null
-				 }
-				 
-				 switch(request.method) {
-					 case 'PURGE':
-						 // cleans cache
-						 break;
-					 case 'TRACE':
-						 break;
-					 case 'HEAD':
-						 break;
-					 case 'OPTIONS':
-
-						 LinkedHashMap doc = apiLayerService.getApiDoc(params)
-						 
-						 switch(params.contentType){
-							 case 'application/xml':
-								 render(text:doc as XML, contentType: "${params.contentType}")
-								 break
-							 case 'application/json':
-							 default:
-								 render(text:doc as JSON, contentType: "${params.contentType}")
-								 break
-						 }
-						 return false
-						 break;
-					 case 'GET':
-						 if(!map.isEmpty()){
+					 if(!model){
+						 response.flushBuffer()
+						 return null
+					 }
+					 
+					 switch(request.method) {
+						 case 'PURGE':
+							 // cleans cache
+							 break;
+						 case 'TRACE':
+							 break;
+						 case 'HEAD':
+							 break;
+						 case 'OPTIONS':
+	
+							 LinkedHashMap doc = apiLayerService.getApiDoc(params)
+							 
 							 switch(params.contentType){
 								 case 'application/xml':
-									 if(params.encoding){
-										 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-									 }else{
-										 render(text:map as XML, contentType: "${params.contentType}")
-									 }
-									 break
-								 case 'text/html':
+									 render(text:doc as XML, contentType: "${params.contentType}")
 									 break
 								 case 'application/json':
 								 default:
-									 if(params.encoding){
-										 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-									 }else{
-										 render(text:map as JSON, contentType: "${params.contentType}")
-									 }
+									 render(text:doc as JSON, contentType: "${params.contentType}")
 									 break
 							 }
 							 return false
-						 }
-						 break
-					 case 'POST':
-						 if(!map.isEmpty()){
-							 switch(params.contentType){
-								 case 'application/xml':
-									 if(params.encoding){
-										 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-									 }else{
-										 render(text:map as XML, contentType: "${params.contentType}")
-									 }
-									 break
-								 case 'application/json':
-								 default:
-									 if(params.encoding){
-										 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-									 }else{
-										 render(text:map as JSON, contentType: "${params.contentType}")
-									 }
-									 break
+							 break;
+						 case 'GET':
+							 if(!map.isEmpty()){
+								 switch(params.contentType){
+									 case 'application/xml':
+										 if(params.encoding){
+											 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
+										 }else{
+											 render(text:map as XML, contentType: "${params.contentType}")
+										 }
+										 break
+									 case 'text/html':
+										 break
+									 case 'application/json':
+									 default:
+										 if(params.encoding){
+											 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
+										 }else{
+											 render(text:map as JSON, contentType: "${params.contentType}")
+										 }
+										 break
+								 }
+								 return false
 							 }
-							 return false
-						 }
-						 break
-					 case 'PUT':
-						 if(!map.isEmpty()){
-							 switch(params.contentType){
-								 case 'application/xml':
-									 if(params.encoding){
-										 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-									 }else{
-										 render(text:map as XML, contentType: "${params.contentType}")
-									 }
-									 break
-								 case 'application/json':
-								 default:
-									 if(params.encoding){
-										 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-									 }else{
-										 render(text:map as JSON, contentType: "${params.contentType}")
-									 }
-									 break
+							 break
+						 case 'POST':
+							 if(!map.isEmpty()){
+								 switch(params.contentType){
+									 case 'application/xml':
+										 if(params.encoding){
+											 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
+										 }else{
+											 render(text:map as XML, contentType: "${params.contentType}")
+										 }
+										 break
+									 case 'application/json':
+									 default:
+										 if(params.encoding){
+											 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
+										 }else{
+											 render(text:map as JSON, contentType: "${params.contentType}")
+										 }
+										 break
+								 }
+								 return false
 							 }
-							 return false
-						 }
-						 break
-					 case 'DELETE':
-						 if(!map.isEmpty()){
-							 switch(params.contentType){
-								 case 'application/xml':
-									 if(params.encoding){
-										 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-									 }else{
-										 render(text:map as XML, contentType: "${params.contentType}")
-									 }
-									 break
-								 case 'application/json':
-								 default:
-									 if(params.encoding){
-										 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-									 }else{
-										 render(text:map as JSON, contentType: "${params.contentType}")
-									 }
-									 break
+							 break
+						 case 'PUT':
+							 if(!map.isEmpty()){
+								 switch(params.contentType){
+									 case 'application/xml':
+										 if(params.encoding){
+											 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
+										 }else{
+											 render(text:map as XML, contentType: "${params.contentType}")
+										 }
+										 break
+									 case 'application/json':
+									 default:
+										 if(params.encoding){
+											 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
+										 }else{
+											 render(text:map as JSON, contentType: "${params.contentType}")
+										 }
+										 break
+								 }
+								 return false
 							 }
-							 return false
-						 }
-						 break
+							 break
+						 case 'DELETE':
+							 if(!map.isEmpty()){
+								 switch(params.contentType){
+									 case 'application/xml':
+										 if(params.encoding){
+											 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
+										 }else{
+											 render(text:map as XML, contentType: "${params.contentType}")
+										 }
+										 break
+									 case 'application/json':
+									 default:
+										 if(params.encoding){
+											 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
+										 }else{
+											 render(text:map as JSON, contentType: "${params.contentType}")
+										 }
+										 break
+								 }
+								 return false
+							 }
+							 break
+					 }
 				 }
 			 }
 

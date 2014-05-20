@@ -54,10 +54,8 @@ class ApiLayerService{
 	
 	static transactional = false
 	
-	ApiStatuses error = new ApiStatuses()
+	ApiStatuses errors = new ApiStatuses()
 	GrailsCacheManager grailsCacheManager
-	
-
 	
 	// DEPRECATED
 	SecurityContextHolderAwareRequestWrapper getRequest(){
@@ -67,7 +65,6 @@ class ApiLayerService{
 	GrailsContentBufferingResponse getResponse(){
 		return RCH.currentRequestAttributes().currentResponse
 	}
-
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
 		// SET CONTENTTYPE FOR THIS REQUEST
@@ -75,8 +72,23 @@ class ApiLayerService{
 			List content = getContentType(request)
 			params.contentType = content[0]
 			params.encoding = (content.size()>1)?content[1]:null
+			
+			switch(params.contentType){
+				case 'text/json':
+				case 'application/json':
+					if(request.JSON?.chain){
+						params.apiChain = request.JSON?.chain
+					}
+					break
+				case 'text/xml':
+				case 'application/xml':
+					if(request.XML?.chain){
+						params.apiChain = request.XML?.chain
+					}
+					break
+			}
 		}
-
+		
 		// CHECK IF URI HAS CACHE
 		if(cache["${params.action}"]){
 			// CHECK IF URI IS APICALL
@@ -92,20 +104,15 @@ class ApiLayerService{
 				// DOES api.methods.contains(request.method)
 				if(!isRequestMatch(method,request.method.toString())){
 					// check for apichain
-					if(!params.queryString){
-						params.queryString = request.'javax.servlet.forward.query_string'
-					}
+
 					
 					// TEST FOR CHAIN PATHS
-					if(params.queryString){
-						popPath()
-						List path = getPath(params, params.queryString)
-						int pos = checkChainedMethodPosition(uri,path as List)
+					if(params.apiChain){
+						popPath(params.controller,params.action)
+						int pos = checkChainedMethodPosition(request, params,uri,path as List)
 						if(pos==3){
-							println("bad position")
 							ApiStatuses error = new ApiStatuses()
 							String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
-							println(msg)
 							error._400_BAD_REQUEST(msg)?.send()
 							return false
 						}
@@ -118,9 +125,10 @@ class ApiLayerService{
 					if(!checkURIDefinitions(cache["${params.action}"]['receives'])){
 						ApiStatuses error = new ApiStatuses()
 						String msg = 'Expected request variables do not match sent variables'
-						println(msg)
 						error._400_BAD_REQUEST(msg)?.send()
 						return false
+					}else{
+						return true
 					}
 				}
 			}else{
@@ -129,10 +137,8 @@ class ApiLayerService{
 		}
 	}
 	
-	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
-		String type = params.contentType
+	def handleApiChain(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
 		
-
 		def uri = [params.controller,params.action,params.id]
 		def queryString = params.queryString
 		List newPath = (queryString)?queryString.split('&'):[]
@@ -140,19 +146,7 @@ class ApiLayerService{
 		// create response data
 		
 		def newQuery = []
-		/*
-		if(params.containsKey("newPath")){
-			if(params.newPath){
-				path = params.newPath?.split('&')
-			}else{
-				path = (queryString)?queryString.split('&'):[]
-			}
-		}else{
-			path = (queryString)?queryString.split('&'):[]
-		}
-		*/
-		//path.remove(0)
-	   // List path = []
+
 		if(newPath){
 			//path = apiToolkitService.getPath(params, queryString)
 
@@ -172,12 +166,9 @@ class ApiLayerService{
 				newQuery.add("${k}=${v}")
 			}
 		}
-
-
-		// api chaining
+		
 		if(newPath && (newPath.last().split('=')[1]!='null' && newPath.last().split('=')[1]!='return')){
-			println("######################## "+newPath.last().split('=')[1])
-			int pos = checkChainedMethodPosition(uri,newPath as List)
+			int pos = checkChainedMethodPosition(request,params,uri,newPath as List)
 			if(pos==3){
 				println("bad path")
 				log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
@@ -192,7 +183,6 @@ class ApiLayerService{
 					return false
 				}
 				
-				println("${uri2['controller']}/${uri2['action']}")
 				def currentPath = "${uri2['controller']}/${uri2['action']}"
 
 				if(currentPath!=newPath.last().split('=')[0]){
@@ -229,36 +219,40 @@ class ApiLayerService{
 				}
 			}
 			return
-		}else{
-			if(cache){
-				if(cache["${params.action}"]){
+		}
+	}
+	
+	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
+		String type = params.contentType
 
-					
-					// make 'application/json' default
-					def formats = ['text/html','application/json','application/xml']
-					type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
+		if(cache){
+			if(cache["${params.action}"]){
 
-					if(type){
-						if (isApiCall(request,params)) {
-							println("is api call")
-							def newModel = convertModel(model)
-							
-							response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
+				
+				// make 'application/json' default
+				def formats = ['text/html','application/json','application/xml']
+				type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
 
-							return newModel
+				if(type){
+					if (isApiCall(request,params)) {
+						def newModel = convertModel(model)
+						
+						response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
 
-							//return false
-						}
-					}else{
-						//return true
-						//render(view:params.action,model:model)
+						return newModel
+
+						//return false
 					}
 				}else{
 					//return true
 					//render(view:params.action,model:model)
 				}
+			}else{
+				//return true
+				//render(view:params.action,model:model)
 			}
 		}
+
 	}
 	
 	List getContentType(SecurityContextHolderAwareRequestWrapper request){
@@ -305,6 +299,25 @@ class ApiLayerService{
 				}
 				break
 		}
+	}
+	
+	boolean isChain(SecurityContextHolderAwareRequestWrapper request,GrailsParameterMap params){
+		switch(params.contentType){
+			case 'text/xml':
+			case 'application/xml':
+				if(request.XML?.chain){
+					return true
+				}
+				break
+			case 'text/json':
+			case 'application/json':
+			default:
+				if(request.JSON?.chain){
+					return true
+				}
+				break
+		}
+		return false
 	}
 	
 	// api call now needs to detect request method and see if it matches anno request method
@@ -1010,14 +1023,13 @@ class ApiLayerService{
 	 * 2 = postchain
 	 * 3 = illegal combination
 	 */
-	int checkChainedMethodPosition(List uri,List path){
+	int checkChainedMethodPosition(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, List uri,List path){
 		boolean preMatch = false
 		boolean postMatch = false
 		boolean pathMatch = false
 		Long pathSize = path.size()
 		
 		// prematch check
-		def request = getRequest()
 		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
 		def cache = apiCacheService.getApiCache(uri[0])
 		//def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
@@ -1090,10 +1102,10 @@ class ApiLayerService{
 			return 3
 		}else{
 			if(preMatch){
-				setParams()
+				setParams(request,params)
 				return 1
 			}else if(postMatch){
-				setParams()
+				setParams(request,params)
 				return 2
 			}
 		}
