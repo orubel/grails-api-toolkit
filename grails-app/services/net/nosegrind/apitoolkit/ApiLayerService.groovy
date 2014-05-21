@@ -282,7 +282,7 @@ class ApiLayerService{
 	}
 	
 	HashMap getMethodParams(){
-		List optionalParams = ['action','controller','apiName_v','newPath','queryString']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'chain']
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		Map paramsRequest = params.findAll {
@@ -808,74 +808,6 @@ class ApiLayerService{
 
 	*/
 	
-	private List getBlankChainUri(String controllername,String actionname,String uri){
-		def paths = []
-		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-		Map methods = [:]
-		controller.getClazz().methods.each { Method method ->
-			String action = method.getName()
-			if(action!=actionname){
-				if(method.isAnnotationPresent(Api)) {
-					def api = method.getAnnotation(Api)
-
-					if(api.method() == 'GET'){
-						def roles = api.apiRoles() as List
-						roles.each(){
-							if(!path["${it}"]){
-								path["${it}"] = [:]
-							}
-							path["${it}"] = "${uri}&${controllername}/${action}=return"
-						}
-						paths.add(path)
-					}
-				}
-			}
-		}
-		return paths
-	}
-	
-	private List getPostChainUri(String controllername,String actionname,String uri){
-		def paths = []
-		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-		Map methods = [:]
-		Map path = [:]
-		controller.getClazz().methods.each { Method method ->
-			String action = method.getName()
-			if(action!=actionname){
-				if(method.isAnnotationPresent(Api)) {
-					def api = method.getAnnotation(Api)
-
-					if(api.method() == 'POST' || api.method() == 'PUT' || api.method() == 'DELETE'){
-						def roles = api.roles() as List
-						roles.each(){
-							if(!path["${it}"]){
-								path["${it}"] = [:]
-							}
-							path["${it}"] = "${uri}&${controllername}/${action}=return"
-						}
-						paths.add(path)
-					}
-				}
-			}
-		}
-		return paths
-	}
-	
-	List getPath(GrailsParameterMap params, String queryString){
-		List path = []
-		def newQuery = []
-		if(params.containsKey("newPath")){
-			if(params.newPath){
-				path = params.newPath?.split('&')
-			}else{
-				path = (queryString)?queryString.split('&'):[]
-			}
-		}else{
-			path = (queryString)?queryString.split('&'):[]
-		}
-		return path
-	}
-	
 	/*
 	 * Returns chainType
 	 * 1 = prechain
@@ -909,8 +841,7 @@ class ApiLayerService{
 				preMatch = true
 			}
 		}
-		println("[pre] "+preMatch)
-		
+
 		// postmatch check
 		if(pathSize>=1){
 			def last=path[keys[pathSize-1]]
@@ -931,8 +862,7 @@ class ApiLayerService{
 				postMatch = true
 			}
 		}
-		println("[post] "+postMatch)
-		
+
 		// path check
 		int start = 1
 		int end = pathSize-2
@@ -954,8 +884,7 @@ class ApiLayerService{
 				}
 			}
 		}
-		println("[path] "+pathMatch)
-		
+
 		if(pathMatch || (preMatch && postMatch)){
 			return 3
 		}else{
