@@ -41,17 +41,15 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 				 println("##### FILTER (AFTER)")
-				 
 				 def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
-				 
+				 println("################ MODEL : "+model)
 				 if(params?.apiChain?.order){
 					 // return map of variable and POP first variable off chain 'order'
-					 HashMap path = apiLayerService.handleApiChain(cache, request,response,model,params)
-					 forward(controller:"${path['controller']}",action:"${path['action']}",id:"${path['id']}")
+					 boolean result = apiLayerService.handleApiChain(cache, request,response,model,params)
+					 forward(controller:"${params.controller}",action:"${params.action}",id:"${model.id}")
 					 return false
 				 }else{
 				 	LinkedHashMap map = apiLayerService.handleApiResponse(cache, request,response,model,params)
-				 
 					 if(!model){
 						 response.flushBuffer()
 						 return null

@@ -15,6 +15,7 @@
  *****************************************************************************/
 package net.nosegrind.apitoolkit
 
+import org.codehaus.groovy.grails.web.json.JSONObject
 import grails.converters.JSON
 import grails.converters.XML
 import java.util.regex.Matcher
@@ -77,7 +78,7 @@ class ApiLayerService{
 				case 'text/json':
 				case 'application/json':
 					if(request.JSON?.chain){
-						params.apiChain = request.JSON?.chain
+						params.apiChain = request.JSON.chain
 					}
 					break
 				case 'text/xml':
@@ -92,7 +93,7 @@ class ApiLayerService{
 		// CHECK IF URI HAS CACHE
 		if(cache["${params.action}"]){
 			// CHECK IF URI IS APICALL
-			if (isApiCall(request,params)) {
+			if (isApiCall(params)) {
 				// CHECK IF PRINCIPAL HAS ACCESS TO API
 				if(!checkAuthority(cache["${params.action}"]['roles'])){
 					return false
@@ -107,14 +108,15 @@ class ApiLayerService{
 
 					
 					// TEST FOR CHAIN PATHS
-					if(params.apiChain){
-						popPath(params.controller,params.action)
-						int pos = checkChainedMethodPosition(request, params,uri,path as List)
+					if(params?.apiChain){
+						int pos = checkChainedMethodPosition(request, params,uri,params?.apiChain?.order as Map)
 						if(pos==3){
 							ApiStatuses error = new ApiStatuses()
 							String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
 							error._400_BAD_REQUEST(msg)?.send()
 							return false
+						}else{
+							return true
 						}
 					}else{
 						return true
@@ -137,89 +139,54 @@ class ApiLayerService{
 		}
 	}
 	
-	def handleApiChain(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
-		
+	boolean handleApiChain(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
+		List keys = params?.apiChain?.order.keySet() as List
 		def uri = [params.controller,params.action,params.id]
-		def queryString = params.queryString
-		List newPath = (queryString)?queryString.split('&'):[]
 		
-		// create response data
+		def newModel = (model)?convertModel(model):model
 		
-		def newQuery = []
-
-		if(newPath){
-			//path = apiToolkitService.getPath(params, queryString)
-
-			Map query = [:]
-			for(int b = 0;b<newPath.size();b++){
-				def temp = newPath[b].split('=')
-				if(temp.size()>1){
-					query[temp[0]] = temp[1]
-				}else{
-					String msg = 'Paths in chain need to all have a value.'
-					errors._400_BAD_REQUEST(msg).send()
-				   return false
-				}
-			}
-
-			query.each{ k,v ->
-				newQuery.add("${k}=${v}")
-			}
-		}
+		List uri2 = keys[0].split('/')
+		String controller = uri2[0]
+		String action = uri2[1]
+		Long id = newModel.id
 		
-		if(newPath && (newPath.last().split('=')[1]!='null' && newPath.last().split('=')[1]!='return')){
-			int pos = checkChainedMethodPosition(request,params,uri,newPath as List)
+		if(keys[0] && (params?.apiChain?.order["${keys[0]}"]='null' && params?.apiChain?.order["${keys[0]}"]!='return')){
+			int pos = checkChainedMethodPosition(request,params,uri,params?.apiChain?.order as Map)
+			println("POS :"+pos)
 			if(pos==3){
-				println("bad path")
 				log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
 				return false
 			}else{
-				def newModel = convertModel(model)
-				def uri2 = isChainedApi(newModel,newPath as List)
 				if(!uri2){
 					String msg = "Path was unable to be parsed. Check your path variables and try again."
 					//redirect(uri: "/")
 					errors._404_NOT_FOUND(msg).send()
 					return false
 				}
-				
-				def currentPath = "${uri2['controller']}/${uri2['action']}"
 
-				if(currentPath!=newPath.last().split('=')[0]){
-					def methods = cache["${uri2['action']}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-					def method = (methods.contains(request.method))?request.method:null
+				def currentPath = "${controller}/${action}"
 
-					if(checkAuthority(cache["${uri2['action']}"]['roles'])){
-						switch(type){
-							case 'application/xml':
-								forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
-								break
-							case 'application/json':
-							default:
-								forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
-								break
-						}
-					}else{
-						String msg = "User does not have access."
-						errors._403_FORBIDDEN(msg).send()
-						return false
-					}
+				def methods = cache["${action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+				def method = (methods.contains(request.method))?request.method:null
+
+				if(checkAuthority(cache["${action}"]['roles'])){
+					params.controller = controller
+					params.action = action
+					params.id = newModel.id
+					
+					println(params.apiChain.order)
+					params.apiChain.order.remove("${keys[0]}")
+					println(params.apiChain.order)
 				}else{
-					switch(type){
-						case 'application/xml':
-							forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
-							return false
-							break
-						case 'application/json':
-						default:
-							forward(controller:"${uri2['controller']}",action:"${uri2['action']}",id:"${uri2['id']}",params:[newPath:newQuery.join('&')])
-							return false
-							break
-					}
+					String msg = "User does not have access."
+					errors._403_FORBIDDEN(msg).send()
+					return false
 				}
+
 			}
-			return
+
 		}
+		return true
 	}
 	
 	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
@@ -234,7 +201,7 @@ class ApiLayerService{
 				type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
 
 				if(type){
-					if (isApiCall(request,params)) {
+					if (isApiCall(params)) {
 						def newModel = convertModel(model)
 						
 						response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
@@ -321,53 +288,11 @@ class ApiLayerService{
 	}
 	
 	// api call now needs to detect request method and see if it matches anno request method
-	boolean isApiCall(SecurityContextHolderAwareRequestWrapper request,GrailsParameterMap params){
-		String queryString = request.'javax.servlet.forward.query_string'
-
-		String uri
-		if(request.isRedirected()){
-			if(params.action=='index'){
-				uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI+'/'+params.action
-			}else{
-				uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI
-			}
-		}else{
-			uri = (queryString)?request.forwardURI+'?'+queryString:request.forwardURI
-		}
-		
-		String apiPrefix
-		if(grailsApplication.config.apitoolkit.apiName){
-			apiPrefix = "${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String
-		}else{
-			apiPrefix = "v${grailsApplication.metadata['app.version']}" as String
-		}
-
-		String api
-		Map type = ['XML':'text/xml','JSON':'application/json','HTML':'application/html'].findAll{ request.getHeader('Content-Type')?.startsWith(it.getValue()) }
-
-		if(grailsApplication.config.grails.app.context=='/'){
-			api = "/${apiPrefix}/" as String
-		}else if(grailsApplication.config?.grails?.app?.context){
-			api = "/${grailsApplication.config.grails.app.context}/${apiPrefix}/" as String
-		}else if(!grailsApplication.config?.grails?.app?.context){
-			api = "/${grailsApplication.metadata['app.name']}/${apiPrefix}/" as String
-		}
-
-		api += "${params.controller}/${params.action}" as String
-		api += (params.id)?"/${params.id}" as String:""
-		api += (queryString)?"?${queryString}" as String:""
-
-		return uri==api
-	}
-
-	void popPath(){
+	boolean isApiCall(GrailsParameterMap params){
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
-		GrailsParameterMap params = RCH.currentRequestAttributes().params
-		String  queryString = request.'javax.servlet.forward.query_string'
-		List path = getPath(params, queryString)
-		path.remove(0)
-		path.join('&')
-		params.queryString = path.join('&')
+		String uri = request.forwardURI.split('/')[1]
+		String api = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String
+		return uri==api
 	}
 	
 	HashMap getMethodParams(){
@@ -391,7 +316,7 @@ class ApiLayerService{
 		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (requestDefinitions["${authority}"])?requestDefinitions["${authority}"]:requestDefinitions["permitAll"]
 		List requestList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'chain']
 		temp.each{
 			requestList.add(it.name)
 		}
@@ -463,7 +388,7 @@ class ApiLayerService{
 				List finalRoles = []
 				List userRoles = []
 				if (springSecurityService.isLoggedIn()){
-					userRoles = springSecurityService.getPrincipal().getAuthorities()
+					userRoles = springSecurityService.getPrincipal().getAuthorities() as List
 				}
 				
 				if(userRoles){
@@ -950,58 +875,6 @@ class ApiLayerService{
 		return paths
 	}
 	
-	Map isChainedApi(Map map,List path){
-		def pathSize = path.size()
-		//String uri = ''
-		Map uri = [:]
-		for (int i = 0; i < path.size(); i++) {
-			if(path[i]){
-				def val=path[i]
-				def temp = val.split('=')
-				String pathKey = temp[0]
-				String pathVal = (temp.size()>1)?temp[1]:null
-
-				if(pathKey=='null'){
-					pathVal = pathVal.split('/').join('.')
-						if(map["${pathVal}"]){
-							if(map["${pathVal}"] in java.util.Collection){
-								map = map["${pathVal}"]
-							}else{
-								if(map["${pathVal}"].toString().isInteger()){
-									if(i==(pathSize-1)){
-										def newMap = ["${pathVal}":map["${pathVal}"]]
-										map = newMap
-									}else{
-										params.id = map["${pathVal}"]
-									}
-								}else{
-									def newMap = ["${pathVal}":map["${pathVal}"]]
-									map = newMap
-								}
-							}
-						}else{
-							return uri
-						}
-				}else{
-					if(!uri['id']){
-						uri['id'] = map["${pathVal}"]
-					}
-					uri['controller'] = pathKey.split('/')[0]
-					uri['action'] = pathKey.split('/')[1]
-					if(i+1<=path.size()-1){
-						uri['params'] = [:]
-						path[i+1..path.size()-1].each{
-							 def tmp = it.split('=')
-							 uri['params'][tmp[0]] = tmp[1]
-						}
-					}
-					return uri
-					break
-				}
-			}
-		}
-	}
-	
 	List getPath(GrailsParameterMap params, String queryString){
 		List path = []
 		def newQuery = []
@@ -1023,17 +896,23 @@ class ApiLayerService{
 	 * 2 = postchain
 	 * 3 = illegal combination
 	 */
-	int checkChainedMethodPosition(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, List uri,List path){
+	int checkChainedMethodPosition(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, List uri, Map path){
 		boolean preMatch = false
 		boolean postMatch = false
 		boolean pathMatch = false
-		Long pathSize = path.size()
+
+		List keys = path.keySet() as List
+		Integer pathSize = keys.size()
+		
+		String controller = uri[0]
+		String action = uri[1]
+		Long id = uri[2]
 		
 		// prematch check
 		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
-		def cache = apiCacheService.getApiCache(uri[0])
+		def cache = apiCacheService.getApiCache(controller)
 		//def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-		def methods = cache["${uri[1]}"]['method'].trim()
+		def methods = cache["${action}"]['method'].trim()
 
 		if(method=='GET'){
 			if(methods != method){
@@ -1048,27 +927,22 @@ class ApiLayerService{
 		
 		// postmatch check
 		if(pathSize>=1){
-			def last=path.last()?.split('=')
-			println(last)
-			if(last[0] && (last[0]!='null' || last[0]!='return')){
-				List last2 = last[0].split('/')
+			def last=path[keys[pathSize-1]]
+			if(last && last!='return'){
+				List last2 = keys[pathSize-1].split('/')
 				cache = apiCacheService.getApiCache(last2[0])
-				//methods = cache["${last2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 				methods = cache["${last2[1]}"]['method'].trim()
 				if(method=='GET'){
-					println("GET")
-					println(last2)
 					if(methods != method){
-						
 						postMatch = true
 					}
 				}else{
-					println("NOTGET")
-					println(last2)
 					if(methods == method){
 						postMatch = true
 					}
 				}
+			}else{
+				postMatch = true
 			}
 		}
 		println("[post] "+postMatch)
@@ -1077,12 +951,10 @@ class ApiLayerService{
 		int start = 1
 		int end = pathSize-2
 		if(start<end){
-			path(start..end).each{ val ->
+			keys[0..(pathSize-1)].each{ val ->
 				if(val){
-					List temp=val.split('=')
-					List temp2 = temp[0].split('/')
+					List temp2 = val.split('/')
 					cache = apiCacheService.getApiCache(temp2[0])
-					//methods = cache["${temp2[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 					methods = cache["${temp2[1]}"]['method'].trim() as List
 					if(method=='GET'){
 						if(methods != method){
@@ -1119,7 +991,6 @@ class ApiLayerService{
 	
 	Map convertModel(Map map){
 		Map newMap = [:]
-		println(map)
 		String k = map.entrySet().toList().first().key
 		
 		if(map && (!map?.response && !map?.metaClass && !map?.params)){
