@@ -18,7 +18,6 @@ class ApiToolkitFilters {
 	def apiToolkitService
 	def grailsApplication
 	def apiCacheService
-	def apiLayerService
 	
 	def filters = {
 		String apiName = grailsApplication.config.apitoolkit.apiName
@@ -32,7 +31,7 @@ class ApiToolkitFilters {
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 
 				if(cache){
-					boolean result = apiLayerService.handleApiRequest(cache,request,params)
+					boolean result = apiToolkitService.handleApiRequest(cache,request,params)
 					return result
 				}else{
 					return false
@@ -44,11 +43,11 @@ class ApiToolkitFilters {
 				 def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 				 if(params?.apiChain?.order){
 					 // return map of variable and POP first variable off chain 'order'
-					 boolean result = apiLayerService.handleApiChain(cache, request,response,model,params)
+					 boolean result = apiToolkitService.handleApiChain(cache, request,response,model,params)
 					 forward(controller:"${params.controller}",action:"${params.action}",id:"${model.id}")
 					 return false
 				 }else{
-				 	LinkedHashMap map = apiLayerService.handleApiResponse(cache, request,response,model,params)
+				 	LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)
 					 if(!model){
 						 response.flushBuffer()
 						 return null
@@ -64,7 +63,7 @@ class ApiToolkitFilters {
 							 break;
 						 case 'OPTIONS':
 	
-							 LinkedHashMap doc = apiLayerService.getApiDoc(params)
+							 LinkedHashMap doc = apiToolkitService.getApiDoc(params)
 							 
 							 switch(params.contentType){
 								 case 'application/xml':
