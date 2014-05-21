@@ -59,11 +59,11 @@ class ApiLayerService{
 	GrailsCacheManager grailsCacheManager
 	
 	// DEPRECATED
-	SecurityContextHolderAwareRequestWrapper getRequest(){
+	private SecurityContextHolderAwareRequestWrapper getRequest(){
 		return RCH.currentRequestAttributes().currentRequest
 	}
 	
-	GrailsContentBufferingResponse getResponse(){
+	private GrailsContentBufferingResponse getResponse(){
 		return RCH.currentRequestAttributes().currentResponse
 	}
 	
@@ -92,49 +92,44 @@ class ApiLayerService{
 		
 		// CHECK IF URI HAS CACHE
 		if(cache["${params.action}"]){
-			// CHECK IF URI IS APICALL
-			if (isApiCall(params)) {
-				// CHECK IF PRINCIPAL HAS ACCESS TO API
-				if(!checkAuthority(cache["${params.action}"]['roles'])){
-					return false
-				}
-				
-				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
-				def method = cache["${params.action}"]['method']?.trim()
-				def uri = [params.controller,params.action,params.id]
-				// DOES api.methods.contains(request.method)
-				if(!isRequestMatch(method,request.method.toString())){
-					// check for apichain
+			// CHECK IF PRINCIPAL HAS ACCESS TO API
+			if(!checkAuthority(cache["${params.action}"]['roles'])){
+				return false
+			}
+			
+			// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
+			def method = cache["${params.action}"]['method']?.trim()
+			def uri = [params.controller,params.action,params.id]
+			// DOES api.methods.contains(request.method)
+			if(!isRequestMatch(method,request.method.toString())){
+				// check for apichain
 
-					
-					// TEST FOR CHAIN PATHS
-					if(params?.apiChain){
-						int pos = checkChainedMethodPosition(request, params,uri,params?.apiChain?.order as Map)
-						if(pos==3){
-							ApiStatuses error = new ApiStatuses()
-							String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
-							error._400_BAD_REQUEST(msg)?.send()
-							return false
-						}else{
-							return true
-						}
-					}else{
-						return true
-					}
-				}else{
-					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
-					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
-					if(!checkURIDefinitions(cache["${params.action}"]['receives'])){
+				
+				// TEST FOR CHAIN PATHS
+				if(params?.apiChain){
+					int pos = checkChainedMethodPosition(request, params,uri,params?.apiChain?.order as Map)
+					if(pos==3){
 						ApiStatuses error = new ApiStatuses()
-						String msg = 'Expected request variables do not match sent variables'
+						String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
 						error._400_BAD_REQUEST(msg)?.send()
 						return false
 					}else{
 						return true
 					}
+				}else{
+					return true
 				}
 			}else{
-				return true
+				// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
+				// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
+				if(!checkURIDefinitions(cache["${params.action}"]['receives'])){
+					ApiStatuses error = new ApiStatuses()
+					String msg = 'Expected request variables do not match sent variables'
+					error._400_BAD_REQUEST(msg)?.send()
+					return false
+				}else{
+					return true
+				}
 			}
 		}
 	}
@@ -152,7 +147,6 @@ class ApiLayerService{
 		
 		if(keys[0] && (params?.apiChain?.order["${keys[0]}"]='null' && params?.apiChain?.order["${keys[0]}"]!='return')){
 			int pos = checkChainedMethodPosition(request,params,uri,params?.apiChain?.order as Map)
-			println("POS :"+pos)
 			if(pos==3){
 				log.info("[ERROR] Bad combination of unsafe METHODS in api chain.")
 				return false
@@ -174,9 +168,7 @@ class ApiLayerService{
 					params.action = action
 					params.id = newModel.id
 					
-					println(params.apiChain.order)
 					params.apiChain.order.remove("${keys[0]}")
-					println(params.apiChain.order)
 				}else{
 					String msg = "User does not have access."
 					errors._403_FORBIDDEN(msg).send()
@@ -201,15 +193,9 @@ class ApiLayerService{
 				type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
 
 				if(type){
-					if (isApiCall(params)) {
 						def newModel = convertModel(model)
-						
 						response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
-
 						return newModel
-
-						//return false
-					}
 				}else{
 					//return true
 					//render(view:params.action,model:model)
@@ -288,7 +274,7 @@ class ApiLayerService{
 	}
 	
 	// api call now needs to detect request method and see if it matches anno request method
-	boolean isApiCall(GrailsParameterMap params){
+	boolean isApiCall(){
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		String uri = request.forwardURI.split('/')[1]
 		String api = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String

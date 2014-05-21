@@ -27,7 +27,7 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiDir}/**"){
 			before = { Map model ->
-				println("##### FILTER (BEFORE)")
+				//println("##### FILTER (BEFORE)")
 				params.action = (params.action)?params.action:'index'
 				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 
@@ -40,9 +40,8 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 println("##### FILTER (AFTER)")
+				 //println("##### FILTER (AFTER)")
 				 def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
-				 println("################ MODEL : "+model)
 				 if(params?.apiChain?.order){
 					 // return map of variable and POP first variable off chain 'order'
 					 boolean result = apiLayerService.handleApiChain(cache, request,response,model,params)
