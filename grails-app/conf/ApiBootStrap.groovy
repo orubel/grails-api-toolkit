@@ -23,7 +23,6 @@ class ApiBootStrap {
 		apiObjectService.initApiCache()
 	}
 
-
     def destroy = {}
 
 }
