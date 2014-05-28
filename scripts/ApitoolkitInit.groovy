@@ -81,6 +81,7 @@ private void updateConfig() {
 			it.writeLine '\n// Added by the Api Toolkit plugin:'
 			it.writeLine "apitoolkit.domain = '${packageName}.Hook'"
 			it.writeLine "apitoolkit.controller = '${packageName}.HookController'"
+			it.writeLine "apitoolkit.batch.limit = '10'"
 		}
 	}
 }
