@@ -5,7 +5,7 @@ import java.util.Map
 import grails.converters.JSON
 import grails.converters.XML
 import net.nosegrind.apitoolkit.Api;
-
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 import net.nosegrind.apitoolkit.Method;
 import net.nosegrind.apitoolkit.ApiStatuses;
@@ -28,7 +28,7 @@ class ApiToolkitFilters {
 			before = { Map model ->
 				//println("##### FILTER (BEFORE)")
 				params.action = (params.action)?params.action:'index'
-				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
+				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 
 				if(cache){
 					boolean result = apiToolkitService.handleApiRequest(cache,request,params)
@@ -40,17 +40,20 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 				 //println("##### FILTER (AFTER)")
-				 def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
+				 def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 				 if(params?.apiChain?.order){
 					 // return map of variable and POP first variable off chain 'order'
 					 boolean result = apiToolkitService.handleApiChain(cache, request,response,model,params)
 					 forward(controller:"${params.controller}",action:"${params.action}",id:"${model.id}")
 					 return false
+				 }else if(params?.apiBatch){
+						 forward(controller:"${params.controller}",action:"${params.action}",params:params)
+						 return false
 				 }else{
 				 	LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)
 					 if(!model){
 						 response.flushBuffer()
-						 return null
+						 return false
 					 }
 					 
 					 switch(request.method) {

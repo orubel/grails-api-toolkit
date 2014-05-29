@@ -68,8 +68,9 @@ class ApiToolkitService{
 	}
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
-		// SET CONTENTTYPE FOR THIS REQUEST
+
 		ApiStatuses error = new ApiStatuses()
+		
 		if(!params.contentType){
 			List content = getContentType(request)
 			params.contentType = content[0]
@@ -80,16 +81,46 @@ class ApiToolkitService{
 				case 'application/json':
 					if(request.JSON?.chain){
 						params.apiChain = request.JSON.chain
+						request.JSON?.chain = null
+					}
+					if(request.JSON?.batch){
+						params.apiBatch = []
+						request.JSON.batch.each {
+							params.apiBatch.add(it.value)
+						}
+						params.apiBatch = params.apiBatch.reverse()
+						request.JSON.batch = null
 					}
 					break
 				case 'text/xml':
 				case 'application/xml':
 					if(request.XML?.chain){
 						params.apiChain = request.XML?.chain
+						request.XML?.chain = null
+					}
+					if(request.XML?.batch){
+						params.apiBatch = []
+						request.XML.batch.each {
+							params.apiBatch.add(it.value)
+						}
+						params.apiBatch = params.apiBatch.reverse()
+						request.XML?.batch = null
 					}
 					break
 			}
 		}
+
+		if(params.apiBatch){
+			JSONObject json =  params.apiBatch.getAt(0)
+			json.each{ k,v ->
+				params["${k}"] = v
+			}
+			params.apiBatch.remove(0)
+		}
+		
+		//if(!params.apiBatch){ params.remove("apiBatch") }
+		//if(!params.apiChain){ params.remove("apiChain") }
+
 		
 		// CHECK IF URI HAS CACHE
 		if(cache["${params.action}"]){
@@ -175,7 +206,6 @@ class ApiToolkitService{
 				}
 
 			}
-
 		}
 		return true
 	}
@@ -282,7 +312,7 @@ class ApiToolkitService{
 	}
 	
 	HashMap getMethodParams(){
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'chain']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'chain']
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		Map paramsRequest = params.findAll {
@@ -302,7 +332,7 @@ class ApiToolkitService{
 		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (requestDefinitions["${authority}"])?requestDefinitions["${authority}"]:requestDefinitions["permitAll"]
 		List requestList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'chain','apiModel']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'chain','apiModel']
 		temp.each{
 			requestList.add(it.name)
 		}
@@ -311,6 +341,7 @@ class ApiToolkitService{
 		//GrailsParameterMap params = RCH.currentRequestAttributes().params
 		List paramsList = params.post.keySet() as List
 		paramsList.removeAll(optionalParams)
+
 		if(paramsList.containsAll(requestList)){
 			paramsList.removeAll(requestList)
 			if(!paramsList){
@@ -327,10 +358,9 @@ class ApiToolkitService{
 		ApiStatuses errors = new ApiStatuses()
 		String msg = "Error. Invalid variables being returned. Please see your administrator"
 		String authority = springSecurityService.principal.authorities*.authority[0]
-		println(authority)
 		ParamsDescriptor[] temp = (responseDefinitions["${authority}"])?responseDefinitions["${authority}"]:responseDefinitions["permitAll"]
 		List responseList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'chain','apiModel']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'chain','apiModel']
 		temp.each{
 			responseList.add(it.name)
 		}
