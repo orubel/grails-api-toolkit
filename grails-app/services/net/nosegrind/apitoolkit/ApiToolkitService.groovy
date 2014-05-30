@@ -199,6 +199,11 @@ class ApiToolkitService{
 					params.id = newModel.id
 					
 					params.apiChain.order.remove("${keys[0]}")
+					
+					if(params?.apiChain.combine=='true'){
+						if(!params.apiCombine){ params.apiCombine = [:] }
+						params.apiCombine[currentPath] = parseURIDefinitions(newModel,cache["${params.action}"]['returns'])
+					}
 				}else{
 					String msg = "User does not have access."
 					errors._403_FORBIDDEN(msg).send()
@@ -224,8 +229,13 @@ class ApiToolkitService{
 						def newModel = convertModel(model)
 						
 						response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
-						//return newModel
-						return parseURIDefinitions(newModel,cache["${params.action}"]['returns'])
+						LinkedHashMap result = parseURIDefinitions(newModel,cache["${params.action}"]['returns'])
+						if(params?.apiChain.combine=='true'){
+							if(!params.apiCombine){ params.apiCombine = [:] }
+							String currentPath = "${params.controller}/${params.action}"
+							params.apiCombine[currentPath] = result
+						}
+						return result
 				}else{
 					//return true
 					//render(view:params.action,model:model)
@@ -312,7 +322,7 @@ class ApiToolkitService{
 	}
 	
 	HashMap getMethodParams(){
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'chain']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'chain']
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		Map paramsRequest = params.findAll {
@@ -332,7 +342,7 @@ class ApiToolkitService{
 		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (requestDefinitions["${authority}"])?requestDefinitions["${authority}"]:requestDefinitions["permitAll"]
 		List requestList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'chain','apiModel']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'chain']
 		temp.each{
 			requestList.add(it.name)
 		}
@@ -360,7 +370,7 @@ class ApiToolkitService{
 		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (responseDefinitions["${authority}"])?responseDefinitions["${authority}"]:responseDefinitions["permitAll"]
 		List responseList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'chain','apiModel']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'chain']
 		temp.each{
 			responseList.add(it.name)
 		}

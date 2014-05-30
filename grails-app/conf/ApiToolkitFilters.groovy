@@ -56,6 +56,10 @@ class ApiToolkitFilters {
 						 return false
 					 }
 					 
+					 if(params.apiCombine){
+							map = params.apiCombine
+					 }
+					 
 					 switch(request.method) {
 						 case 'PURGE':
 							 // cleans cache
