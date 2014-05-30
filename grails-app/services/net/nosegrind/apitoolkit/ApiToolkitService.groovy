@@ -67,10 +67,7 @@ class ApiToolkitService{
 		return RCH.currentRequestAttributes().currentResponse
 	}
 	
-	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
-
-		ApiStatuses error = new ApiStatuses()
-		
+	private void setApiParams(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
 		if(!params.contentType){
 			List content = getContentType(request)
 			params.contentType = content[0]
@@ -81,22 +78,27 @@ class ApiToolkitService{
 				case 'application/json':
 					if(request.JSON?.chain){
 						params.apiChain = request.JSON.chain
-						request.JSON?.chain = null
+						request.JSON.remove("chain")
 					}
 					if(request.JSON?.batch){
 						params.apiBatch = []
 						request.JSON.batch.each {
+							
+							println(it.value)
 							params.apiBatch.add(it.value)
 						}
 						params.apiBatch = params.apiBatch.reverse()
-						request.JSON.batch = null
+						request.JSON.remove("batch")
+					}
+					if(params?.apiChain?.combine=='true'){
+						if(!params.apiCombine){ params.apiCombine = [:] }
 					}
 					break
 				case 'text/xml':
 				case 'application/xml':
 					if(request.XML?.chain){
 						params.apiChain = request.XML?.chain
-						request.XML?.chain = null
+						request.XML.remove("chain")
 					}
 					if(request.XML?.batch){
 						params.apiBatch = []
@@ -104,24 +106,23 @@ class ApiToolkitService{
 							params.apiBatch.add(it.value)
 						}
 						params.apiBatch = params.apiBatch.reverse()
-						request.XML?.batch = null
+						request.XML.remove("batch")
+					}
+					if(params?.apiChain?.combine=='true'){
+						if(!params.apiCombine){ params.apiCombine = [:] }
 					}
 					break
 			}
 		}
-
-		if(params.apiBatch){
-			JSONObject json =  params.apiBatch.getAt(0)
-			json.each{ k,v ->
-				params["${k}"] = v
-			}
-			params.apiBatch.remove(0)
-		}
 		
-		//if(!params.apiBatch){ params.remove("apiBatch") }
-		//if(!params.apiChain){ params.remove("apiChain") }
+	}
+	
+	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
 
+		ApiStatuses error = new ApiStatuses()
 		
+		setApiParams(request, params)
+
 		// CHECK IF URI HAS CACHE
 		if(cache["${params.action}"]){
 			// CHECK IF PRINCIPAL HAS ACCESS TO API
@@ -131,13 +132,14 @@ class ApiToolkitService{
 			
 			// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
 			def method = cache["${params.action}"]['method']?.trim()
-			def uri = [params.controller,params.action,params.id]
+			
 			// DOES api.methods.contains(request.method)
 			if(!isRequestMatch(method,request.method.toString())){
 				// check for apichain
 
 				// TEST FOR CHAIN PATHS
 				if(params?.apiChain){
+					List uri = [params.controller,params.action,params.id]
 					int pos = checkChainedMethodPosition(request, params,uri,params?.apiChain?.order as Map)
 					if(pos==3){
 						String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
@@ -189,11 +191,13 @@ class ApiToolkitService{
 				}
 
 				def currentPath = "${controller}/${action}"
-
 				def methods = cache["${action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 				def method = (methods.contains(request.method))?request.method:null
 
 				if(checkAuthority(cache["${action}"]['roles'])){
+					if(params?.apiChain.combine=='true'){
+						params.apiCombine["${params.controller}/${params.action}"] = parseURIDefinitions(newModel,cache["${params.action}"]['returns'])
+					}
 					params.controller = controller
 					params.action = action
 					params.id = newModel.id
@@ -201,7 +205,6 @@ class ApiToolkitService{
 					params.apiChain.order.remove("${keys[0]}")
 					
 					if(params?.apiChain.combine=='true'){
-						if(!params.apiCombine){ params.apiCombine = [:] }
 						params.apiCombine[currentPath] = parseURIDefinitions(newModel,cache["${params.action}"]['returns'])
 					}
 				}else{
@@ -230,7 +233,7 @@ class ApiToolkitService{
 						
 						response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
 						LinkedHashMap result = parseURIDefinitions(newModel,cache["${params.action}"]['returns'])
-						if(params?.apiChain.combine=='true'){
+						if(params?.apiChain?.combine=='true'){
 							if(!params.apiCombine){ params.apiCombine = [:] }
 							String currentPath = "${params.controller}/${params.action}"
 							params.apiCombine[currentPath] = result
