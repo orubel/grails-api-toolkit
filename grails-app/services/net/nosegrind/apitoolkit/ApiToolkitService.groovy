@@ -118,20 +118,21 @@ class ApiToolkitService{
 	}
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
-
 		ApiStatuses error = new ApiStatuses()
-		
 		setApiParams(request, params)
 
 		// CHECK IF URI HAS CACHE
 		if(cache["${params.action}"]){
+			
 			// CHECK IF PRINCIPAL HAS ACCESS TO API
 			if(!checkAuthority(cache["${params.action}"]['roles'])){
 				return false
 			}
 			
+			println("CACHE : ${cache}")
 			// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
 			def method = cache["${params.action}"]['method']?.trim()
+			println("METHOD : ${method}")
 			
 			// DOES api.methods.contains(request.method)
 			if(!isRequestMatch(method,request.method.toString())){
