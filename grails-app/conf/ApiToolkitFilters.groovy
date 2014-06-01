@@ -26,156 +26,164 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiDir}/**"){
 			before = { Map model ->
-				println("##### FILTER (BEFORE)")
-				params.action = (params.action)?params.action:'index'
-				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-
-				if(cache){
-					boolean result = apiToolkitService.handleApiRequest(cache,request,params)
-					return result
-				}else{
+				log.warn("##### FILTER (BEFORE)")
+				try{
+					params.action = (params.action)?params.action:'index'
+					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
+					if(cache){
+						boolean result = apiToolkitService.handleApiRequest(cache,request,params)
+						return result
+					}else{
+						return false
+					}
+				}catch(Exception e){
+					log.error("[ApiToolkitFilters :: apitoolkit.before] : Exception - full stack trace follows:", e);
 					return false
 				}
 			}
 			
 			after = { Map model ->
-				 println("##### FILTER (AFTER)")
-				 def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-				 if(params?.apiChain?.order){
-					 println("########## handle api chain")
-					 // return map of variable and POP first variable off chain 'order'
-					 boolean result = apiToolkitService.handleApiChain(cache, request,response,model,params)
-					 forward(controller:"${params.controller}",action:"${params.action}",id:"${model.id}")
-					 return false
-				 }else if(params?.apiBatch){
-						 forward(controller:"${params.controller}",action:"${params.action}",params:params)
+				 log.warn("##### FILTER (AFTER)")
+				 try{
+				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
+					 if(params?.apiChain?.order){
+						 // return map of variable and POP first variable off chain 'order'
+						 boolean result = apiToolkitService.handleApiChain(cache, request,response,model,params)
+						 forward(controller:"${params.controller}",action:"${params.action}",id:"${model.id}")
 						 return false
-				 }else{
-				 	LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)
-					 if(!model){
-						 response.flushBuffer()
-						 return false
-					 }
-					 
-					 if(params.apiCombine){
-							map = params.apiCombine
-					 }
-					 
-					 switch(request.method) {
-						 case 'PURGE':
-							 // cleans cache
-							 break;
-						 case 'TRACE':
-							 break;
-						 case 'HEAD':
-							 break;
-						 case 'OPTIONS':
-	
-							 LinkedHashMap doc = apiToolkitService.getApiDoc(params)
-							 
-							 switch(params.contentType){
-								 case 'application/xml':
-									 render(text:doc as XML, contentType: "${params.contentType}")
-									 break
-								 case 'application/json':
-								 default:
-									 render(text:doc as JSON, contentType: "${params.contentType}")
-									 break
-							 }
+					 }else if(params?.apiBatch){
+							 forward(controller:"${params.controller}",action:"${params.action}",params:params)
 							 return false
-							 break;
-						 case 'GET':
-							 if(!map.isEmpty()){
+					 }else{
+					 	LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)
+						 if(!model){
+							 response.flushBuffer()
+							 return false
+						 }
+						 
+						 if(params?.apiCombine==true){
+								map = params.apiCombine
+						 }
+						 
+						 switch(request.method) {
+							 case 'PURGE':
+								 // cleans cache
+								 break;
+							 case 'TRACE':
+								 break;
+							 case 'HEAD':
+								 break;
+							 case 'OPTIONS':
+		
+								 LinkedHashMap doc = apiToolkitService.getApiDoc(params)
+								 
 								 switch(params.contentType){
 									 case 'application/xml':
-										 if(params.encoding){
-											 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-										 }else{
-											 render(text:map as XML, contentType: "${params.contentType}")
-										 }
-										 break
-									 case 'text/html':
+										 render(text:doc as XML, contentType: "${params.contentType}")
 										 break
 									 case 'application/json':
 									 default:
-										 if(params.encoding){
-											 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-										 }else{
-											 render(text:map as JSON, contentType: "${params.contentType}")
-										 }
+										 render(text:doc as JSON, contentType: "${params.contentType}")
 										 break
 								 }
 								 return false
-							 }
-							 break
-						 case 'POST':
-							 if(!map.isEmpty()){
-								 switch(params.contentType){
-									 case 'application/xml':
-										 if(params.encoding){
-											 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-										 }else{
-											 render(text:map as XML, contentType: "${params.contentType}")
-										 }
-										 break
-									 case 'application/json':
-									 default:
-										 if(params.encoding){
-											 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-										 }else{
-											 render(text:map as JSON, contentType: "${params.contentType}")
-										 }
-										 break
+								 break;
+							 case 'GET':
+								 if(map?.isEmpty()==false){
+									 switch(params.contentType){
+										 case 'application/xml':
+											 if(params.encoding){
+												 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
+											 }else{
+												 render(text:map as XML, contentType: "${params.contentType}")
+											 }
+											 break
+										 case 'text/html':
+											 break
+										 case 'application/json':
+										 default:
+											 if(params.encoding){
+												 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
+											 }else{
+												 render(text:map as JSON, contentType: "${params.contentType}")
+											 }
+											 break
+									 }
+									 return false
 								 }
-								 return false
-							 }
-							 break
-						 case 'PUT':
-							 if(!map.isEmpty()){
-								 switch(params.contentType){
-									 case 'application/xml':
-										 if(params.encoding){
-											 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-										 }else{
-											 render(text:map as XML, contentType: "${params.contentType}")
-										 }
-										 break
-									 case 'application/json':
-									 default:
-										 if(params.encoding){
-											 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-										 }else{
-											 render(text:map as JSON, contentType: "${params.contentType}")
-										 }
-										 break
+								 break
+							 case 'POST':
+								 if(!map.isEmpty()){
+									 switch(params.contentType){
+										 case 'application/xml':
+											 if(params.encoding){
+												 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
+											 }else{
+												 render(text:map as XML, contentType: "${params.contentType}")
+											 }
+											 break
+										 case 'application/json':
+										 default:
+											 if(params.encoding){
+												 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
+											 }else{
+												 render(text:map as JSON, contentType: "${params.contentType}")
+											 }
+											 break
+									 }
+									 return false
 								 }
-								 return false
-							 }
-							 break
-						 case 'DELETE':
-							 if(!map.isEmpty()){
-								 switch(params.contentType){
-									 case 'application/xml':
-										 if(params.encoding){
-											 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-										 }else{
-											 render(text:map as XML, contentType: "${params.contentType}")
-										 }
-										 break
-									 case 'application/json':
-									 default:
-										 if(params.encoding){
-											 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-										 }else{
-											 render(text:map as JSON, contentType: "${params.contentType}")
-										 }
-										 break
+								 break
+							 case 'PUT':
+								 if(!map.isEmpty()){
+									 switch(params.contentType){
+										 case 'application/xml':
+											 if(params.encoding){
+												 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
+											 }else{
+												 render(text:map as XML, contentType: "${params.contentType}")
+											 }
+											 break
+										 case 'application/json':
+										 default:
+											 if(params.encoding){
+												 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
+											 }else{
+												 render(text:map as JSON, contentType: "${params.contentType}")
+											 }
+											 break
+									 }
+									 return false
 								 }
-								 return false
-							 }
-							 break
+								 break
+							 case 'DELETE':
+								 if(!map.isEmpty()){
+									 switch(params.contentType){
+										 case 'application/xml':
+											 if(params.encoding){
+												 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
+											 }else{
+												 render(text:map as XML, contentType: "${params.contentType}")
+											 }
+											 break
+										 case 'application/json':
+										 default:
+											 if(params.encoding){
+												 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
+											 }else{
+												 render(text:map as JSON, contentType: "${params.contentType}")
+											 }
+											 break
+									 }
+									 return false
+								 }
+								 break
+						 }
 					 }
-				 }
+				}catch(Exception e){
+					log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
+					return false
+				}
 			 }
 
 		}

@@ -83,8 +83,6 @@ class ApiToolkitService{
 					if(request.JSON?.batch){
 						params.apiBatch = []
 						request.JSON.batch.each {
-							
-							println(it.value)
 							params.apiBatch.add(it.value)
 						}
 						params.apiBatch = params.apiBatch.reverse()
@@ -118,51 +116,53 @@ class ApiToolkitService{
 	}
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
-		ApiStatuses error = new ApiStatuses()
-		setApiParams(request, params)
-
-		// CHECK IF URI HAS CACHE
-		if(cache["${params.action}"]){
-			
-			// CHECK IF PRINCIPAL HAS ACCESS TO API
-			if(!checkAuthority(cache["${params.action}"]['roles'])){
-				return false
-			}
-			
-			println("CACHE : ${cache}")
-			// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
-			def method = cache["${params.action}"]['method']?.trim()
-			println("METHOD : ${method}")
-			
-			// DOES api.methods.contains(request.method)
-			if(!isRequestMatch(method,request.method.toString())){
-				// check for apichain
-
-				// TEST FOR CHAIN PATHS
-				if(params?.apiChain){
-					List uri = [params.controller,params.action,params.id]
-					int pos = checkChainedMethodPosition(request, params,uri,params?.apiChain?.order as Map)
-					if(pos==3){
-						String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
+		try{
+			ApiStatuses error = new ApiStatuses()
+			setApiParams(request, params)
+	
+			// CHECK IF URI HAS CACHE
+			if(cache["${params.action}"]){
+				
+				// CHECK IF PRINCIPAL HAS ACCESS TO API
+				if(!checkAuthority(cache["${params.action}"]['roles'].toList())){
+					return false
+				}
+				
+				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
+				def method = cache["${params.action}"]['method']?.trim()
+				
+				// DOES api.methods.contains(request.method)
+				if(!isRequestMatch(method,request.method.toString())){
+					// check for apichain
+	
+					// TEST FOR CHAIN PATHS
+					if(params?.apiChain){
+						List uri = [params.controller,params.action,params.id]
+						int pos = checkChainedMethodPosition(request, params,uri,params?.apiChain?.order as Map)
+						if(pos==3){
+							String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
+							error._400_BAD_REQUEST(msg)?.send()
+							return false
+						}else{
+							return true
+						}
+					}else{
+						return true
+					}
+				}else{
+					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
+					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
+					if(!checkURIDefinitions(cache["${params.action}"]['receives'])){
+						String msg = 'Expected request variables do not match sent variables'
 						error._400_BAD_REQUEST(msg)?.send()
 						return false
 					}else{
 						return true
 					}
-				}else{
-					return true
-				}
-			}else{
-				// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
-				// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
-				if(!checkURIDefinitions(cache["${params.action}"]['receives'])){
-					String msg = 'Expected request variables do not match sent variables'
-					error._400_BAD_REQUEST(msg)?.send()
-					return false
-				}else{
-					return true
 				}
 			}
+		}catch(Exception e){
+			log.error("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:", e);
 		}
 	}
 	
@@ -220,36 +220,37 @@ class ApiToolkitService{
 	}
 	
 	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
-		String type = params.contentType
-
-		if(cache){
-			if(cache["${params.action}"]){
-
-				// make 'application/json' default
-				def formats = ['text/html','application/json','application/xml']
-				type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
-
-				if(type){
-						def newModel = convertModel(model)
-						
-						response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
-						LinkedHashMap result = parseURIDefinitions(newModel,cache["${params.action}"]['returns'])
-						if(params?.apiChain?.combine=='true'){
-							if(!params.apiCombine){ params.apiCombine = [:] }
-							String currentPath = "${params.controller}/${params.action}"
-							params.apiCombine[currentPath] = result
-						}
-						return result
+		try{
+			String type = params.contentType
+			if(cache){
+				if(cache["${params.action}"]){
+	
+					// make 'application/json' default
+					def formats = ['text/html','application/json','application/xml']
+					type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
+	
+					if(type){
+							def newModel = convertModel(model)
+							response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
+							LinkedHashMap result = parseURIDefinitions(newModel,cache["${params.action}"]['returns'])
+							if(params?.apiChain?.combine=='true'){
+								if(!params.apiCombine){ params.apiCombine = [:] }
+								String currentPath = "${params.controller}/${params.action}"
+								params.apiCombine[currentPath] = result
+							}
+							return result
+					}else{
+						//return true
+						//render(view:params.action,model:model)
+					}
 				}else{
 					//return true
 					//render(view:params.action,model:model)
 				}
-			}else{
-				//return true
-				//render(view:params.action,model:model)
 			}
+		}catch(Exception e){
+			log.error("[ApiToolkitService :: handleApiResponse] : Exception - full stack trace follows:", e);
 		}
-
 	}
 	
 	List getContentType(SecurityContextHolderAwareRequestWrapper request){
@@ -727,40 +728,33 @@ class ApiToolkitService{
 		String apiPrefix = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String
 		
 		if(cont){
-			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllername)
-			for (Method method : controller.getClazz().getDeclaredMethod(actionname)){
-				if(method.isAnnotationPresent(Api)) {
-					
-					String path = "/${apiPrefix}/${controllername}/${actionname}"
-					doc = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
-					
-					// if(springSecurityService.principal.authorities*.authority.any { receiveVal.key==it }){
-					if(cont["${actionname}"]["receives"]){
 
-						doc["receives"] = [:]
-						for(receiveVal in cont["${actionname}"]["receives"]){
-							doc["receives"]["${receiveVal.key}"] = receiveVal.value
-						}
-					}
-					
-					if(cont["${actionname}"]["returns"]){
-						doc["returns"] = [:]
-						for(returnVal in cont["${actionname}"]["returns"]){
-							doc["returns"]["${returnVal.key}"] = returnVal.value
-						}
-					}
-					
-					if(cont["${actionname}"]["errorcodes"]){
-						doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
-					}
+			String path = "/${apiPrefix}/${controllername}/${actionname}"
+			doc = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
+			
+			// if(springSecurityService.principal.authorities*.authority.any { receiveVal.key==it }){
+			if(cont["${actionname}"]["receives"]){
 
-					//List links = generateLinkRels(controllername,actionname,doc)
-					//doc["links"] = links
-
-				}else{
-					// ERROR: method at '${controllername}/${actionname}' does not have API annotation
+				doc["receives"] = [:]
+				for(receiveVal in cont["${actionname}"]["receives"]){
+					doc["receives"]["${receiveVal.key}"] = receiveVal.value
 				}
 			}
+			
+			if(cont["${actionname}"]["returns"]){
+				doc["returns"] = [:]
+				for(returnVal in cont["${actionname}"]["returns"]){
+					doc["returns"]["${returnVal.key}"] = returnVal.value
+				}
+			}
+			
+			if(cont["${actionname}"]["errorcodes"]){
+				doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
+			}
+
+			//List links = generateLinkRels(controllername,actionname,doc)
+			//doc["links"] = links
+
 		}
 
 		return doc

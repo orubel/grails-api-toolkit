@@ -44,7 +44,7 @@ class ApiCacheService{
 		grailsApplication.controllerClasses.each { controllerClass ->
 			String controllername = controllerClass.logicalPropertyName
 			if(controllername!='aclClass'){
-				flushApiCache(controllername)
+				flushApiCache(controllername.capitalize())
 			}
 		}
 	}
@@ -88,7 +88,8 @@ class ApiCacheService{
 
 			return cache
 		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
+			//log.info
+			println("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
 		}
 	}
 
@@ -103,7 +104,8 @@ class ApiCacheService{
 			}
 			return cache
 		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
+			//log.info
+			println("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
 		}
 	}
 	
@@ -115,7 +117,7 @@ class ApiCacheService{
 			}
 			//return cache
 		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.getApiCache : No Cache exists for controller ${controllername} : ${e}")
+			log.error("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:", e);
 		}
 	}
 }

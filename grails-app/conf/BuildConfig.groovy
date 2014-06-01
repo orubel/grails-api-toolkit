@@ -23,8 +23,8 @@ grails.project.dependency.resolution = {
 		build(":release:3.0.0",":rest-client-builder:1.0.3") {
 			 export = false
 		}
-		compile(":cache:1.1.1")
-		compile ':spring-security-core:2.0-RC2'
+		compile(":cache:1.1.6")
+		compile ':spring-security-core:2.0-RC3'
 		
 		// used for testing
 	    test(":spock:0.7") {

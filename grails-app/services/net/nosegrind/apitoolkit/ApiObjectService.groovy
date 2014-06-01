@@ -123,43 +123,36 @@ class ApiObjectService{
 	def initApiCache(){
 		JSONObject json = readObjectFile()
 
-		grailsApplication.controllerClasses.each { DefaultGrailsControllerClass controllerClass ->
-			String controllername = controllerClass.logicalPropertyName
+		Map methods = [:]
+		String controllername
+		json.each { controller ->
+			controllername = controller.key
 			
-			Map methods = [:]
-			controllerClass.getClazz().methods.each { Method method ->
-				String actionname = method.getName()
+			controller.value.URI.each { it ->
+				List temp = it.key.split('/')
+				String actionname = temp[1]
 				
 				ApiStatuses error = new ApiStatuses()
 				
-				if(method.isAnnotationPresent(Api)) {
-					def api = method.getAnnotation(Api)
+				ApiDescriptor apiDescriptor
+				Map apiParams
+				
+				String apiMethod = it.value.METHOD
+				String apiDescription = it.value.DESCRIPTION
+				List apiRoles = it.value.ROLES
+				
+				String uri = it.key
+				apiDescriptor = createApiDescriptor(controllername, apiMethod, apiDescription, apiRoles, uri, json)
 
-					ApiDescriptor apiDescriptor
-					Map apiParams
-					
-					String apiName = (api?.name())?api.name().capitalize():controllername.capitalize()
-					String apiMethod = api.method()
-					String apiDescription = api.description()
-					List apiRoles = api?.roles()
-					
-					if(json["${apiName}"]){
-						String uri = controllername+"/"+actionname
-						if(json["${apiName}"].URI?."${uri}"){
-							apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, json)
-						}
-					}
-
-					methods["${actionname}"] = apiDescriptor
-				}
+				methods["${actionname}"] = apiDescriptor
 			}
 			
 			if(methods){
 				apiToolkitService.setApiCache(controllername.toString(),methods)
 			}
-			
-			def cache = apiCacheService.getApiCache(controllername)
-
 		}
+
+		def cache2 = apiCacheService.getApiCache(controllername)
+
 	}
 }
