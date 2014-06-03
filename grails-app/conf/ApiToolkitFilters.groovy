@@ -25,8 +25,8 @@ class ApiToolkitFilters {
 		String apiDir = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
 		
 		apitoolkit(uri:"/${apiDir}/**"){
-			before = { Map model ->
-				log.warn("##### FILTER (BEFORE)")
+			before = { 
+				log.error("##### FILTER (BEFORE)")
 				try{
 					params.action = (params.action)?params.action:'index'
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
@@ -43,7 +43,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 log.warn("##### FILTER (AFTER)")
+				 log.error("##### FILTER (AFTER)")
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					 if(params?.apiChain?.order){

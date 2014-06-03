@@ -52,6 +52,7 @@ class ApiObjectService{
 			if(!ioSet["${k}"]){
 				ioSet["${k}"] = []
 			}
+			
 
 			def roleVars=v.toList()
 			roleVars.each{ val ->
@@ -61,6 +62,7 @@ class ApiObjectService{
 					}
 				}
 			}
+
 		}
 		
 		// add permitAll vars to other roles after processing

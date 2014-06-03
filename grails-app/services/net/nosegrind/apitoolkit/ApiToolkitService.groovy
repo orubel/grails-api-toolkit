@@ -29,7 +29,7 @@ import javax.servlet.forward.*
 
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
-import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
+import grails.util.Holders as HOLDER
 
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
@@ -116,7 +116,7 @@ class ApiToolkitService{
 	}
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
-		try{
+		//try{
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
 	
@@ -124,7 +124,7 @@ class ApiToolkitService{
 			if(cache["${params.action}"]){
 				
 				// CHECK IF PRINCIPAL HAS ACCESS TO API
-				if(!checkAuthority(cache["${params.action}"]['roles'].toList())){
+				if(!checkAuthority(cache["${params.action}"]['roles']?.toList())){
 					return false
 				}
 				
@@ -149,6 +149,7 @@ class ApiToolkitService{
 					}else{
 						return true
 					}
+	
 				}else{
 					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
 					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
@@ -161,9 +162,12 @@ class ApiToolkitService{
 					}
 				}
 			}
+			/*
 		}catch(Exception e){
-			log.error("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:", e);
+			//log.error
+			println("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:", e);
 		}
+		*/
 	}
 	
 	boolean handleApiChain(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
@@ -571,7 +575,7 @@ class ApiToolkitService{
 	List getRedirectParams(){
 		// params.controller = temp[0]
 		// params.action = temp[1]
-		def uri = SCH.servletContext.getControllerActionUri(request)
+		def uri = HOLDER.getServletContext().getControllerActionUri(request)
 		return uri[1..(uri.size()-1)].split('/')
 	}
 	
@@ -979,7 +983,7 @@ class ApiToolkitService{
 	
 	Map convertModel(Map map){
 		Map newMap = [:]
-		String k = map.entrySet().toList().first().key
+		String k = map?.entrySet()?.toList()?.first()?.key
 		
 		if(map && (!map?.response && !map?.metaClass && !map?.params)){
 			if(grailsApplication.isDomainClass(map[k].getClass())){
