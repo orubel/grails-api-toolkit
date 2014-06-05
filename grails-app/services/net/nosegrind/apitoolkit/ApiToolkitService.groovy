@@ -68,61 +68,68 @@ class ApiToolkitService{
 	}
 	
 	private void setApiParams(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
-		if(!params.contentType){
-			List content = getContentType(request)
-			params.contentType = content[0]
-			params.encoding = (content.size()>1)?content[1]:null
-			
-			switch(params.contentType){
-				case 'text/json':
-				case 'application/json':
-					if(request.JSON?.chain){
-						params.apiChain = request.JSON.chain
-						request.JSON.remove("chain")
-					}
-					if(request.JSON?.batch){
-						params.apiBatch = []
-						request.JSON.batch.each {
-							params.apiBatch.add(it.value)
+		try{
+			if(!params.contentType){
+				List content = getContentType(request)
+				params.contentType = content[0]
+				params.encoding = (content.size()>1)?content[1]:null
+				
+				switch(params?.contentType){
+					case 'text/json':
+					case 'application/json':
+						if(request?.JSON?.chain){
+							params.apiChain = [:]
+							params.apiChain = request.JSON.chain
+							request.JSON.remove("chain")
 						}
-						params.apiBatch = params.apiBatch.reverse()
-						request.JSON.remove("batch")
-					}
-					if(params?.apiChain?.combine=='true'){
-						if(!params.apiCombine){ params.apiCombine = [:] }
-					}
-					break
-				case 'text/xml':
-				case 'application/xml':
-					if(request.XML?.chain){
-						params.apiChain = request.XML?.chain
-						request.XML.remove("chain")
-					}
-					if(request.XML?.batch){
-						params.apiBatch = []
-						request.XML.batch.each {
-							params.apiBatch.add(it.value)
+						if(request?.JSON?.batch){
+							params.apiBatch = []
+							request.JSON.batch.each {
+								params.apiBatch.add(it.value)
+							}
+							params.apiBatch = params.apiBatch.reverse()
+							request.JSON.remove("batch")
 						}
-						params.apiBatch = params.apiBatch.reverse()
-						request.XML.remove("batch")
-					}
-					if(params?.apiChain?.combine=='true'){
-						if(!params.apiCombine){ params.apiCombine = [:] }
-					}
-					break
+						if(params?.apiChain?.combine=='true'){
+							if(!params.apiCombine){ params.apiCombine = [:] }
+						}
+						break
+					case 'text/xml':
+					case 'application/xml':
+						if(request?.XML?.chain){
+							params.apiChain = [:]
+							params.apiChain = request.XML.chain
+							request.XML.remove("chain")
+						}
+						if(request?.XML?.batch){
+							params.apiBatch = []
+							request.XML.batch.each {
+								params.apiBatch.add(it.value)
+							}
+							params.apiBatch = params.apiBatch.reverse()
+							request.XML.remove("batch")
+						}
+						if(params?.apiChain?.combine=='true'){
+							if(!params.apiCombine){ params.apiCombine = [:] }
+						}
+						break
+				}
 			}
+		}catch(Exception e){
+			log.error("[ApiToolkitService :: setApiParams] : Exception - full stack trace follows:", e);
 		}
 		
 	}
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
 		try{
+
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
-	
+
 			// CHECK IF URI HAS CACHE
 			if(cache["${params.action}"]){
-				
+
 				// CHECK IF PRINCIPAL HAS ACCESS TO API
 				if(!checkAuthority(cache["${params.action}"]['roles']?.toList())){
 					return false
@@ -132,6 +139,7 @@ class ApiToolkitService{
 				def method = cache["${params.action}"]['method']?.trim()
 				
 				// DOES api.methods.contains(request.method)
+			
 				if(!isRequestMatch(method,request.method.toString())){
 					// check for apichain
 	
@@ -155,12 +163,15 @@ class ApiToolkitService{
 					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
 					if(!checkURIDefinitions(cache["${params.action}"]['receives'])){
 						String msg = 'Expected request variables do not match sent variables'
+
 						error._400_BAD_REQUEST(msg)?.send()
 						return false
 					}else{
 						return true
 					}
 				}
+
+
 			}
 		}catch(Exception e){
 			log.error("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:", e);
@@ -223,14 +234,12 @@ class ApiToolkitService{
 	
 	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
 		try{
-			String type = params.contentType
+			String type = ''
 			if(cache){
 				if(cache["${params.action}"]){
-	
 					// make 'application/json' default
-					def formats = ['text/html','application/json','application/xml']
-					type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
-	
+					def formats = ['text/html','text/json','application/json','text/xml','application/xml']
+					type = (params.contentType)?formats.findAll{ type.startsWith(it) }[0].toString():params.contentType
 					if(type){
 							def newModel = convertModel(model)
 							response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
@@ -257,8 +266,12 @@ class ApiToolkitService{
 	
 	List getContentType(SecurityContextHolderAwareRequestWrapper request){
 		List tempType = request.getHeader('Content-Type')?.split(';')
-		String contentType = (tempType)?tempType[0]:request.getHeader('Content-Type')
-		return tempType
+		
+		if(tempType){
+			return tempType
+		}else{
+			return ['application/json']
+		}
 	}
 	
 	GrailsParameterMap getParams(SecurityContextHolderAwareRequestWrapper request,GrailsParameterMap params){

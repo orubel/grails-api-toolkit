@@ -88,8 +88,7 @@ class ApiCacheService{
 
 			return cache
 		}catch(Exception e){
-			//log.info
-			println("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
+			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
 		}
 	}
 
@@ -104,8 +103,7 @@ class ApiCacheService{
 			}
 			return cache
 		}catch(Exception e){
-			//log.info
-			println("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
+			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
 		}
 	}
 	
@@ -118,8 +116,7 @@ class ApiCacheService{
 			//return cache
 
 		}catch(Exception e){
-			//log.error("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:", e);
-			println("[ApiCacheService :: getApiCache] : Exception - full stack trace follows: ${e}");
+			log.error("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:", e);
 		}
 
 	}

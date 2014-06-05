@@ -57,6 +57,11 @@ apitoolkit.apiobject.type = [
 	"Email":["type":"Email","description":"Email"]
 ]
 
+grails.plugin.springsecurity.auth.loginFormUrl = "/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/login/auth"
+grails.plugin.springsecurity.auth.ajaxLoginFormUrl = "/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/login/authAjax"
+grails.plugin.springsecurity.failureHandler.defaultFailureUrl = '/'
+grails.plugin.springsecurity.failureHandler.ajaxAuthFailUrl = '/'
+
 grails.plugin.springsecurity.filterChain.chainMap = [
 	"/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
 	"/v${grailsApplication.metadata['app.version']}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',

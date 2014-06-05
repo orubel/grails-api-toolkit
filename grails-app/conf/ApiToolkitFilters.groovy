@@ -26,7 +26,7 @@ class ApiToolkitFilters {
 		
 		apitoolkit(uri:"/${apiDir}/**"){
 			before = { 
-				log.error("##### FILTER (BEFORE)")
+				//log.error("##### FILTER (BEFORE)")
 				try{
 					params.action = (params.action)?params.action:'index'
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
@@ -43,7 +43,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 log.error("##### FILTER (AFTER)")
+				 //log.error("##### FILTER (AFTER)")
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					 if(params?.apiChain?.order){
@@ -180,6 +180,7 @@ class ApiToolkitFilters {
 								 break
 						 }
 					 }
+					 return false
 				}catch(Exception e){
 					log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
 					return false
