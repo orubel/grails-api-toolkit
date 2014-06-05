@@ -63,7 +63,7 @@ grails.plugin.springsecurity.filterChain.chainMap = [
 ]
 
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
-	"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
-	"v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
+	"/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
+	"/v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
 	"/hook/**" : ['permitAll'] 
 ]
