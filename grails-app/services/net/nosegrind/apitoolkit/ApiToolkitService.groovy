@@ -116,7 +116,7 @@ class ApiToolkitService{
 	}
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
-		//try{
+		try{
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
 	
@@ -162,12 +162,10 @@ class ApiToolkitService{
 					}
 				}
 			}
-			/*
 		}catch(Exception e){
-			//log.error
-			println("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:", e);
+			log.error("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:", e);
 		}
-		*/
+
 	}
 	
 	boolean handleApiChain(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){

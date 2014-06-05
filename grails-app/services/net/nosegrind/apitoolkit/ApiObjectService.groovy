@@ -123,6 +123,7 @@ class ApiObjectService{
 	}
 	
 	def initApiCache(){
+		apiCacheService.flushAllApiCache()
 		JSONObject json = readObjectFile()
 
 		Map methods = [:]

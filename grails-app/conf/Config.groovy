@@ -3,11 +3,10 @@ String apiName = grailsApplication.config.apitoolkit.apiName
 String apiVersion = grailsApplication.metadata['app.version']
 
 log4j = {
-	debug 'org.springframework.security'
-    error 'org.codehaus.groovy.grails',
-          'org.springframework',
-          'org.hibernate',
-          'net.sf.ehcache.hibernate'
+    error 'grails.app.services.net.nosegrind.apitoolkit',
+		'grails.app.taglib.net.nosegrind.apitoolkit',
+		'grails.app.conf',
+		'grails.app.filters'
 }
 
 grails.converters.default.pretty.print = true
@@ -64,7 +63,7 @@ grails.plugin.springsecurity.filterChain.chainMap = [
 ]
 
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
-	"/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
-	"/v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
+	"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
+	"v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
 	"/hook/**" : ['permitAll'] 
 ]
