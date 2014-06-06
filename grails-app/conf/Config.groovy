@@ -2,12 +2,16 @@
 String apiName = grailsApplication.config.apitoolkit.apiName
 String apiVersion = grailsApplication.metadata['app.version']
 
+
 log4j = {
-    error 'grails.app.services.net.nosegrind.apitoolkit',
-		'grails.app.taglib.net.nosegrind.apitoolkit',
-		'grails.app.conf',
-		'grails.app.filters'
+    error 'grails.app.controllers.net.nosegrind',
+			  'grails.app.domain.net.nosegrind',
+			  'grails.app.services.net.nosegrind.apitoolkit',
+			  'grails.app.taglib.net.nosegrind.apitoolkit',
+			  'grails.app.conf.your.package',
+			  'grails.app.filters.your.package'
 }
+
 
 grails.converters.default.pretty.print = true
 grails.cache.enabled = true
