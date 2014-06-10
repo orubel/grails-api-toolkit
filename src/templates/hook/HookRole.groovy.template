@@ -2,8 +2,11 @@ package ${packageName}
 
 import java.io.Serializable
 import java.util.Date
+import ${packageName}.Hook
+import ${packageName}.${roleClassName}
 
 class HookRole implements Serializable {
+
 	Hook hook
 	${roleClassName} role
 	Date dateCreated

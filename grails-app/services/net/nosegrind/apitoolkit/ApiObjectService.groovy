@@ -33,7 +33,12 @@ class ApiObjectService{
 	
 	private JSONObject readObjectFile(){
 		def filePath = "apiObjects.json"
-		def text = grailsApplication.getParentContext().getResource("classpath:$filePath").getInputStream().getText()
+		String text
+		if(grailsApplication.config.grails.env=='development'){
+			text = grailsApplication.getParentContext().getResource("classpath:$filePath").getInputStream().getText()
+		}else if(grailsApplication.config.grails.env=='production'){
+			text = grailsApplication.getParentContext().getResource("WEB-INF/classes/$filePath").getInputStream().getText()
+		}
 		def json = JSON.parse(text)
 		return json
 	}
