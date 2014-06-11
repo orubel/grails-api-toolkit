@@ -29,25 +29,6 @@ grails.cache.config = {
 apitoolkit.apiName = 'api'
 apitoolkit.protocol='http'
 
-
-apitoolkit.defaultData.PKEY = '26'
-apitoolkit.defaultData.FKEY = '32'
-apitoolkit.defaultData.INDEX = '26'
-apitoolkit.defaultData.STRING = 'Hello World'
-apitoolkit.defaultData.BOOLEAN = 'true'
-apitoolkit.defaultData.FLOAT = '1.00'
-apitoolkit.defaultData.BIGDECIMAL = '123567828794.87'
-apitoolkit.defaultData.LONG = '18926'
-apitoolkit.defaultData.EMAIL = 'example@yoursite.com'
-apitoolkit.defaultData.URL = 'http://www.yoursite.com'
-
-apitoolkit.apiobject.method = [
-	"GET":["id":["require":"true"]],
-	"PUT":["id":["require":"false"]],
-	"POST":["id":["require":"true"]],
-	"DELETE":["id":["require":"true"]]
-]
-
 apitoolkit.apiobject.type = [
 	"PKEY":["type":"Long","references":"self","description":"Primary Key"],
 	"FKEY":["type":"Long","description":""],
@@ -72,7 +53,6 @@ grails.plugin.springsecurity.filterChain.chainMap = [
 ]
 
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
-	"/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
-	"/v${grailsApplication.metadata['app.version']}/**" : ['permitAll'],
-	"/hook/**" : ['permitAll'] 
+	"/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/**" : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+	"/v${grailsApplication.metadata['app.version']}/**" : ['IS_AUTHENTICATED_ANONYMOUSLY']
 ]

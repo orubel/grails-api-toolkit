@@ -321,7 +321,7 @@
 				<g:if test="${action.value.path}"><g:set var="path" value="${action.value.path}"/></g:if>
 				<g:if test="${action.value.json}"><g:set var="json" value="${action.value.json}"/></g:if>
 				<g:if test="${action.value.method}"><g:set var="methods" value="${action.value.method}"/></g:if>
-				<g:if test="${action.value.method}"><g:set var="method" value="${action.value.method.replace('[','').replace(']','').split(',').findAll{ it =~ /(GET|PUT|POST|DELETE|PATCH|TRACE)/ }[0].toLowerCase()}"/></g:if> 
+				<g:if test="${action.value.method}"><g:set var="method" value="${action.value.method.replace('[','').replace(']','').split(',').findAll{ it =~ /(GET|PUT|POST|DELETE|PATCH|TRACE)/ }[0]?.toLowerCase()}"/></g:if> 
 				<g:if test="${action.value.description}"><g:set var="description" value="${action.value.description}"/></g:if>
 				<g:if test="${action.value.receives}"><g:set var="receives" value="${action.value.receives}"/></g:if> 
 				<g:if test="${action.value.returns}"><g:set var="returns" value="${action.value.returns}"/></g:if> 
@@ -331,7 +331,7 @@
 	
 				<div class="methodList" style="display:none;">
 				
-					<div class="method ${method}Dark"><a href="#" onClick="toggleInfoBox(this);">${method.toUpperCase()}</a></div>
+					<div class="method ${method}Dark"><a href="#" onClick="toggleInfoBox(this);">${method?.toUpperCase()}</a></div>
 					<div class="path ${method}Light">${path}/{ID}<img src="/images/pix.gif" class="methodSeparator"/><div class="${method}Desc"">${description}</div></div>
 					<div class="infoBox ${method}Light" style="display:none;">
 						<br/>

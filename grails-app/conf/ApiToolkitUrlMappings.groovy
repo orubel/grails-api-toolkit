@@ -32,6 +32,7 @@ class ApiToolkitUrlMappings {
 			}
 		}
 
+		"/apidoc/show" (controller:'apidoc',action:'show', parseRequest: true)
 		"/hook" (controller:'hook',action:'list', parseRequest: true)
 
 	}

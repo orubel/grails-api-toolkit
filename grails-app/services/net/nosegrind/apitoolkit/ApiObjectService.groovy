@@ -118,6 +118,7 @@ class ApiObjectService{
 		ApiDescriptor service = new ApiDescriptor(
 			"method":"${apiMethod}",
 			"description":"${apiDescription}",
+			"roles":[],
 			"doc":[:],
 			"receives":receives,
 			"returns":returns

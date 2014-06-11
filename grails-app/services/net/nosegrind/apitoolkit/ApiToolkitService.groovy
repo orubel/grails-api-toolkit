@@ -779,16 +779,16 @@ class ApiToolkitService{
 	 * TODO: Need to compare multiple authorities
 	 */
 	def Map generateDoc(String controllerName, String actionName){
-		GrailsParameterMap params = getParams()
 		
 		def newDoc = [:]
 
 		String authority = springSecurityService.principal.authorities*.authority[0]
 
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
-		def cache = (params.controller)?apiCacheService.getApiCache(controllerName):null
-		
-		if(cache["${actionName}"]?.doc){
+		def cache = apiCacheService.getApiCache(controllerName)?:null
+
+		if(cache["${actionName}"]?.doc && (cache["${actionName}"]['roles']?.contains(authority) || cache["${actionName}"]['roles']?.contains('permitAll'))){
+
 			def doc = cache["${actionName}"].doc
 			def path = doc.path
 			def method = doc.method

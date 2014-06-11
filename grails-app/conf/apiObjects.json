@@ -1,34 +1,27 @@
 /* JSON API Object */
 
+/* 'permitAll' needs to always come first so other roles can make use of it
+* as they come afterward
+*/
+
 {
     "test": {
         "VALUES": {
-            "id": {                
-                "type": "PKEY"
+            "id": {
+                "type": "PKEY",
+                "description":"ID for test"
             },
             "testdata": {
                 "type": "String",
+                "description":"Field to show testdata",
                 "mockData": "blahblahblah"
             }
         },
         "URI": {
-            "test/fred": {
-            	"METHOD":"GET",
-            	"DESCRIPTION":"Get test data",
-            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
-                "REQUEST": {
-                    "permitAll":["id"]
-                },
-                "RESPONSE": {
-                	"permitAll":["id"],
-                    "ROLE_ADMIN":["testdata"],
-                    "ROLE_USER":["testdata"]
-                }
-            },
             "test/show": {
-            	"METHOD":"GET",
+             	"METHOD":"GET",
             	"DESCRIPTION":"Get test data",
-            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
+            	"ROLES":["permitAll"],
                 "REQUEST": {
                     "permitAll":["id"]
                 },
@@ -38,8 +31,8 @@
                     "ROLE_USER":["testdata"]
                 }
             },
-            "test/create": {
-            	"METHOD":"PUT",
+            "test/save": {
+             	"METHOD":"PUT",
             	"DESCRIPTION":"Create test data",
             	"ROLES":["ROLE_ADMIN","ROLE_USER"],
                 "REQUEST": {
@@ -48,10 +41,10 @@
                 "RESPONSE": {
                     "permitAll":["id"]
                 },
-                "ERROR":{"304_NOT_MODIFIED":""}
+                "ERROR":["304_NOT_MODIFIED"]
             },
-             "test/update": {
-            	"METHOD":"POST",
+            "test/update": {
+             	"METHOD":"POST",
             	"DESCRIPTION":"Update test data",
             	"ROLES":["ROLE_ADMIN","ROLE_USER"],
                 "REQUEST": {
@@ -60,7 +53,7 @@
                 "RESPONSE": {
                     "permitAll":["id"]
                 },
-                "ERROR":{"304_NOT_MODIFIED":""}
+                "ERROR":["304_NOT_MODIFIED"]
             }
         }
     }
