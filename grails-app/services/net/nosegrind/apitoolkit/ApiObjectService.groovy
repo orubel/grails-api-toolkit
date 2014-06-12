@@ -74,7 +74,7 @@ class ApiObjectService{
 		LinkedHashMap<String,ParamsDescriptor> apiObject = [:]
 		ApiParams param = new ApiParams()
 		
-		json["${apiname}"].VALUES.each{ k,v ->
+		json.VALUES.each{ k,v ->
 			String references = ""
 			String hasDescription = ""
 			String hasMockData = ""
@@ -100,8 +100,8 @@ class ApiObjectService{
 			apiObject["${param.param.name}"] = param.toObject()
 		}
 		
-		LinkedHashMap receives = getIOSet(json["${apiname}"].URI["${uri}"]?.REQUEST,apiObject)
-		LinkedHashMap returns = getIOSet(json["${apiname}"].URI["${uri}"]?.RESPONSE,apiObject)
+		LinkedHashMap receives = getIOSet(json.URI["${uri}"]?.REQUEST,apiObject)
+		LinkedHashMap returns = getIOSet(json.URI["${uri}"]?.RESPONSE,apiObject)
 		
 		ApiDescriptor service = new ApiDescriptor(
 			"method":"${apiMethod}",
@@ -118,110 +118,54 @@ class ApiObjectService{
 	
 	def initApiCache(){
 		apiCacheService.flushAllApiCache()
-		def results = []
 
 		if(grailsApplication.config.grails.env=='development'){
 			new File("src/apiObject").eachFile() { file ->
-				results.add(file.getName())
-				String name = file.getName().split('/.')[0].toLowerCase()
-				def json = JSON.parse(file.text)
-println(json.class)
-				Map methods = [:]
-				String controllername
-				json.each { controller ->
-					controllername = controller.key
-					
-					controller.value.URI.each { it ->
-						List temp = it.key.split('/')
-						String actionname = temp[1]
-						
-						ApiStatuses error = new ApiStatuses()
-						
-						ApiDescriptor apiDescriptor
-						Map apiParams
-						
-						String apiMethod = it.value.METHOD
-						String apiDescription = it.value.DESCRIPTION
-						List apiRoles = it.value.ROLES
-						
-						String uri = it.key
-						apiDescriptor = createApiDescriptor(controllername, apiMethod, apiDescription, apiRoles, uri, json)
-		
-						methods["${actionname}"] = apiDescriptor
-					}
-					
-					if(methods){
-						apiToolkitService.setApiCache(controllername.toString(),methods)
-					}
-				}
+				String apiName = file.getName().split('\\.')[0].toLowerCase()
+				JSONObject json = JSON.parse(file.text)
+
+				parseJson(apiName,json)
+				def cache2 = apiCacheService.getApiCache(apiName)
 			 }
 		}else if(grailsApplication.config.grails.env=='production'){
 			new File("WEB-INF/classes/apiObject").eachFile() { file ->
-				String name = file.getName().split('/.')[0].toLowerCase()
-				def json = JSON.parse(file.text)
+				String apiName = file.getName().split('\\.')[0].toLowerCase()
+				JSONObject json = JSON.parse(file.text)
 				
-				Map methods = [:]
-				String controllername
-				json.each { controller ->
-					controllername = controller.key
-					
-					controller.value.URI.each { it ->
-						List temp = it.key.split('/')
-						String actionname = temp[1]
-						
-						ApiStatuses error = new ApiStatuses()
-						
-						ApiDescriptor apiDescriptor
-						Map apiParams
-						
-						String apiMethod = it.value.METHOD
-						String apiDescription = it.value.DESCRIPTION
-						List apiRoles = it.value.ROLES
-						
-						String uri = it.key
-						apiDescriptor = createApiDescriptor(controllername, apiMethod, apiDescription, apiRoles, uri, json)
-		
-						methods["${actionname}"] = apiDescriptor
-					}
-					
-					if(methods){
-						apiToolkitService.setApiCache(controllername.toString(),methods)
-					}
-				}
+				parseJson(apiName,json)
+				def cache2 = apiCacheService.getApiCache(apiName)
 			 }
 		}
-		//def cache2 = apiCacheService.getApiCache(controllername)
+		
 
 	}
 	
-	/*
-	Boolean parseJson(String apiName,Map methods){
-		json.each { controller ->
-			controllername = controller.key
-			
-			controller.value.URI.each { it ->
-				List temp = it.key.split('/')
-				String actionname = temp[1]
-				
-				ApiStatuses error = new ApiStatuses()
-				
-				ApiDescriptor apiDescriptor
-				Map apiParams
-				
-				String apiMethod = it.value.METHOD
-				String apiDescription = it.value.DESCRIPTION
-				List apiRoles = it.value.ROLES
-				
-				String uri = it.key
-				apiDescriptor = createApiDescriptor(controllername, apiMethod, apiDescription, apiRoles, uri, json)
 
-				methods["${actionname}"] = apiDescriptor
-			}
+	Boolean parseJson(String apiName,JSONObject json){
+		Map methods = [:]
+		json.URI.each() { it ->
+
+			List temp = it.key.split('/')
+			String actionname = temp[1]
+			
+			ApiStatuses error = new ApiStatuses()
+			
+			ApiDescriptor apiDescriptor
+			Map apiParams
+			
+			String apiMethod = it.value.METHOD
+			String apiDescription = it.value.DESCRIPTION
+			List apiRoles = it.value.ROLES
+			
+			String uri = it.key
+			apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, json)
+
+			methods["${actionname}"] = apiDescriptor
 			
 			if(methods){
-				apiToolkitService.setApiCache(controllername.toString(),methods)
+				apiToolkitService.setApiCache(apiName,methods)
 			}
 		}
 	}
-	*/
+
 }
