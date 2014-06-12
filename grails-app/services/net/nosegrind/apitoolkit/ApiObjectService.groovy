@@ -31,18 +31,6 @@ class ApiObjectService{
 	
 	static transactional = false
 	
-	private JSONObject readObjectFile(){
-		def filePath = "apiObjects.json"
-		String text
-		if(grailsApplication.config.grails.env=='development'){
-			text = grailsApplication.getParentContext().getResource("classpath:$filePath").getInputStream().getText()
-		}else if(grailsApplication.config.grails.env=='production'){
-			text = grailsApplication.getParentContext().getResource("WEB-INF/classes/$filePath").getInputStream().getText()
-		}
-		def json = JSON.parse(text)
-		return json
-	}
-	
 	
 	String getKeyType(String reference, String type){
 		String keyType = (reference.toLowerCase()=='self')?((type.toLowerCase()=='long')?'PKEY':'INDEX'):((type.toLowerCase()=='long')?'FKEY':'INDEX')
@@ -130,10 +118,84 @@ class ApiObjectService{
 	
 	def initApiCache(){
 		apiCacheService.flushAllApiCache()
-		JSONObject json = readObjectFile()
+		def results = []
 
-		Map methods = [:]
-		String controllername
+		if(grailsApplication.config.grails.env=='development'){
+			new File("src/apiObject").eachFile() { file ->
+				results.add(file.getName())
+				String name = file.getName().split('/.')[0].toLowerCase()
+				def json = JSON.parse(file.text)
+println(json.class)
+				Map methods = [:]
+				String controllername
+				json.each { controller ->
+					controllername = controller.key
+					
+					controller.value.URI.each { it ->
+						List temp = it.key.split('/')
+						String actionname = temp[1]
+						
+						ApiStatuses error = new ApiStatuses()
+						
+						ApiDescriptor apiDescriptor
+						Map apiParams
+						
+						String apiMethod = it.value.METHOD
+						String apiDescription = it.value.DESCRIPTION
+						List apiRoles = it.value.ROLES
+						
+						String uri = it.key
+						apiDescriptor = createApiDescriptor(controllername, apiMethod, apiDescription, apiRoles, uri, json)
+		
+						methods["${actionname}"] = apiDescriptor
+					}
+					
+					if(methods){
+						apiToolkitService.setApiCache(controllername.toString(),methods)
+					}
+				}
+			 }
+		}else if(grailsApplication.config.grails.env=='production'){
+			new File("WEB-INF/classes/apiObject").eachFile() { file ->
+				String name = file.getName().split('/.')[0].toLowerCase()
+				def json = JSON.parse(file.text)
+				
+				Map methods = [:]
+				String controllername
+				json.each { controller ->
+					controllername = controller.key
+					
+					controller.value.URI.each { it ->
+						List temp = it.key.split('/')
+						String actionname = temp[1]
+						
+						ApiStatuses error = new ApiStatuses()
+						
+						ApiDescriptor apiDescriptor
+						Map apiParams
+						
+						String apiMethod = it.value.METHOD
+						String apiDescription = it.value.DESCRIPTION
+						List apiRoles = it.value.ROLES
+						
+						String uri = it.key
+						apiDescriptor = createApiDescriptor(controllername, apiMethod, apiDescription, apiRoles, uri, json)
+		
+						methods["${actionname}"] = apiDescriptor
+					}
+					
+					if(methods){
+						apiToolkitService.setApiCache(controllername.toString(),methods)
+					}
+				}
+			 }
+		}
+		//def cache2 = apiCacheService.getApiCache(controllername)
+
+	}
+	
+	/*
+	Boolean parseJson(String apiName,Map methods){
 		json.each { controller ->
 			controllername = controller.key
 			
@@ -160,8 +222,6 @@ class ApiObjectService{
 				apiToolkitService.setApiCache(controllername.toString(),methods)
 			}
 		}
-
-		def cache2 = apiCacheService.getApiCache(controllername)
-
 	}
+	*/
 }

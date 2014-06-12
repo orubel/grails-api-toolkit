@@ -7,6 +7,7 @@ ant.mkdir(dir: "${basedir}/grails-app/views/apidoc")
 ant.copy(file:"${pluginBasedir}/src/templates/apidoc/show.gsp.template",tofile:"${basedir}/grails-app/views/apidoc/show.gsp")
 
 ant.mkdir(dir: "${basedir}/grails-app/controllers/net/nosegrind/apitoolkit")
+ant.mkdir(dir: "${basedir}/src/apiObject")
 ant.copy(file:"${pluginBasedir}/src/templates/apidoc/ApidocController.groovy.template",tofile:"${basedir}/grails-app/controllers/net/nosegrind/apitoolkit/ApidocController.groovy")
 
 def configFile = new File("${basedir}/grails-app", 'conf/Config.groovy')
