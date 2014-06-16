@@ -4,57 +4,58 @@
 * as they come afterward
 */
 
-{
-    "test": {
-        "VALUES": {
-            "id": {
-                "type": "PKEY",
-                "description":"ID for test"
-            },
-            "testdata": {
-                "type": "String",
-                "description":"Field to show testdata",
-                "mockData": "blahblahblah"
-            }
-        },
-        "URI": {
-            "test/show": {
-             	"METHOD":"GET",
-            	"DESCRIPTION":"Get test data",
-            	"ROLES":["permitAll"],
-                "REQUEST": {
-                    "permitAll":["id"]
-                },
-                "RESPONSE": {
-                	"permitAll":["id"],
-                    "ROLE_ADMIN":["testdata"],
-                    "ROLE_USER":["testdata"]
-                }
-            },
-            "test/save": {
-             	"METHOD":"PUT",
-            	"DESCRIPTION":"Create test data",
-            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
-                "REQUEST": {
-                    "permitAll":["testdata"]
-                },
-                "RESPONSE": {
-                    "permitAll":["id"]
-                },
-                "ERROR":["304_NOT_MODIFIED"]
-            },
-            "test/update": {
-             	"METHOD":"POST",
-            	"DESCRIPTION":"Update test data",
-            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
-                "REQUEST": {
-                    "permitAll":["id","testdata"]
-                },
-                "RESPONSE": {
-                    "permitAll":["id"]
-                },
-                "ERROR":["304_NOT_MODIFIED"]
-            }
-        }
+{	"VERSION": {
+	    "1": {
+	        "VALUES": {
+	            "id": {
+	                "type": "PKEY",
+	                "description":"ID for test"
+	            },
+	            "testdata": {
+	                "type": "String",
+	                "description":"Field to show testdata",
+	                "mockData": "blahblahblah"
+	            }
+	        },
+	        "URI": {
+	            "test/show": {
+	             	"METHOD":"GET",
+	            	"DESCRIPTION":"Get test data",
+	            	"ROLES":["permitAll"],
+	                "REQUEST": {
+	                    "permitAll":["id"]
+	                },
+	                "RESPONSE": {
+	                	"permitAll":["id"],
+	                    "ROLE_ADMIN":["testdata"],
+	                    "ROLE_USER":["testdata"]
+	                }
+	            },
+	            "test/save": {
+	             	"METHOD":"PUT",
+	            	"DESCRIPTION":"Create test data",
+	            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
+	                "REQUEST": {
+	                    "permitAll":["testdata"]
+	                },
+	                "RESPONSE": {
+	                    "permitAll":["id"]
+	                },
+	                "ERROR":["304_NOT_MODIFIED"]
+	            },
+	            "test/update": {
+	             	"METHOD":"POST",
+	            	"DESCRIPTION":"Update test data",
+	            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
+	                "REQUEST": {
+	                    "permitAll":["id","testdata"]
+	                },
+	                "RESPONSE": {
+	                    "permitAll":["id"]
+	                },
+	                "ERROR":["304_NOT_MODIFIED"]
+	            }
+	        }
+	    }
     }
 }

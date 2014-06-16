@@ -1,6 +1,6 @@
 
-String apiName = grailsApplication.config.apitoolkit.apiName
-String apiVersion = grailsApplication.metadata['app.version']
+apiName = grailsApplication.config.apitoolkit.apiName
+apiVersion = grailsApplication.metadata['app.version']
 
 
 log4j = {
@@ -12,7 +12,17 @@ log4j = {
 			  'grails.app.filters.your.package'
 }
 
+environments {
+	development {
 
+	}
+	production {
+
+	}
+	test {
+		
+	}
+}
 grails.converters.default.pretty.print = true
 grails.cache.enabled = true
 grails.cache.clearAtStartup	= true
@@ -42,17 +52,17 @@ apitoolkit.apiobject.type = [
 	"Email":["type":"Email","description":"Email"]
 ]
 
-grails.plugin.springsecurity.auth.loginFormUrl = "/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/login/auth"
-grails.plugin.springsecurity.auth.ajaxLoginFormUrl = "/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/login/authAjax"
+grails.plugin.springsecurity.auth.loginFormUrl = "/${apiName}_v${apiVersion}/login/auth"
+grails.plugin.springsecurity.auth.ajaxLoginFormUrl = "/${apiName}_v${apiVersion}/login/authAjax"
 grails.plugin.springsecurity.failureHandler.defaultFailureUrl = '/'
 grails.plugin.springsecurity.failureHandler.ajaxAuthFailUrl = '/'
 
 grails.plugin.springsecurity.filterChain.chainMap = [
-	"/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
-	"/v${grailsApplication.metadata['app.version']}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
+	"/${apiName}_v${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
+	"/v${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
 ]
 
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
-	"/${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}/**" : ['IS_AUTHENTICATED_ANONYMOUSLY'],
-	"/v${grailsApplication.metadata['app.version']}/**" : ['IS_AUTHENTICATED_ANONYMOUSLY']
+	"/${apiName}_v${apiVersion}/**" : ['IS_AUTHENTICATED_ANONYMOUSLY'],
+	"/v${apiVersion}/**" : ['IS_AUTHENTICATED_ANONYMOUSLY']
 ]
