@@ -32,6 +32,7 @@ class ApiToolkitFilters {
 				try{
 					apiToolkitService.setApiObjectVersion(apiDir, request, params)
 					params.action = (params.action)?params.action:'index'
+					println("CONTROLLER:"+params)
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					if(cache){
 						println("has cache")

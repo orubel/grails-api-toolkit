@@ -82,7 +82,6 @@ class ApiToolkitService{
 				params.apiObject = temp2[1]?.toLong()
 			}
 		}
-		println("apiobject = "+params.apiObject)
 	}
 	
 	private void setApiParams(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
@@ -368,7 +367,7 @@ class ApiToolkitService{
 	}
 	
 	HashMap getMethodParams(){
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'chain']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject', 'chain']
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		Map paramsRequest = params.findAll {
@@ -388,7 +387,7 @@ class ApiToolkitService{
 		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (requestDefinitions["${authority}"])?requestDefinitions["${authority}"]:requestDefinitions["permitAll"]
 		List requestList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'chain']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject', 'chain']
 		temp.each{
 			requestList.add(it.name)
 		}
@@ -416,7 +415,7 @@ class ApiToolkitService{
 		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (responseDefinitions["${authority}"])?responseDefinitions["${authority}"]:responseDefinitions["permitAll"]
 		List responseList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'chain']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject', 'chain']
 		temp.each{
 			responseList.add(it.name)
 		}
@@ -767,12 +766,6 @@ class ApiToolkitService{
 		Map doc = [:]
 		def cont = apiCacheService.getApiCache(controllername)
 		String apiPrefix = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String
-		
-		println("CONT:"+cont)
-		println("ACTIONNAME:"+actionname)
-		println("VERSION:"+apiversion)
-		println("CACHE(w/ action) : "+cont["${actionname}"])
-		println("CACHE(w/ action and version) : "+cont["${actionname}"]["${apiversion}"])
 		
 		if(cont){
 
