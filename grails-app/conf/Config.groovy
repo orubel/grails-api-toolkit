@@ -2,7 +2,6 @@
 apiName = grailsApplication.config.apitoolkit.apiName
 apiVersion = grailsApplication.metadata['app.version']
 
-
 log4j = {
     error 'grails.app.controllers.net.nosegrind',
 			  'grails.app.domain.net.nosegrind',
@@ -12,17 +11,6 @@ log4j = {
 			  'grails.app.filters.your.package'
 }
 
-environments {
-	development {
-
-	}
-	production {
-
-	}
-	test {
-		
-	}
-}
 grails.converters.default.pretty.print = true
 grails.cache.enabled = true
 grails.cache.clearAtStartup	= true
@@ -52,6 +40,12 @@ apitoolkit.apiobject.type = [
 	"Email":["type":"Email","description":"Email"]
 ]
 
+
+grails.plugin.springsecurity.filterChain.chainMap = [
+	"/${apiName}_v${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
+	"/v${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
+]
+
 grails.plugin.springsecurity.auth.loginFormUrl = "/${apiName}_v${apiVersion}/login/auth"
 grails.plugin.springsecurity.auth.ajaxLoginFormUrl = "/${apiName}_v${apiVersion}/login/authAjax"
 grails.plugin.springsecurity.failureHandler.defaultFailureUrl = '/'
@@ -59,10 +53,16 @@ grails.plugin.springsecurity.failureHandler.ajaxAuthFailUrl = '/'
 
 grails.plugin.springsecurity.filterChain.chainMap = [
 	"/${apiName}_v${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
+	"/${apiName}_v${apiVersion}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
 	"/v${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
+	"/v${apiVersion}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter'
 ]
 
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
-	"/${apiName}_v${apiVersion}/**" : ['IS_AUTHENTICATED_ANONYMOUSLY'],
-	"/v${apiVersion}/**" : ['IS_AUTHENTICATED_ANONYMOUSLY']
+	"/${apiName}_v${apiVersion}*" : ['permitAll'],
+	"/${apiName}_v${apiVersion}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**" : ['permitAll'],
+	"/v${apiVersion}/**" : ['permitAll'],
+	"/v${apiVersion}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**" : ['permitAll'],
+	"/hook/**" : ['permitAll'] 
 ]
+

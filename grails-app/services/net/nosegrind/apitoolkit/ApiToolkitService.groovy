@@ -67,6 +67,24 @@ class ApiToolkitService{
 		return RCH.currentRequestAttributes().currentResponse
 	}
 	
+	void setApiObjectVersion(String apiDir, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
+		// GET APICACHE VERSION; can be improved with regex/matcher
+		String temp = request.forwardURI.split('\\/')[1]
+		params.apiObject = 1
+		if(temp.contains("_v")){
+			List temp2 = temp?.split('-')
+			if(temp2.size()>1){
+				params.apiObject = temp2[1]?.toLong()
+			}
+		}else{
+			List temp2 = temp?.split('-')
+			if(temp2.size()>1){
+				params.apiObject = temp2[1]?.toLong()
+			}
+		}
+		println("apiobject = "+params.apiObject)
+	}
+	
 	private void setApiParams(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
 		try{
 			if(!params.contentType){
@@ -128,15 +146,15 @@ class ApiToolkitService{
 			setApiParams(request, params)
 
 			// CHECK IF URI HAS CACHE
-			if(cache["${params.action}"]){
-
+			if(cache["${params.action}"]["${params.apiObject}"]){
+				println("cache exists...")
 				// CHECK IF PRINCIPAL HAS ACCESS TO API
-				if(!checkAuthority(cache["${params.action}"]['roles']?.toList())){
+				if(!checkAuthority(cache["${params.action}"]["${params.apiObject}"]['roles']?.toList())){
 					return false
 				}
 				
 				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
-				def method = cache["${params.action}"]['method']?.trim()
+				def method = cache["${params.action}"]["${params.apiObject}"]['method']?.trim()
 				
 				// DOES api.methods.contains(request.method)
 			
@@ -161,7 +179,7 @@ class ApiToolkitService{
 				}else{
 					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
 					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
-					if(!checkURIDefinitions(cache["${params.action}"]['receives'])){
+					if(!checkURIDefinitions(cache["${params.action}"]["${params.apiObject}"]['receives'])){
 						String msg = 'Expected request variables do not match sent variables'
 
 						error._400_BAD_REQUEST(msg)?.send()
@@ -205,12 +223,12 @@ class ApiToolkitService{
 				}
 
 				def currentPath = "${controller}/${action}"
-				def methods = cache["${action}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+				def methods = cache["${action}"]["${params.apiObject}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 				def method = (methods.contains(request.method))?request.method:null
 
-				if(checkAuthority(cache["${action}"]['roles'])){
+				if(checkAuthority(cache["${action}"]["${params.apiObject}"]['roles'])){
 					if(params?.apiChain.combine=='true'){
-						params.apiCombine["${params.controller}/${params.action}"] = parseURIDefinitions(newModel,cache["${params.action}"]['returns'])
+						params.apiCombine["${params.controller}/${params.action}"] = parseURIDefinitions(newModel,cache["${params.action}"]["${params.apiObject}"]['returns'])
 					}
 					params.controller = controller
 					params.action = action
@@ -219,7 +237,7 @@ class ApiToolkitService{
 					params.apiChain.order.remove("${keys[0]}")
 					
 					if(params?.apiChain.combine=='true'){
-						params.apiCombine[currentPath] = parseURIDefinitions(newModel,cache["${params.action}"]['returns'])
+						params.apiCombine[currentPath] = parseURIDefinitions(newModel,cache["${params.action}"]["${params.apiObject}"]['returns'])
 					}
 				}else{
 					String msg = "User does not have access."
@@ -236,14 +254,14 @@ class ApiToolkitService{
 		try{
 			String type = ''
 			if(cache){
-				if(cache["${params.action}"]){
+				if(cache["${params.action}"]["${params.apiObject}"]){
 					// make 'application/json' default
 					def formats = ['text/html','text/json','application/json','text/xml','application/xml']
 					type = (params.contentType)?formats.findAll{ type.startsWith(it) }[0].toString():params.contentType
 					if(type){
 							def newModel = convertModel(model)
-							response.setHeader('Authorization', cache["${params.action}"]['roles'].join(', '))
-							LinkedHashMap result = parseURIDefinitions(newModel,cache["${params.action}"]['returns'])
+							response.setHeader('Authorization', cache["${params.action}"]["${params.apiObject}"]['roles'].join(', '))
+							LinkedHashMap result = parseURIDefinitions(newModel,cache["${params.action}"]["${params.apiObject}"]['returns'])
 							if(params?.apiChain?.combine=='true'){
 								if(!params.apiCombine){ params.apiCombine = [:] }
 								String currentPath = "${params.controller}/${params.action}"
@@ -336,8 +354,16 @@ class ApiToolkitService{
 	// api call now needs to detect request method and see if it matches anno request method
 	boolean isApiCall(){
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
+		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		String uri = request.forwardURI.split('/')[1]
-		String api = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String
+		String apiName = grailsApplication.config.apitoolkit.apiName
+		String apiVersion = grailsApplication.metadata['app.version']
+		String api
+		if(params.apiObject){
+			api = (apiName)?"${apiName}_v${apiVersion}-${params.apiObject}" as String:"v${apiVersion}-${params.apiObject}" as String
+		}else{
+			api = (apiName)?"${apiName}_v${apiVersion}" as String:"v${apiVersion}" as String
+		}
 		return uri==api
 	}
 	
@@ -506,16 +532,16 @@ class ApiToolkitService{
 		return true
 	}
 	
-	void callHook(String service, Map data, String state) {
-		send(data, state, service)
+	void callHook(String service, String state, Map data, String apiversion) {
+		send(data, state, apiversion, service)
 	}
 	
-	void callHook(String service, Object data, String state) {
+	void callHook(String service,String state, Object data, String apiversion) {
 		data = formatDomainObject(data)
-		send(data, state, service)
+		send(data, state, apiversion, service)
 	}
 	
-	private boolean send(Map data, String state, String service) {
+	private boolean send(Map data, String state, String apiversion, String service) {
 		List hooks = grailsApplication.getClassForName(grailsApplication.config.apitoolkit.domain).findAll("from Hook where service='${service}/${state}'")
 		def cache = apiCacheService.getApiCache(service)
 		hooks.each { hook ->
@@ -525,7 +551,7 @@ class ApiToolkitService{
 			authorities.each{
 				userRoles += it.authority
 			}
-			def roles= cache["${state}"]['roles']
+			def roles= cache["${state}"]["${apiversion}"]['roles']
 			List temp = roles.intersect(userRoles)
 
 			if(temp.size()>0){
@@ -680,9 +706,9 @@ class ApiToolkitService{
 		if(controller){
 			def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 			if(cache){
-				if(cache["${params.action}"]){
+				if(cache["${params.action}"]["${params.apiObject}"]){
 
-					def doc = cache["${params.action}"].doc
+					def doc = cache["${params.action}"]["${params.apiObject}"].doc
 					def path = doc?.path
 					def method = doc?.method
 					def description = doc?.description
@@ -737,34 +763,40 @@ class ApiToolkitService{
 		return [:]
 	}
 	
-	Map generateApiDoc(String controllername, String actionname){
+	Map generateApiDoc(String controllername, String actionname, String apiversion){
 		Map doc = [:]
 		def cont = apiCacheService.getApiCache(controllername)
 		String apiPrefix = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String
 		
+		println("CONT:"+cont)
+		println("ACTIONNAME:"+actionname)
+		println("VERSION:"+apiversion)
+		println("CACHE(w/ action) : "+cont["${actionname}"])
+		println("CACHE(w/ action and version) : "+cont["${actionname}"]["${apiversion}"])
+		
 		if(cont){
 
 			String path = "/${apiPrefix}/${controllername}/${actionname}"
-			doc = ["path":"${path}","method":cont[("${actionname}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
+			doc = ["path":"${path}","method":cont[("${actionname}".toString())][("${apiversion}".toString())]["method"],"description":cont[("${actionname}".toString())]["description"]]
 			
 			// if(springSecurityService.principal.authorities*.authority.any { receiveVal.key==it }){
-			if(cont["${actionname}"]["receives"]){
+			if(cont["${actionname}"]["${apiversion}"]["receives"]){
 
 				doc["receives"] = [:]
-				for(receiveVal in cont["${actionname}"]["receives"]){
+				for(receiveVal in cont["${actionname}"]["${apiversion}"]["receives"]){
 					doc["receives"]["${receiveVal.key}"] = receiveVal.value
 				}
 			}
 			
-			if(cont["${actionname}"]["returns"]){
+			if(cont["${actionname}"]["${apiversion}"]["returns"]){
 				doc["returns"] = [:]
-				for(returnVal in cont["${actionname}"]["returns"]){
+				for(returnVal in cont["${actionname}"]["${apiversion}"]["returns"]){
 					doc["returns"]["${returnVal.key}"] = returnVal.value
 				}
 			}
 			
-			if(cont["${actionname}"]["errorcodes"]){
-				doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())]["errorcodes"] as HashSet)
+			if(cont["${actionname}"]["${apiversion}"]["errorcodes"]){
+				doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())][("${apiversion}".toString())]["errorcodes"] as HashSet)
 			}
 
 			//List links = generateLinkRels(controllername,actionname,doc)
@@ -778,7 +810,7 @@ class ApiToolkitService{
 	/*
 	 * TODO: Need to compare multiple authorities
 	 */
-	def Map generateDoc(String controllerName, String actionName){
+	def Map generateDoc(String controllerName, String actionName, String apiversion){
 		
 		def newDoc = [:]
 
@@ -787,9 +819,9 @@ class ApiToolkitService{
 		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
 		def cache = apiCacheService.getApiCache(controllerName)?:null
 
-		if(cache["${actionName}"]?.doc && (cache["${actionName}"]['roles']?.contains(authority) || cache["${actionName}"]['roles']?.contains('permitAll'))){
+		if(cache["${actionName}"]["${apiversion}"]?.doc && (cache["${actionName}"]["${apiversion}"]['roles']?.contains(authority) || cache["${actionName}"]["${apiversion}"]['roles']?.contains('permitAll'))){
 
-			def doc = cache["${actionName}"].doc
+			def doc = cache["${actionName}"]["${apiversion}"].doc
 			def path = doc.path
 			def method = doc.method
 			def description = doc.description
@@ -918,7 +950,7 @@ class ApiToolkitService{
 		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
 		def cache = apiCacheService.getApiCache(controller)
 		//def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-		def methods = cache["${action}"]['method'].trim()
+		def methods = cache["${action}"]["${params.apiObject}"]['method'].trim()
 
 		if(method=='GET'){
 			if(methods != method){
@@ -936,7 +968,7 @@ class ApiToolkitService{
 			if(last && last!='return'){
 				List last2 = keys[pathSize-1].split('/')
 				cache = apiCacheService.getApiCache(last2[0])
-				methods = cache["${last2[1]}"]['method'].trim()
+				methods = cache["${last2[1]}"]["${params.apiObject}"]['method'].trim()
 				if(method=='GET'){
 					if(methods != method){
 						postMatch = true
@@ -959,7 +991,7 @@ class ApiToolkitService{
 				if(val){
 					List temp2 = val.split('/')
 					cache = apiCacheService.getApiCache(temp2[0])
-					methods = cache["${temp2[1]}"]['method'].trim() as List
+					methods = cache["${temp2[1]}"]["${params.apiObject}"]['method'].trim() as List
 					if(method=='GET'){
 						if(methods != method){
 							pathMatch = true
@@ -1044,10 +1076,12 @@ class ApiToolkitService{
 		apiCacheService.setApiCache(controllername,apidoc)
 		//def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
 
-		apidoc.each{ k,v ->
-			if(v){
-				def doc = generateApiDoc(controllername, k)
-				apiCacheService.setApiDocCache(controllername,k,doc)
+		apidoc.each(){ k1,v1 ->
+			if(v1){
+				v1.each() { k2, v2 ->
+					def doc = generateApiDoc(controllername, k1, k2)
+					apiCacheService.setApiDocCache(controllername,k1,k2,doc)
+				}
 			}
 		}
 	}

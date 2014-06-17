@@ -11,6 +11,7 @@ import net.nosegrind.apitoolkit.Method;
 import net.nosegrind.apitoolkit.ApiStatuses;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
 
 class ApiToolkitFilters {
@@ -24,26 +25,31 @@ class ApiToolkitFilters {
 		String apiVersion = grailsApplication.metadata['app.version']
 		String apiDir = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
 		
-		apitoolkit(uri:"/${apiDir}/**"){
-			before = { 
-				//log.error("##### FILTER (BEFORE)")
+		apitoolkit(regex:"/${apiDir}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?//**"){
+			before = {
+				//log.error
+				println("##### FILTER (BEFORE)")
 				try{
+					apiToolkitService.setApiObjectVersion(apiDir, request, params)
 					params.action = (params.action)?params.action:'index'
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					if(cache){
+						println("has cache")
 						boolean result = apiToolkitService.handleApiRequest(cache,request,params)
 						return result
 					}else{
 						return false
 					}
 				}catch(Exception e){
-					log.error("[ApiToolkitFilters :: apitoolkit.before] : Exception - full stack trace follows:", e);
+					//log.error
+					println("[ApiToolkitFilters :: apitoolkit.before] : Exception - full stack trace follows:", e);
 					return false
 				}
 			}
 			
 			after = { Map model ->
-				 //log.error("##### FILTER (AFTER)")
+				 //log.error
+				println("##### FILTER (AFTER)")
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					 if(params?.apiChain?.order){
@@ -182,7 +188,8 @@ class ApiToolkitFilters {
 					 }
 					 return false
 				}catch(Exception e){
-					log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
+					//log.error
+					println("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
 					return false
 				}
 			 }

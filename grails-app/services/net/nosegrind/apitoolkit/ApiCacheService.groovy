@@ -63,28 +63,28 @@ class ApiCacheService{
 	}
 	
 	@CachePut(value="ApiCache",key="#controllername")
-	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc){
+	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc, String apiversion){
 		try{
 			def cache = getApiCache(controllername)
-			if(cache["${methodname}"]){
-				cache["${methodname}"]['name'] = apidoc.name
-				cache["${methodname}"]['description'] = apidoc.description
-				cache["${methodname}"]['receives'] = apidoc.receives
-				cache["${methodname}"]['returns'] = apidoc.returns
-				cache["${methodname}"]['errorcodes'] = apidoc.errorcodes
-				cache["${methodname}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname)
+			if(cache["${methodname}"]["${apiversion}"]){
+				cache["${methodname}"]["${apiversion}"]['name'] = apidoc.name
+				cache["${methodname}"]["${apiversion}"]['description'] = apidoc.description
+				cache["${methodname}"]["${apiversion}"]['receives'] = apidoc.receives
+				cache["${methodname}"]["${apiversion}"]['returns'] = apidoc.returns
+				cache["${methodname}"]["${apiversion}"]['errorcodes'] = apidoc.errorcodes
+				cache["${methodname}"]["${apiversion}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname,apiversion)
 			}else{
 				log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} ")
 			}
-			if(!cache["${methodname}"]){
-				cache["${methodname}"] = [:]
+			if(!cache["${methodname}"]["${apiversion}"]){
+				cache["${methodname}"]["${apiversion}"] = [:]
 			}
 
-			cache["${methodname}"]['name'] = apidoc.name
-			cache["${methodname}"]['description'] = apidoc.description
-			cache["${methodname}"]['receives'] = apidoc.receives
-			cache["${methodname}"]['returns'] = apidoc.returns
-			cache["${methodname}"]['errorcodes'] = apidoc.errorcodes
+			cache["${methodname}"]["${apiversion}"]['name'] = apidoc.name
+			cache["${methodname}"]["${apiversion}"]['description'] = apidoc.description
+			cache["${methodname}"]["${apiversion}"]['receives'] = apidoc.receives
+			cache["${methodname}"]["${apiversion}"]['returns'] = apidoc.returns
+			cache["${methodname}"]["${apiversion}"]['errorcodes'] = apidoc.errorcodes
 
 			return cache
 		}catch(Exception e){
@@ -93,11 +93,11 @@ class ApiCacheService{
 	}
 
 	@CachePut(value="ApiCache",key="#controllername")
-	def setApiDocCache(String controllername,String methodname,Map apidoc){
+	def setApiDocCache(String controllername,String methodname, String apiversion, Map apidoc){
 		try{
 			def cache = getApiCache(controllername)
-			if(cache["${methodname}"]){
-				cache["${methodname}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname)
+			if(cache["${methodname}"]["${apiversion}"]){
+				cache["${methodname}"]["${apiversion}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname, apiversion)
 			}else{
 				log.info"[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
 			}

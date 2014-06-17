@@ -143,28 +143,36 @@ class ApiObjectService{
 
 	Boolean parseJson(String apiName,JSONObject json){
 		Map methods = [:]
-		json.URI.each() { it ->
+		json.VERSION.each() { vers ->
 
-			List temp = it.key.split('/')
-			String actionname = temp[1]
-			
-			ApiStatuses error = new ApiStatuses()
-			
-			ApiDescriptor apiDescriptor
-			Map apiParams
-			
-			String apiMethod = it.value.METHOD
-			String apiDescription = it.value.DESCRIPTION
-			List apiRoles = it.value.ROLES
-			
-			String uri = it.key
-			apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, json)
+			vers.value.URI.each() { it ->
 
-			methods["${actionname}"] = apiDescriptor
-			
-			if(methods){
-				apiToolkitService.setApiCache(apiName,methods)
+				JSONObject apiVersion = json.VERSION["${vers.key}"]
+				
+				List temp = it.key.split('/')
+				String actionname = temp[1]
+				
+				ApiStatuses error = new ApiStatuses()
+				
+				ApiDescriptor apiDescriptor
+				Map apiParams
+				
+				String apiMethod = it.value.METHOD
+				String apiDescription = it.value.DESCRIPTION
+				List apiRoles = it.value.ROLES
+				
+				String uri = it.key
+				apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, apiVersion)
+				if(!methods["${actionname}"]){
+					methods["${actionname}"] = [:]
+				}
+				methods["${actionname}"]["${vers.key}"] = apiDescriptor
+				
+				if(methods){
+					apiToolkitService.setApiCache(apiName,methods)
+				}
 			}
+
 		}
 	}
 

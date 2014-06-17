@@ -1,27 +1,31 @@
-/* JSON API Object */
+/* JSON API Object Example
+*
+* APIObject rules for modification of existing document specification:
+*
+* - Rules/Checks/Descriptors MUST apply to api communication layer either for a process directly occurring or affecting by 
+*    the request/response
+* - MUST be usable by all clients/privileges even if it isn't
+* - SHOULD be applicable to ALL methods; if not, it belongs either in client request or business logic.
 
-/* 'permitAll' needs to always come first so other roles can make use of it
-* as they come afterward
 */
 
-{	"VERSION": {
+{	
+	"VERSION": {
 	    "1": {
 	        "VALUES": {
 	            "id": {
-	                "type": "PKEY",
-	                "description":"ID for test"
+	                "type": "PKEY"
 	            },
 	            "testdata": {
 	                "type": "String",
-	                "description":"Field to show testdata",
 	                "mockData": "blahblahblah"
 	            }
 	        },
 	        "URI": {
 	            "test/show": {
-	             	"METHOD":"GET",
+	            	"METHOD":"GET",
 	            	"DESCRIPTION":"Get test data",
-	            	"ROLES":["permitAll"],
+	            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
 	                "REQUEST": {
 	                    "permitAll":["id"]
 	                },
@@ -31,8 +35,8 @@
 	                    "ROLE_USER":["testdata"]
 	                }
 	            },
-	            "test/save": {
-	             	"METHOD":"PUT",
+	            "test/create": {
+	            	"METHOD":"PUT",
 	            	"DESCRIPTION":"Create test data",
 	            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
 	                "REQUEST": {
@@ -41,20 +45,8 @@
 	                "RESPONSE": {
 	                    "permitAll":["id"]
 	                },
-	                "ERROR":["304_NOT_MODIFIED"]
+	                "ERROR":{"304_NOT_MODIFIED":""}
 	            },
-	            "test/update": {
-	             	"METHOD":"POST",
-	            	"DESCRIPTION":"Update test data",
-	            	"ROLES":["ROLE_ADMIN","ROLE_USER"],
-	                "REQUEST": {
-	                    "permitAll":["id","testdata"]
-	                },
-	                "RESPONSE": {
-	                    "permitAll":["id"]
-	                },
-	                "ERROR":["304_NOT_MODIFIED"]
-	            }
 	        }
 	    }
     }
