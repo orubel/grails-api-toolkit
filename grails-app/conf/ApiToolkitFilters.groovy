@@ -35,12 +35,9 @@ class ApiToolkitFilters {
 					if(cache){
 						boolean result = apiToolkitService.handleApiRequest(cache,request,params)
 						return result
-					}else{
-						if(params.controller=='error'){
-							return true
-						}
-						return false
 					}
+					return false
+
 				}catch(Exception e){
 					log.error("[ApiToolkitFilters :: apitoolkit.before] : Exception - full stack trace follows:", e);
 					return false

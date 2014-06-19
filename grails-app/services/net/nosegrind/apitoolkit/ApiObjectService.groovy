@@ -70,7 +70,7 @@ class ApiObjectService{
 		return ioSet
 	}
 	
-	private ApiDescriptor createApiDescriptor(String apiname,String apiMethod, String apiDescription, List apiRoles, String uri, JSONObject json){
+	private ApiDescriptor createApiDescriptor(String apiname,String apiMethod, String apiDescription, List apiRoles, String uri, JSONObject json, List deprecated){
 		LinkedHashMap<String,ParamsDescriptor> apiObject = [:]
 		ApiParams param = new ApiParams()
 		
@@ -104,6 +104,7 @@ class ApiObjectService{
 		LinkedHashMap returns = getIOSet(json.URI["${uri}"]?.RESPONSE,apiObject)
 		
 		ApiDescriptor service = new ApiDescriptor(
+			"deprecated":[],
 			"method":"${apiMethod}",
 			"description":"${apiDescription}",
 			"roles":[],
@@ -111,10 +112,15 @@ class ApiObjectService{
 			"receives":receives,
 			"returns":returns
 		)
+		if(deprecated){
+			service['deprecated'] = deprecated
+		}
 		service['roles'] = apiRoles
 
 		return service
 	}
+	
+
 	
 	def initApiCache(){
 		apiCacheService.flushAllApiCache()
@@ -144,7 +150,8 @@ class ApiObjectService{
 	Boolean parseJson(String apiName,JSONObject json){
 		Map methods = [:]
 		json.VERSION.each() { vers ->
-
+			
+			List deprecated = (vers.value.DEPRECATED)?vers.value.DEPRECATED:[]
 			vers.value.URI.each() { it ->
 
 				JSONObject apiVersion = json.VERSION["${vers.key}"]
@@ -162,7 +169,7 @@ class ApiObjectService{
 				List apiRoles = it.value.ROLES
 				
 				String uri = it.key
-				apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, apiVersion)
+				apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, apiVersion, deprecated)
 				if(!methods["${actionname}"]){
 					methods["${actionname}"] = [:]
 				}

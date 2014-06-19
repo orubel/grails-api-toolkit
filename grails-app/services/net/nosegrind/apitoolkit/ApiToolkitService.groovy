@@ -15,37 +15,37 @@
  *****************************************************************************/
 package net.nosegrind.apitoolkit
 
-import org.codehaus.groovy.grails.web.json.JSONObject
 import grails.converters.JSON
 import grails.converters.XML
-import java.util.regex.Matcher
-import java.util.regex.Pattern
-import java.lang.reflect.Method
-import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
+import grails.plugin.cache.GrailsCacheManager
+import grails.spring.BeanBuilder
+import grails.util.Holders as HOLDER
+
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.Map
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
+import java.lang.reflect.Method
 import javax.servlet.forward.*
+import java.text.SimpleDateFormat
 
-import org.codehaus.groovy.grails.validation.routines.UrlValidator
-import org.springframework.web.context.request.RequestContextHolder as RCH
-import grails.util.Holders as HOLDER
-
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
+import org.codehaus.groovy.grails.web.util.WebUtils
+import org.codehaus.groovy.grails.validation.routines.UrlValidator
+
+import org.springframework.cache.Cache
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
+import org.springframework.web.context.request.RequestContextHolder as RCH
+import org.springframework.ui.ModelMap
 
 import net.nosegrind.apitoolkit.*
 
-import org.springframework.ui.ModelMap
-
-import grails.plugin.cache.GrailsCacheManager
-import org.springframework.cache.Cache
-
-import grails.spring.BeanBuilder
-
-import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
-import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
-import org.codehaus.groovy.grails.web.util.WebUtils
 
 class ApiToolkitService{
 
@@ -138,18 +138,37 @@ class ApiToolkitService{
 		
 	}
 	
+	boolean checkDeprecationDate(String deprecationDate){
+		def ddate = new SimpleDateFormat("MM/dd/yyyy").parse(deprecationDate)
+		def deprecated = new Date(ddate.time)
+		def today = new Date()
+		if(deprecated < today ) {
+			return true
+		}
+		return false
+	}
+	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
 		try{
-
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
 
 			// CHECK IF URI HAS CACHE
 			if(cache["${params.action}"]["${params.apiObject}"]){
-
 				// CHECK IF PRINCIPAL HAS ACCESS TO API
 				if(!checkAuthority(cache["${params.action}"]["${params.apiObject}"]['roles']?.toList())){
 					return false
+				}
+				
+				if(cache["${params.action}"]["${params.apiObject}"]['deprecated'][0]){
+					String depdate = cache["${params.action}"]["${params.apiObject}"]['deprecated'][0]
+					String depMsg = cache["${params.action}"]["${params.apiObject}"]['deprecated'][1]
+					if(checkDeprecationDate(depdate)){
+						// replace msg with config deprecation message
+						String msg = "[ERROR] ${depMsg}"
+						error._400_BAD_REQUEST(msg)?.send()
+						return false
+					}
 				}
 				
 				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
