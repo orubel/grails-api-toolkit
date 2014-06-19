@@ -146,10 +146,9 @@ class ApiToolkitService{
 
 			// CHECK IF URI HAS CACHE
 			if(cache["${params.action}"]["${params.apiObject}"]){
-				println("cache exists...")
+
 				// CHECK IF PRINCIPAL HAS ACCESS TO API
 				if(!checkAuthority(cache["${params.action}"]["${params.apiObject}"]['roles']?.toList())){
-					println("badauthority")
 					return false
 				}
 				
@@ -159,7 +158,6 @@ class ApiToolkitService{
 				// DOES api.methods.contains(request.method)
 			
 				if(!isRequestMatch(method,request.method.toString())){
-					println("norequestmatch")
 					// check for apichain
 	
 					// TEST FOR CHAIN PATHS
@@ -193,8 +191,7 @@ class ApiToolkitService{
 
 			}
 		}catch(Exception e){
-			//log.error("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:", e);
-			println("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:"+ e);
+			log.error("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:", e);
 		}
 
 	}

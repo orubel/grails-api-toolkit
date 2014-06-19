@@ -116,8 +116,7 @@ class ApiCacheService{
 			//return cache
 
 		}catch(Exception e){
-			//log.error("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:", e);
-			println("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:"+ e);
+			log.error("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:", e);
 		}
 
 	}

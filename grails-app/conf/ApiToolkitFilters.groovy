@@ -27,16 +27,12 @@ class ApiToolkitFilters {
 		
 		apitoolkit(regex:"/${apiDir}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?//**"){
 			before = {
-				//log.error
-				println(request.forwardURI)
-				println("##### FILTER (BEFORE)")
+				//log.error("##### FILTER (BEFORE)")
 				try{
 					apiToolkitService.setApiObjectVersion(apiDir, request, params)
 					params.action = (params.action)?params.action:'index'
-					println("CONTROLLER:"+params)
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					if(cache){
-						println("testing cache in filter >>>>>>")
 						boolean result = apiToolkitService.handleApiRequest(cache,request,params)
 						return result
 					}else{
@@ -46,15 +42,13 @@ class ApiToolkitFilters {
 						return false
 					}
 				}catch(Exception e){
-					//log.error
-					println("[ApiToolkitFilters :: apitoolkit.before] : Exception - full stack trace follows:", e);
+					log.error("[ApiToolkitFilters :: apitoolkit.before] : Exception - full stack trace follows:", e);
 					return false
 				}
 			}
 			
 			after = { Map model ->
-				 //log.error
-				println("##### FILTER (AFTER)")
+				 //log.error("##### FILTER (AFTER)")
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					 if(params?.apiChain?.order){
@@ -193,8 +187,7 @@ class ApiToolkitFilters {
 					 }
 					 return false
 				}catch(Exception e){
-					//log.error
-					println("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
+					log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
 					return false
 				}
 			 }
