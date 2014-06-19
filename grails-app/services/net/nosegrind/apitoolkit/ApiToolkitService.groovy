@@ -149,6 +149,7 @@ class ApiToolkitService{
 				println("cache exists...")
 				// CHECK IF PRINCIPAL HAS ACCESS TO API
 				if(!checkAuthority(cache["${params.action}"]["${params.apiObject}"]['roles']?.toList())){
+					println("badauthority")
 					return false
 				}
 				
@@ -158,6 +159,7 @@ class ApiToolkitService{
 				// DOES api.methods.contains(request.method)
 			
 				if(!isRequestMatch(method,request.method.toString())){
+					println("norequestmatch")
 					// check for apichain
 	
 					// TEST FOR CHAIN PATHS
@@ -191,7 +193,8 @@ class ApiToolkitService{
 
 			}
 		}catch(Exception e){
-			log.error("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:", e);
+			//log.error("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:", e);
+			println("[ApiToolkitService :: handleApiRequest] : Exception - full stack trace follows:"+ e);
 		}
 
 	}
@@ -367,7 +370,7 @@ class ApiToolkitService{
 	}
 	
 	HashMap getMethodParams(){
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject', 'chain']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		Map paramsRequest = params.findAll {
@@ -387,7 +390,7 @@ class ApiToolkitService{
 		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (requestDefinitions["${authority}"])?requestDefinitions["${authority}"]:requestDefinitions["permitAll"]
 		List requestList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject', 'chain']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
 		temp.each{
 			requestList.add(it.name)
 		}
@@ -396,7 +399,7 @@ class ApiToolkitService{
 		//GrailsParameterMap params = RCH.currentRequestAttributes().params
 		List paramsList = params.post.keySet() as List
 		paramsList.removeAll(optionalParams)
-
+		
 		if(paramsList.containsAll(requestList)){
 			paramsList.removeAll(requestList)
 			if(!paramsList){
@@ -415,7 +418,7 @@ class ApiToolkitService{
 		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (responseDefinitions["${authority}"])?responseDefinitions["${authority}"]:responseDefinitions["permitAll"]
 		List responseList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject', 'chain']
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
 		temp.each{
 			responseList.add(it.name)
 		}

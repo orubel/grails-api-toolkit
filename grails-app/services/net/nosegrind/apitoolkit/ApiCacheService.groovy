@@ -109,10 +109,8 @@ class ApiCacheService{
 	
 	def getApiCache(String controllername){
 		try{
-			println(controllername)
 			def cache = grailsCacheManager.getCache('ApiCache').get(controllername)
 			if(cache){
-				println("has cache")
 				return cache.get()
 			}
 			//return cache

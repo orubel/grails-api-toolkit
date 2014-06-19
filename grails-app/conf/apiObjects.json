@@ -12,6 +12,7 @@
 {	
 	"VERSION": {
 	    "1": {
+	    	"DEPRECATION_DATE":{"MM/DD/YYYY"}
 	        "VALUES": {
 	            "id": {
 	                "type": "PKEY"

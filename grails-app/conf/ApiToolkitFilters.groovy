@@ -28,6 +28,7 @@ class ApiToolkitFilters {
 		apitoolkit(regex:"/${apiDir}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?//**"){
 			before = {
 				//log.error
+				println(request.forwardURI)
 				println("##### FILTER (BEFORE)")
 				try{
 					apiToolkitService.setApiObjectVersion(apiDir, request, params)
@@ -35,10 +36,13 @@ class ApiToolkitFilters {
 					println("CONTROLLER:"+params)
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					if(cache){
-						println("has cache")
+						println("testing cache in filter >>>>>>")
 						boolean result = apiToolkitService.handleApiRequest(cache,request,params)
 						return result
 					}else{
+						if(params.controller=='error'){
+							return true
+						}
 						return false
 					}
 				}catch(Exception e){
