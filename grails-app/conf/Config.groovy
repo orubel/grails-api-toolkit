@@ -40,7 +40,6 @@ apitoolkit.apiobject.type = [
 	"Email":["type":"Email","description":"Email"]
 ]
 
-
 grails.plugin.springsecurity.filterChain.chainMap = [
 	"/${apiName}_v${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
 	"/v${apiVersion}/**": 'JOINED_FILTERS,-securityContextPersistenceFilter,-logoutFilter,-authenticationProcessingFilter,-securityContextHolderAwareRequestFilter,-rememberMeAuthenticationFilter,-anonymousAuthenticationFilter,-exceptionTranslationFilter',
@@ -63,6 +62,7 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	"/${apiName}_v${apiVersion}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**" : ['permitAll'],
 	"/v${apiVersion}/**" : ['permitAll'],
 	"/v${apiVersion}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**" : ['permitAll'],
-	"/hook/**" : ['permitAll'] 
+	"/hook/**" : ['permitAll'] ,
+	"/apidoc/**" : ['permitAll']
 ]
 

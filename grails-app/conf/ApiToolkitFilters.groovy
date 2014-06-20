@@ -25,14 +25,24 @@ class ApiToolkitFilters {
 		String apiVersion = grailsApplication.metadata['app.version']
 		String apiDir = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
 		
-		apitoolkit(regex:"/${apiDir}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?//**"){
+		//String apiRegex = "/${apiDir}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
+		//println apiRegex
+		
+		//apitoolkit(regex:apiRegex){
+		apitoolkit(uri:"/${apiDir}*/**"){
 			before = {
-				//log.error("##### FILTER (BEFORE)")
+				//log.error
+				println(request.forwardURI)
+				println("##### FILTER (BEFORE)")
 				try{
+					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
+						return false
+					}
 					apiToolkitService.setApiObjectVersion(apiDir, request, params)
 					params.action = (params.action)?params.action:'index'
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					if(cache){
+						println('has cache')
 						boolean result = apiToolkitService.handleApiRequest(cache,request,params)
 						return result
 					}
@@ -45,7 +55,8 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 //log.error("##### FILTER (AFTER)")
+				 //log.error
+				println("##### FILTER (AFTER)")
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					 if(params?.apiChain?.order){

@@ -6,6 +6,9 @@ class ApiToolkitUrlMappings {
 		String apiName = grails.util.Holders.getGrailsApplication().config.apitoolkit.apiName
 		String apiVersion = grails.util.Holders.getGrailsApplication().metadata['app.version']
 		
+		"/apidoc/show" (controller:'apidoc',action:'show', parseRequest: true)
+		"/hook" (controller:'hook',action:'list', parseRequest: true)
+		
 		if(apiName){
 			"/$apiName_v$apiVersion-$apiObjectVersion/$controller/$action?/$id**" {
 				controller = controller
@@ -68,9 +71,5 @@ class ApiToolkitUrlMappings {
 				
 			}
 		}
-
-		"/apidoc/show" (controller:'apidoc',action:'show', parseRequest: true)
-		"/hook" (controller:'hook',action:'list', parseRequest: true)
-
 	}
 }
