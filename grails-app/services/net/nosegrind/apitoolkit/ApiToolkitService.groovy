@@ -834,6 +834,13 @@ class ApiToolkitService{
 		
 
 		if(cache["${actionName}"]["${apiversion}"]?.doc && (cache["${actionName}"]["${apiversion}"]['roles']?.contains(authority) || cache["${actionName}"]["${apiversion}"]['roles']?.contains('permitAll'))){
+			if(cache["${actionName}"]["${apiversion}"]['deprecated'][0]){
+				String depdate = cache["${actionName}"]["${apiversion}"]['deprecated'][0]
+				if(checkDeprecationDate(depdate)){
+					return newDoc
+				}
+			}
+			
 			def doc = cache["${actionName}"]["${apiversion}"].doc
 			def path = doc.path
 			def method = doc.method
