@@ -317,103 +317,104 @@
 			<g:each in="${controller.value}" var="act">
 				<g:each in="${act}" var="action">
 					<g:set var="actionName" value="${action.key}"/>
-					<g:if test="${action.value.method}"><g:set var="methods" value="${action.value.method}"/></g:if>
-					<g:if test="${action.value.method}"><g:set var="method" value="${action.value.method.replace('[','').replace(']','').split(',').findAll{ it =~ /(GET|PUT|POST|DELETE|PATCH|TRACE)/ }[0]?.toLowerCase()}"/></g:if>
-					<g:if test="${action.value.path}">
-						<g:if test="${method!='PUT'}"><g:set var="path" value="${action.value.path}/ID"/></g:if>
-						<g:else><g:set var="path" value="${action.value.path}"/></g:else>
-					</g:if>
-					<g:if test="${action.value.json}"><g:set var="json" value="${action.value.json}"/></g:if>
-					<g:if test="${action.value.description}"><g:set var="description" value="${action.value.description}"/></g:if>
-					<g:if test="${action.value.receives}"><g:set var="receives" value="${action.value.receives}"/></g:if> 
-					<g:if test="${action.value.returns}"><g:set var="returns" value="${action.value.returns}"/></g:if> 
-					<g:if test="${action.value.errorcodes}"><g:set var="errors" value="${action.value.errorcodes}"/></g:if> 
-					<g:if test="${action.value.links}"><g:set var="links" value="${action.value.links}"/></g:if> 
-				</g:each>
+					<g:each in="${action.value}" var="vers">
+						<g:set var="version" value="${vers.key}"/>
+						<g:if test="${vers.value.method}"><g:set var="methods" value="${vers.value.method}"/></g:if>
+						<g:if test="${vers.value.method}"><g:set var="method" value="${vers.value.method.replace('[','').replace(']','').split(',').findAll{ it =~ /(GET|PUT|POST|DELETE|PATCH|TRACE)/ }[0]?.toLowerCase()}"/></g:if>
+						<g:if test="${vers.value.path}">
+							<g:if test="${method!='put'}"><g:set var="path" value="${vers.value.path}/ID"/></g:if>
+							<g:else><g:set var="path" value="${vers.value.path}"/></g:else>
+						</g:if>
+						<g:if test="${vers.value.json}"><g:set var="json" value="${vers.value.json}"/></g:if>
+						<g:if test="${vers.value.description}"><g:set var="description" value="${vers.value.description}"/></g:if>
+						<g:if test="${vers.value.receives}"><g:set var="receives" value="${vers.value.receives}"/></g:if> 
+						<g:if test="${vers.value.returns}"><g:set var="returns" value="${vers.value.returns}"/></g:if> 
+						<g:if test="${vers.value.errorcodes}"><g:set var="errors" value="${vers.value.errorcodes}"/></g:if> 
+						<g:if test="${vers.value.links}"><g:set var="links" value="${vers.value.links}"/></g:if> 
+
 	
-				<div class="methodList" style="display:none;">
+						<div class="methodList" style="display:none;">
+						
+							<div class="method ${method}Dark"><a href="#" onClick="toggleInfoBox(this);">${method?.toUpperCase()}</a></div>
+							<div class="path ${method}Light">${path}<img src="/images/pix.gif" class="methodSeparator"/><div class="${method}Desc"">${description}</div></div>
+							<div class="infoBox ${method}Light" style="display:none;">
+								<br/>
+								JSON Example <div class="table ${method}TableContrast"><%=json%></div>
+								<br/>
+								<g:if test="${links?.size()>0}">
+								<div class="table ${method}TableContrast">
+									<div class="${method}HeadContrast">
+									   <span style="display: table-cell;width: 740px;padding-left: 10px;border: 1px #d7ad7b;"><b>Links</b></span>
+									</div>
+									<g:each in="${links}" var="link">
+										<div class="${method}RowContrast">
+										   <span style="display: table-cell;width: 740px;padding-left: 10px;border: 1px #d7ad7b;">${link}</span>
+									    </div>
+									 </g:each>
+								 </div>
+								</g:if>
+								
+								Receives
+								<div class="table ${method}TableContrast">
+									<div class="${method}HeadContrast">
+									   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
+									   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
+									   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
+									    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
+									</div>
+									<g:each in="${receives}" var="value">
+										<div class="${method}RowContrast">
+										   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${(['PKEY','FKEY','INDEX'].contains(value.paramType.toString()))?'ID':value.paramType}</span>
+										   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${value.name}</span>
+										   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">${value.description}</span>
+										    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
+									    </div>
+									 </g:each>
+					
+								 </div>
+								 
+								<g:if test="${returns?.size()>0}">
+								Returns
+								<div class="table ${method}TableContrast">
+									<div class="${method}HeadContrast">
+									   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
+									   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
+									   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
+									    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
+									</div>
+									
+									<g:each status="i" in="${returns}" var="rturn">
+										<div class="${method}RowContrast">
+										   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${(['PKEY','FKEY','INDEX'].contains(rturn.paramType.toString()))?'ID':rturn.paramType}</span>
+										   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.name}</span>
+										   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.description}</span>
+										    <span style="display: table-cell;width:200px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
+									    </div>
+									 </g:each>
+								 </div>
+								 </g:if>
+								
+								<g:if test="${errors?.size()>0}">
+								Errors
+								<div class="table ${method}TableContrast">
+									<div class="${method}HeadContrast">
+									   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Code</b></span>
+									   <span style="display: table-cell;width: 630px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
+									</div>
+									<g:each in="${errors}" var="error">
+										<div class="${method}RowContrast">
+										   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${error.code}</span>
+										   <span style="display: table-cell;width: 630px;padding-left: 10px;border: 1px #d7ad7b;">${error.description}</span>
+									    </div>
+									 </g:each>
+								 </div>
+								 </br>
+								</g:if>
+							</div>
+						</div>
 				
-					<div class="method ${method}Dark"><a href="#" onClick="toggleInfoBox(this);">${method?.toUpperCase()}</a></div>
-					<div class="path ${method}Light">${path}<img src="/images/pix.gif" class="methodSeparator"/><div class="${method}Desc"">${description}</div></div>
-					<div class="infoBox ${method}Light" style="display:none;">
-						<br/>
-						JSON Example <div class="table ${method}TableContrast"><%=json%></div>
-						<br/>
-						<g:if test="${links?.size()>0}">
-						<div class="table ${method}TableContrast">
-							<div class="${method}HeadContrast">
-							   <span style="display: table-cell;width: 740px;padding-left: 10px;border: 1px #d7ad7b;"><b>Links</b></span>
-							</div>
-							<g:each in="${links}" var="link">
-								<div class="${method}RowContrast">
-								   <span style="display: table-cell;width: 740px;padding-left: 10px;border: 1px #d7ad7b;">${link}</span>
-							    </div>
-							 </g:each>
-						 </div>
-						</g:if>
-						
-						Receives
-						<div class="table ${method}TableContrast">
-							<div class="${method}HeadContrast">
-
-							   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
-							   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
-							   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
-							    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
-							</div>
-							<g:each in="${receives}" var="value">
-								<div class="${method}RowContrast">
-
-								   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${(['PKEY','FKEY','INDEX'].contains(value.paramType.toString()))?'ID':value.paramType}</span>
-								   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${value.name}</span>
-								   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">${value.description}</span>
-								    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
-							    </div>
-							 </g:each>
-			
-						 </div>
-						 
-						<g:if test="${returns?.size()>0}">
-						Returns
-						<div class="table ${method}TableContrast">
-							<div class="${method}HeadContrast">
-
-							   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Type</b></span>
-							   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;"><b>Name</b></span>
-							   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
-							    <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;"><b>Params</b></span>
-							</div>
-							
-							<g:each status="i" in="${returns}" var="rturn">
-								<div class="${method}RowContrast">
-								   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${(['PKEY','FKEY','INDEX'].contains(rturn.paramType.toString()))?'ID':rturn.paramType}</span>
-								   <span style="display: table-cell;width: 150px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.name}</span>
-								   <span style="display: table-cell;width: 200px;padding-left: 10px;border: 1px #d7ad7b;">${rturn.description}</span>
-								    <span style="display: table-cell;width:200px;padding-left: 10px;border: 1px #d7ad7b;">[]</span>
-
-							    </div>
-							 </g:each>
-						 </div>
-						 </g:if>
-						
-						<g:if test="${errors?.size()>0}">
-						Errors
-						<div class="table ${method}TableContrast">
-							<div class="${method}HeadContrast">
-							   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;"><b>Code</b></span>
-							   <span style="display: table-cell;width: 630px;padding-left: 10px;border: 1px #d7ad7b;"><b>Description</b></span>
-							</div>
-							<g:each in="${errors}" var="error">
-								<div class="${method}RowContrast">
-								   <span style="display: table-cell;width: 100px;padding-left: 10px;border: 1px #d7ad7b;">${error.code}</span>
-								   <span style="display: table-cell;width: 630px;padding-left: 10px;border: 1px #d7ad7b;">${error.description}</span>
-							    </div>
-							 </g:each>
-						 </div>
-						 </br>
-						</g:if>
-					</div>
-				</div>
+					</g:each>
+				</g:each>
 			</g:each>
 			
 			</div>
