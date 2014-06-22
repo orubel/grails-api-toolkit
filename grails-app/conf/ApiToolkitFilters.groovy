@@ -48,7 +48,6 @@ class ApiToolkitFilters {
 		apitoolkit(uri:"/${apiDir}*/**"){
 			before = {
 				//log.error
-				println(request.forwardURI)
 				println("##### FILTER (BEFORE)")
 				try{
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){

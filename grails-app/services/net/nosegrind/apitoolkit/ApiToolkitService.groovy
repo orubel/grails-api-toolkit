@@ -149,14 +149,12 @@ class ApiToolkitService{
 	}
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
-		println("##### handleApiRequest #####")
 		try{
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
 
 			// CHECK IF URI HAS CACHE
 			if(cache["${params.action}"]["${params.apiObject}"]){
-				println('hasCache')
 				// CHECK IF PRINCIPAL HAS ACCESS TO API
 				if(!checkAuthority(cache["${params.action}"]["${params.apiObject}"]['roles']?.toList())){
 					return false
@@ -177,10 +175,9 @@ class ApiToolkitService{
 				def method = cache["${params.action}"]["${params.apiObject}"]['method']?.trim()
 				
 				// DOES api.methods.contains(request.method)
-			
 				if(!isRequestMatch(method,request.method.toString())){
 					// check for apichain
-	
+
 					// TEST FOR CHAIN PATHS
 					if(params?.apiChain){
 						List uri = [params.controller,params.action,params.id]
@@ -208,7 +205,6 @@ class ApiToolkitService{
 						return true
 					}
 				}
-
 
 			}
 		}catch(Exception e){
@@ -507,10 +503,10 @@ class ApiToolkitService{
 	
 	boolean checkAuthority(ArrayList role){
 		List roles = role as List
-		if(roles.size()==1 && roles[0]=='permitAll'){
+		if(roles.size()==1 && roles.contains('permitAll')){
 			return true
 		}else{
-			if(roles.size()>0 && roles[0].trim()){
+			if(roles.size()>0){
 				List roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugin.springsecurity.authority.className).clazz.list().authority
 				List finalRoles = []
 				List userRoles = []
@@ -519,7 +515,7 @@ class ApiToolkitService{
 				}
 				
 				if(userRoles){
-					List temp = roles2.intersect(roles as Set)
+					List temp = roles2.intersect(roles)
 					finalRoles = temp.intersect(userRoles)
 					if(finalRoles){
 						return true
