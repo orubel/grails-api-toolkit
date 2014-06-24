@@ -70,11 +70,11 @@ class ApiObjectService{
 		return ioSet
 	}
 	
-	private ApiDescriptor createApiDescriptor(String apiname,String apiMethod, String apiDescription, List apiRoles, String uri, JSONObject json, List deprecated){
+	private ApiDescriptor createApiDescriptor(String apiname,String apiMethod, String apiDescription, List apiRoles, String uri, JSONObject values, JSONObject json, List deprecated){
 		LinkedHashMap<String,ParamsDescriptor> apiObject = [:]
 		ApiParams param = new ApiParams()
 		
-		json.VALUES.each{ k,v ->
+		values.each{ k,v ->
 			String references = ""
 			String hasDescription = ""
 			String hasMockData = ""
@@ -129,7 +129,6 @@ class ApiObjectService{
 			new File("src/apiObject").eachFile() { file ->
 				String apiName = file.getName().split('\\.')[0].toLowerCase()
 				JSONObject json = JSON.parse(file.text)
-
 				parseJson(apiName,json)
 				def cache2 = apiCacheService.getApiCache(apiName)
 			 }
@@ -169,7 +168,7 @@ class ApiObjectService{
 				List apiRoles = it.value.ROLES
 				
 				String uri = it.key
-				apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, apiVersion, deprecated)
+				apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, json.get('VALUES'), apiVersion, deprecated)
 				if(!methods["${actionname}"]){
 					methods["${actionname}"] = [:]
 				}
