@@ -397,18 +397,23 @@ class ApiToolkitService{
 		return ['get':paramsGet,'post':paramsPost]
 	}
 	
+	List getApiParams(LinkedHashMap definitions){
+		String authority = springSecurityService.principal.authorities*.authority[0]
+		ParamsDescriptor[] temp = (definitions["${authority}"])?definitions["${authority}"]:definitions["permitAll"]
+		List apiList = []
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
+		temp.each{
+			apiList.add(it.name)
+		}
+		return apiList
+	}
+	
 	/*
 	 * TODO: Need to compare multiple authorities
 	 */
 	boolean checkURIDefinitions(LinkedHashMap requestDefinitions){
-		String authority = springSecurityService.principal.authorities*.authority[0]
-		ParamsDescriptor[] temp = (requestDefinitions["${authority}"])?requestDefinitions["${authority}"]:requestDefinitions["permitAll"]
-		List requestList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
-		temp.each{
-			requestList.add(it.name)
-		}
-
+		List requestList = getApiParams(requestDefinitions)
+		
 		HashMap params = getMethodParams()
 		//GrailsParameterMap params = RCH.currentRequestAttributes().params
 		List paramsList = params.post.keySet() as List
@@ -429,14 +434,8 @@ class ApiToolkitService{
 	LinkedHashMap parseURIDefinitions(LinkedHashMap model,LinkedHashMap responseDefinitions){
 		ApiStatuses errors = new ApiStatuses()
 		String msg = "Error. Invalid variables being returned. Please see your administrator"
-		String authority = springSecurityService.principal.authorities*.authority[0]
-		ParamsDescriptor[] temp = (responseDefinitions["${authority}"])?responseDefinitions["${authority}"]:responseDefinitions["permitAll"]
-		List responseList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
-		temp.each{
-			responseList.add(it.name)
-		}
-
+		List responseList = getApiParams(requestDefinitions)
+		
 		HashMap params = getMethodParams()
 		//GrailsParameterMap params = RCH.currentRequestAttributes().params
 		List paramsList = model.keySet() as List
@@ -757,20 +756,6 @@ class ApiToolkitService{
 						}
 					}
 
-					/*
-					def links = generateLinkRels(params.controller, params.action,doc)
-					if(links){
-						newDoc["${params.action}"].links = []
-						links.each(){ role ->
-							role.each(){ v ->
-								if(springSecurityService.principal.authorities*.authority.any { v.key }){
-									newDoc["${params.action}"].links.add(v.value)
-								}
-							}
-						}
-						newDoc["${params.action}"].links.unique()
-					}
-					*/
 					
 					return newDoc
 				}
@@ -808,9 +793,6 @@ class ApiToolkitService{
 			if(cont["${actionname}"]["${apiversion}"]["errorcodes"]){
 				doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())][("${apiversion}".toString())]["errorcodes"] as HashSet)
 			}
-
-			//List links = generateLinkRels(controllername,actionname,doc)
-			//doc["links"] = links
 
 		}
 
@@ -884,69 +866,11 @@ class ApiToolkitService{
 				newDoc["${actionName}"]["${apiversion}"].errorcodes = doc.errorcodes
 			}
 
-			/*
-
-			def links = generateLinkRels(controllerName, actionName,doc)
-			if(links){
-				newDoc["${actionName}"].links = []
-				links.each(){ role ->
-					role.each(){ v ->
-
-						if(springSecurityService.principal.authorities*.authority.any { v.key }){
-							newDoc["${actionName}"].links.add(v.value)
-						}
-					}
-				}
-				
-				newDoc["${actionName}"].links.unique()
-			}
-
-			*/
-
 		}
 		
 		return newDoc
 	}
-	
 
-	/*
-
-	List generateLinkRels(String controllerName, String actionName,Map apidoc){
-		List links = []
-		int inc = 0
-
-		def receives = apidoc.receives
-		def path = apidoc.path
-		if(receives){
-			receives.each() { param ->
-				def paramType = param?.paramType
-				if(paramType){
-					switch(paramType){
-						case 'PKEY':
-							String uri = "${path}/[ID]?null=${param?.name}"
-							def endChains = getPostChainUri(controllerName,actionName,uri)
-							endChains.each(){ end ->
-								links.add(inc,end)
-								inc++
-							}
-							break
-						case 'FKEY':
-							String uri = "${path}/[ID]?null=${param?.name}"
-							def endChains = getBlankChainUri(controllerName,actionName,uri)
-							endChains.each(){ end ->
-								links.add(inc,end)
-								inc++
-							}
-							break
-					}
-				}
-			}
-		}
-
-		return links
-	}
-
-	*/
 	
 	/*
 	 * Returns chainType

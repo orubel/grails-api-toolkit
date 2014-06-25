@@ -47,8 +47,7 @@ class ApiToolkitFilters {
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${apiDir}*/**"){
 			before = {
-				//log.error
-				println("##### FILTER (BEFORE)")
+				//log.error("##### FILTER (BEFORE)")
 				try{
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
 						return false
@@ -57,7 +56,6 @@ class ApiToolkitFilters {
 					params.action = (params.action)?params.action:'index'
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					if(cache){
-						println('has cache')
 						boolean result = apiToolkitService.handleApiRequest(cache,request,params)
 						return result
 					}
@@ -70,8 +68,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 //log.error
-				println("##### FILTER (AFTER)")
+				 //log.error("##### FILTER (AFTER)")
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					 if(params?.apiChain?.order){

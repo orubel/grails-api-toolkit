@@ -120,8 +120,6 @@ class ApiObjectService{
 		return service
 	}
 	
-
-	
 	def initApiCache(){
 		apiCacheService.flushAllApiCache()
 
