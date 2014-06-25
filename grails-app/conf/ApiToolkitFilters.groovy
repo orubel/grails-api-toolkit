@@ -42,7 +42,6 @@ class ApiToolkitFilters {
 		String apiDir = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
 		
 		//String apiRegex = "/${apiDir}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
-		//println apiRegex
 		
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${apiDir}*/**"){
@@ -99,7 +98,6 @@ class ApiToolkitFilters {
 							 case 'HEAD':
 								 break;
 							 case 'OPTIONS':
-		
 								 LinkedHashMap doc = apiToolkitService.getApiDoc(params)
 								 
 								 switch(params.contentType){

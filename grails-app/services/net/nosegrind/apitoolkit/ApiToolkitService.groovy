@@ -412,6 +412,7 @@ class ApiToolkitService{
 	 * TODO: Need to compare multiple authorities
 	 */
 	boolean checkURIDefinitions(LinkedHashMap requestDefinitions){
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
 		List requestList = getApiParams(requestDefinitions)
 		
 		HashMap params = getMethodParams()
@@ -434,7 +435,8 @@ class ApiToolkitService{
 	LinkedHashMap parseURIDefinitions(LinkedHashMap model,LinkedHashMap responseDefinitions){
 		ApiStatuses errors = new ApiStatuses()
 		String msg = "Error. Invalid variables being returned. Please see your administrator"
-		List responseList = getApiParams(requestDefinitions)
+		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
+		List responseList = getApiParams(responseDefinitions)
 		
 		HashMap params = getMethodParams()
 		//GrailsParameterMap params = RCH.currentRequestAttributes().params
