@@ -330,9 +330,7 @@
 						<g:if test="${vers.value.receives}"><g:set var="receives" value="${vers.value.receives}"/></g:if> 
 						<g:if test="${vers.value.returns}"><g:set var="returns" value="${vers.value.returns}"/></g:if> 
 						<g:if test="${vers.value.errorcodes}"><g:set var="errors" value="${vers.value.errorcodes}"/></g:if> 
-						<g:if test="${vers.value.links}"><g:set var="links" value="${vers.value.links}"/></g:if> 
 
-	
 						<div class="methodList" style="display:none;">
 						
 							<div class="method ${method}Dark"><a href="#" onClick="toggleInfoBox(this);">${method?.toUpperCase()}</a></div>

@@ -678,7 +678,6 @@ class ApiToolkitService{
 	private String processJson(LinkedHashMap returns){
 		def json = [:]
 		returns.each{ p ->
-			if(springSecurityService.principal.authorities*.authority.any { p.key }){
 				p.value.each{ it ->
 					ParamsDescriptor paramDesc = it
 				
@@ -703,7 +702,6 @@ class ApiToolkitService{
 						}
 					}
 				}
-			}
 		}
 
 		if(json){
@@ -788,6 +786,8 @@ class ApiToolkitService{
 				for(returnVal in cont["${actionname}"]["${apiversion}"]["returns"]){
 					doc["returns"]["${returnVal.key}"] = returnVal.value
 				}
+				doc["json"] = [:]
+				doc["json"] = processJson(doc["returns"])
 			}
 			
 			if(cont["${actionname}"]["${apiversion}"]["errorcodes"]){
@@ -859,6 +859,7 @@ class ApiToolkitService{
 
 					}
 				}
+
 				newDoc["${actionName}"]["${apiversion}"].json = doc.json
 			}
 			
