@@ -28,7 +28,7 @@ class ApiToolkitUrlMappings {
 			"/$apiName_v$apiVersion-$apiObjectVersion/$controller/$action?/$id**" {
 				controller = controller
 				action = action
-				parseRequest = true
+				//parseRequest = true
 				constraints {
 					apiObjectVersion(matches:/^[0-9]?[0-9]?(\\.[0-9][0-9]?)?/)
 				}
@@ -37,7 +37,7 @@ class ApiToolkitUrlMappings {
 			"/$apiName_v$apiVersion/$controller/$action?/$id**" {
 				controller = controller
 				action = action
-				parseRequest = true
+				//parseRequest = true
 			}
 			
 			"/$apiName_v$apiVersion-$apiObjectVersion/$controller/$action" {

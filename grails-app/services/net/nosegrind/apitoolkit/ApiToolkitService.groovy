@@ -18,6 +18,7 @@ package net.nosegrind.apitoolkit
 import grails.converters.JSON
 import grails.converters.XML
 import grails.plugin.cache.GrailsCacheManager
+import grails.plugin.springsecurity.SpringSecurityService
 import grails.spring.BeanBuilder
 import grails.util.Holders as HOLDER
 
@@ -31,7 +32,7 @@ import java.lang.reflect.Method
 import javax.servlet.forward.*
 import java.text.SimpleDateFormat
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
+import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -49,9 +50,9 @@ import net.nosegrind.apitoolkit.*
 
 class ApiToolkitService{
 
-	def grailsApplication
-	def springSecurityService
-	def apiCacheService
+	GrailsApplication grailsApplication
+	SpringSecurityService springSecurityService
+	ApiCacheService apiCacheService
 	
 	static transactional = false
 	
@@ -804,7 +805,7 @@ class ApiToolkitService{
 	/*
 	 * TODO: Need to compare multiple authorities
 	 */
-	def Map generateDoc(String controllerName, String actionName,String apiversion){
+	Map generateDoc(String controllerName, String actionName,String apiversion){
 		def newDoc = [:]
 
 		String authority = springSecurityService.principal.authorities*.authority[0]

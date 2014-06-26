@@ -23,9 +23,13 @@ import java.util.HashSet;
 import grails.plugin.cache.CacheEvict
 import grails.plugin.cache.Cacheable
 import grails.plugin.cache.CachePut
+import grails.plugin.cache.GrailsValueWrapper
 import grails.plugin.cache.GrailsCacheManager
+import grails.plugin.springsecurity.SpringSecurityService
+
 import org.springframework.cache.Cache
 
+import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
@@ -33,14 +37,14 @@ import net.nosegrind.apitoolkit.*
 
 class ApiCacheService{
 
-	def grailsApplication
-	def springSecurityService
-	def apiToolkitService
+	GrailsApplication grailsApplication
+	SpringSecurityService springSecurityService
+	ApiToolkitService apiToolkitService
 	GrailsCacheManager grailsCacheManager
 	
 	static transactional = false
 	
-	def flushAllApiCache(){
+	void flushAllApiCache(){
 		grailsApplication.controllerClasses.each { controllerClass ->
 			String controllername = controllerClass.logicalPropertyName
 			if(controllername!='aclClass'){
@@ -50,20 +54,20 @@ class ApiCacheService{
 	}
 	
 	@CacheEvict(value="ApiCache",key="#controllername")
-	def flushApiCache(String controllername){} 
+	void flushApiCache(String controllername){} 
 	
 	@CacheEvict(value="ApiCache",key="#controllername")
-	def resetApiCache(String controllername,String method,ApiDescriptor apidoc){
+	Map resetApiCache(String controllername,String method,ApiDescriptor apidoc){
 		setApiCache(controllername,method,apidoc)
 	}
 	
 	@CachePut(value="ApiCache",key="#controllername")
-	def setApiCache(String controllername,Map apidesc){
+	Map setApiCache(String controllername,Map apidesc){
 		return apidesc
 	}
 	
 	@CachePut(value="ApiCache",key="#controllername")
-	def setApiCache(String controllername,String methodname,ApiDescriptor apidoc, String apiversion){
+	LinkedHashMap setApiCache(String controllername,String methodname,ApiDescriptor apidoc, String apiversion){
 		try{
 			def cache = getApiCache(controllername)
 			if(cache["${methodname}"]["${apiversion}"]){
@@ -93,7 +97,7 @@ class ApiCacheService{
 	}
 
 	@CachePut(value="ApiCache",key="#controllername")
-	def setApiDocCache(String controllername,String methodname, String apiversion, Map apidoc){
+	LinkedHashMap setApiDocCache(String controllername,String methodname, String apiversion, Map apidoc){
 		try{
 			def cache = getApiCache(controllername)
 			if(cache["${methodname}"]["${apiversion}"]){
@@ -107,9 +111,10 @@ class ApiCacheService{
 		}
 	}
 	
-	def getApiCache(String controllername){
+	LinkedHashMap getApiCache(String controllername){
 		try{
 			def cache = grailsCacheManager.getCache('ApiCache').get(controllername)
+
 			if(cache){
 				return cache.get()
 			}

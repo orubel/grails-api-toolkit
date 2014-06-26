@@ -3,6 +3,7 @@ package net.nosegrind.apitoolkit
 import org.codehaus.groovy.grails.web.json.JSONObject
 import java.lang.reflect.Method
 import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 
 import grails.converters.JSON
 import grails.converters.XML
@@ -10,12 +11,12 @@ import grails.converters.XML
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 
-import grails.plugin.cache.CacheEvict
-import grails.plugin.cache.Cacheable
-import grails.plugin.cache.CachePut
 import grails.plugin.cache.GrailsCacheManager
+import grails.plugin.springsecurity.SpringSecurityService
+
 import org.springframework.cache.Cache
 
+import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
@@ -23,11 +24,11 @@ import net.nosegrind.apitoolkit.*
 
 class ApiObjectService{
 
-	def grailsApplication
-	def springSecurityService
-	def apiToolkitService
-	def apiCacheService
+	GrailsApplication grailsApplication
+	SpringSecurityService springSecurityService
+	ApiToolkitService apiToolkitService
 	GrailsCacheManager grailsCacheManager
+	ApiCacheService apiCacheService
 	
 	static transactional = false
 	
@@ -120,7 +121,7 @@ class ApiObjectService{
 		return service
 	}
 	
-	def initApiCache(){
+	void initApiCache(){
 		apiCacheService.flushAllApiCache()
 
 		if(grailsApplication.config.grails.env=='development'){

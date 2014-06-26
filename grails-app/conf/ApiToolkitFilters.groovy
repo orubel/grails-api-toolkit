@@ -51,9 +51,11 @@ class ApiToolkitFilters {
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
 						return false
 					}
+
 					apiToolkitService.setApiObjectVersion(apiDir, request, params)
 					params.action = (params.action)?params.action:'index'
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
+
 					if(cache){
 						boolean result = apiToolkitService.handleApiRequest(cache,request,params)
 						return result
