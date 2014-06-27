@@ -95,40 +95,50 @@ class ApiToolkitService{
 				switch(params?.contentType){
 					case 'text/json':
 					case 'application/json':
-						if(request?.JSON?.chain){
-							params.apiChain = [:]
-							params.apiChain = request.JSON.chain
-							request.JSON.remove("chain")
-						}
-						if(request?.JSON?.batch){
-							params.apiBatch = []
-							request.JSON.batch.each {
-								params.apiBatch.add(it.value)
+						if(request?.JSON){
+							request?.JSON.each{ k,v ->
+								if(k=='chain'){
+									params.apiChain = [:]
+									params.apiChain = request.JSON.chain
+									request.JSON.remove("chain")
+								}else if(k=='batch'){
+									params.apiBatch = []
+									v.each { it ->
+										params.apiBatch.add(it.value)
+									}
+									params.apiBatch = params.apiBatch.reverse()
+									request.JSON.remove("batch")
+								}else{
+									params[k]=v
+								}
+								if(params?.apiChain?.combine=='true'){
+									if(!params.apiCombine){ params.apiCombine = [:] }
+								}
 							}
-							params.apiBatch = params.apiBatch.reverse()
-							request.JSON.remove("batch")
-						}
-						if(params?.apiChain?.combine=='true'){
-							if(!params.apiCombine){ params.apiCombine = [:] }
 						}
 						break
 					case 'text/xml':
 					case 'application/xml':
-						if(request?.XML?.chain){
-							params.apiChain = [:]
-							params.apiChain = request.XML.chain
-							request.XML.remove("chain")
-						}
-						if(request?.XML?.batch){
-							params.apiBatch = []
-							request.XML.batch.each {
-								params.apiBatch.add(it.value)
+						if(request?.XML){
+							request?.XML.each{ k,v ->
+								if(k=='chain'){
+									params.apiChain = [:]
+									params.apiChain = request.XML.chain
+									request.XML.remove("chain")
+								}else if(k=='batch'){
+									params.apiBatch = []
+									v.each { it ->
+										params.apiBatch.add(it.value)
+									}
+									params.apiBatch = params.apiBatch.reverse()
+									request.XML.remove("batch")
+								}else{
+									params[k]=v
+								}
+								if(params?.apiChain?.combine=='true'){
+									if(!params.apiCombine){ params.apiCombine = [:] }
+								}
 							}
-							params.apiBatch = params.apiBatch.reverse()
-							request.XML.remove("batch")
-						}
-						if(params?.apiChain?.combine=='true'){
-							if(!params.apiCombine){ params.apiCombine = [:] }
 						}
 						break
 				}
