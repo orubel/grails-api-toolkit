@@ -253,7 +253,7 @@ class ApiToolkitService{
 				def methods = cache["${action}"]["${params.apiObject}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 				def method = (methods.contains(request.method))?request.method:null
 
-				if(checkAuthority(cache["${action}"]["${params.apiObject}"]['roles'])){
+				if(checkAuthority(cache["${action}"]["${params.apiObject}"]['roles'].toArray() as List)){
 					if(params?.apiChain.combine=='true'){
 						params.apiCombine["${params.controller}/${params.action}"] = parseURIDefinitions(newModel,cache["${params.action}"]["${params.apiObject}"]['returns'])
 					}
@@ -395,15 +395,23 @@ class ApiToolkitService{
 	}
 	
 	HashMap getMethodParams(){
+		boolean isChain = false
 		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		Map paramsRequest = params.findAll {
+			if(it.key=='apiChain'){ isChain=true }
 			return !optionalParams.contains(it.key)
 		}
 		
-		Map paramsGet = WebUtils.fromQueryString(request.getQueryString() ?: "")
-		Map paramsPost = paramsRequest.minus(paramsGet)
+		Map paramsGet = [:]
+		Map paramsPost = [:]
+		if(isChain){
+			paramsPost = paramsRequest
+		}else{
+			paramsGet = WebUtils.fromQueryString(request.getQueryString() ?: "")
+			paramsPost = paramsRequest.minus(paramsGet)
+		}
 
 		return ['get':paramsGet,'post':paramsPost]
 	}
@@ -412,7 +420,6 @@ class ApiToolkitService{
 		String authority = springSecurityService.principal.authorities*.authority[0]
 		ParamsDescriptor[] temp = (definitions["${authority}"])?definitions["${authority}"]:definitions["permitAll"]
 		List apiList = []
-		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
 		temp.each{
 			apiList.add(it.name)
 		}
@@ -425,12 +432,12 @@ class ApiToolkitService{
 	boolean checkURIDefinitions(LinkedHashMap requestDefinitions){
 		List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
 		List requestList = getApiParams(requestDefinitions)
-		
 		HashMap params = getMethodParams()
+
 		//GrailsParameterMap params = RCH.currentRequestAttributes().params
 		List paramsList = params.post.keySet() as List
 		paramsList.removeAll(optionalParams)
-		
+
 		if(paramsList.containsAll(requestList)){
 			paramsList.removeAll(requestList)
 			if(!paramsList){

@@ -47,6 +47,7 @@ class ApiToolkitFilters {
 		apitoolkit(uri:"/${apiDir}*/**"){
 			before = {
 				//log.error("##### FILTER (BEFORE)")
+
 				try{
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
 						return false
@@ -60,6 +61,7 @@ class ApiToolkitFilters {
 						boolean result = apiToolkitService.handleApiRequest(cache,request,params)
 						return result
 					}
+					
 					return false
 
 				}catch(Exception e){
@@ -70,27 +72,28 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 				 //log.error("##### FILTER (AFTER)")
+
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
+					 LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)
+					 if(!model){
+						 response.flushBuffer()
+						 return false
+					 }
+					 
+					 if(params?.apiCombine==true){
+							map = params.apiCombine
+					 }
+					 
 					 if(params?.apiChain?.order){
 						 // return map of variable and POP first variable off chain 'order'
 						 boolean result = apiToolkitService.handleApiChain(cache, request,response,model,params)
-						 forward(controller:"${params.controller}",action:"${params.action}",id:"${model.id}")
+						 forward(controller:"${params.controller}",action:"${params.action}",id:"${map.id}")
 						 return false
 					 }else if(params?.apiBatch){
 							 forward(controller:"${params.controller}",action:"${params.action}",params:params)
 							 return false
 					 }else{
-					 	LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)
-						 if(!model){
-							 response.flushBuffer()
-							 return false
-						 }
-						 
-						 if(params?.apiCombine==true){
-								map = params.apiCombine
-						 }
-						 
 						 switch(request.method) {
 							 case 'PURGE':
 								 // cleans cache
