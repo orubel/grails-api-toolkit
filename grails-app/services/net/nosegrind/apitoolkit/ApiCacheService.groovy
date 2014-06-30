@@ -118,7 +118,6 @@ class ApiCacheService{
 			if(cache){
 				return cache.get()
 			}
-			//return cache
 
 		}catch(Exception e){
 			log.error("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:", e);

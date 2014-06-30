@@ -70,15 +70,17 @@ class ApiToolkitService{
 	
 	void setApiObjectVersion(String apiDir, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
 		// GET APICACHE VERSION; can be improved with regex/matcher
-		String temp = request.forwardURI.split('\\/')[1]
-		params.apiObject = 1
-		if(temp.contains("_v")){
-			List temp2 = temp?.split('-')
+		List temp = request.forwardURI.split('\\/')
+		def cache = apiCacheService.getApiCache(temp[2])
+		
+		params.apiObject = cache['currentStable']
+		if(temp[1].contains("_v")){
+			List temp2 = temp[1]?.split('-')
 			if(temp2.size()>1){
 				params.apiObject = temp2[1]?.toLong()
 			}
 		}else{
-			List temp2 = temp?.split('-')
+			List temp2 = temp[1]?.split('-')
 			if(temp2.size()>1){
 				params.apiObject = temp2[1]?.toLong()
 			}
@@ -1042,8 +1044,8 @@ class ApiToolkitService{
 		//def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
 
 		apidoc.each(){ k1,v1 ->
-			if(v1){
-				v1.each() { k2, v2 ->
+			if(k1!='currentStable'){
+				v1.each() { k2,v2 ->
 					def doc = generateApiDoc(controllername, k1, k2)
 					apiCacheService.setApiDocCache(controllername,k1,k2,doc)
 				}

@@ -168,6 +168,10 @@ class ApiObjectService{
 				
 				String uri = it.key
 				apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, json.get('VALUES'), apiVersion, deprecated)
+
+				if(!methods["currentStable"]){
+					methods["currentStable"] = json.CURRENTSTABLE
+				}
 				if(!methods["${actionname}"]){
 					methods["${actionname}"] = [:]
 				}
