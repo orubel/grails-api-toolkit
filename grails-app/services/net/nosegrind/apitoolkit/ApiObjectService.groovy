@@ -170,7 +170,8 @@ class ApiObjectService{
 				apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, json.get('VALUES'), apiVersion, deprecated)
 
 				if(!methods["currentStable"]){
-					methods["currentStable"] = json.CURRENTSTABLE
+					methods["currentStable"] = [:]
+					methods["currentStable"]['value'] = json.CURRENTSTABLE
 				}
 				if(!methods["${actionname}"]){
 					methods["${actionname}"] = [:]

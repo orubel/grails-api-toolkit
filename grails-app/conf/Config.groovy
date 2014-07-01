@@ -27,6 +27,7 @@ grails.cache.config = {
 apitoolkit.apiName = 'api'
 apitoolkit.protocol='http'
 
+
 apitoolkit.apiobject.type = [
 	"PKEY":["type":"Long","references":"self","description":"Primary Key"],
 	"FKEY":["type":"Long","description":""],

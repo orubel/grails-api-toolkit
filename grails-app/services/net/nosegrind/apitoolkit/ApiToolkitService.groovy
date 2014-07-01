@@ -73,7 +73,7 @@ class ApiToolkitService{
 		List temp = request.forwardURI.split('\\/')
 		def cache = apiCacheService.getApiCache(temp[2])
 		
-		params.apiObject = cache['currentStable']
+		params.apiObject = cache['currentStable']['value']
 		if(temp[1].contains("_v")){
 			List temp2 = temp[1]?.split('-')
 			if(temp2.size()>1){

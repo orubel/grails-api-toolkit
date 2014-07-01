@@ -39,12 +39,12 @@ class ApiToolkitFilters {
 	def filters = {
 		String apiName = grailsApplication.config.apitoolkit.apiName
 		String apiVersion = grailsApplication.metadata['app.version']
-		String apiDir = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
-		
-		//String apiRegex = "/${apiDir}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
+		String apiRoot = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
+
+		//String apiRegex = "/${apiRoot}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
 		
 		//apitoolkit(regex:apiRegex){
-		apitoolkit(uri:"/${apiDir}*/**"){
+		apitoolkit(uri:"/${apiRoot}*/**"){
 			before = {
 				//log.error("##### FILTER (BEFORE)")
 
@@ -53,7 +53,7 @@ class ApiToolkitFilters {
 						return false
 					}
 
-					apiToolkitService.setApiObjectVersion(apiDir, request, params)
+					apiToolkitService.setApiObjectVersion(apiRoot, request, params)
 					params.action = (params.action)?params.action:'index'
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 
