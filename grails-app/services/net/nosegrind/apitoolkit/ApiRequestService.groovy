@@ -50,18 +50,17 @@ import net.nosegrind.apitoolkit.*
 
 class ApiRequestService extends ApiLayerService{
 
-	GrailsApplication grailsApplication
-	SpringSecurityService springSecurityService
-	ApiCacheService apiCacheService
-	
 	static transactional = false
 	
-	ApiStatuses errors = new ApiStatuses()
-	GrailsCacheManager grailsCacheManager
+	//GrailsApplication grailsApplication
+	//SpringSecurityService springSecurityService
+	
+	//ApiCacheService apiCacheService
+	//ApiStatuses errors = new ApiStatuses()
+	//GrailsCacheManager grailsCacheManager
 	
 	List getContentType(SecurityContextHolderAwareRequestWrapper request){
 		List tempType = request.getHeader('Content-Type')?.split(';')
-		
 		if(tempType){
 			return tempType
 		}else{
@@ -185,16 +184,12 @@ class ApiRequestService extends ApiLayerService{
 		try{
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
-			println("api params set")
 			// CHECK IF URI HAS CACHE
 			if(cache["${params.action}"]["${params.apiObject}"]){
-				println("hascache")
 				// CHECK IF PRINCIPAL HAS ACCESS TO API
 				if(!checkAuthority(cache["${params.action}"]["${params.apiObject}"]['roles']?.toList())){
-					println("returning false")
 					return false
 				}
-				println("has authority")
 				if(cache["${params.action}"]["${params.apiObject}"]['deprecated'][0]){
 					String depdate = cache["${params.action}"]["${params.apiObject}"]['deprecated'][0]
 					String depMsg = cache["${params.action}"]["${params.apiObject}"]['deprecated'][1]
@@ -205,7 +200,6 @@ class ApiRequestService extends ApiLayerService{
 						return false
 					}
 				}
-				println("not deprecated")
 				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
 				def method = cache["${params.action}"]["${params.apiObject}"]['method']?.trim()
 				
@@ -228,13 +222,10 @@ class ApiRequestService extends ApiLayerService{
 						return true
 					}
 				}else{
-				println("request matches")
 					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
 					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
 					if(!checkURIDefinitions(cache["${params.action}"]["${params.apiObject}"]['receives'])){
-						println("bas uri def")
 						String msg = 'Expected request variables do not match sent variables'
-
 						error._400_BAD_REQUEST(msg)?.send()
 						return false
 					}else{

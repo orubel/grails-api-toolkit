@@ -37,6 +37,7 @@ import net.nosegrind.apitoolkit.*
 class ApiToolkitFilters {
 	
 	ApiRequestService apiRequestService
+	ApiResponseService apiResponseService
 	ApiToolkitService apiToolkitService
 	GrailsApplication grailsApplication
 	ApiCacheService apiCacheService
@@ -83,7 +84,10 @@ class ApiToolkitFilters {
 
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-					 LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)
+					 println("cache:"+cache)
+					 //LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)
+					 LinkedHashMap map = apiResponseService.handleApiResponse(cache, request,response,model,params)
+					 println("map:"+map)
 					 if(!model){
 						 response.flushBuffer()
 						 return false
@@ -95,7 +99,8 @@ class ApiToolkitFilters {
 					 
 					 if(params?.apiChain?.order){
 						 // return map of variable and POP first variable off chain 'order'
-						 boolean result = apiToolkitService.handleApiChain(cache, request,response,model,params)
+						 // boolean result = apiToolkitService.handleApiChain(cache, request,response,model,params)
+						 boolean result = apiResponseService.handleApiChain(cache, request,response,model,params)
 						 forward(controller:"${params.controller}",action:"${params.action}",id:"${map.id}")
 						 return false
 					 }else if(params?.apiBatch){
@@ -111,8 +116,9 @@ class ApiToolkitFilters {
 							 case 'HEAD':
 								 break;
 							 case 'OPTIONS':
-								 LinkedHashMap doc = apiToolkitService.getApiDoc(params)
-								 
+								 // LinkedHashMap doc = apiToolkitService.getApiDoc(params)
+							 	LinkedHashMap doc = apiResponseService.getApiDoc(params)
+							 
 								 switch(params.contentType){
 									 case 'application/xml':
 										 render(text:doc as XML, contentType: "${params.contentType}")

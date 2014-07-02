@@ -55,8 +55,8 @@ class ApiLayerService{
 
 	static transactional = false
 	
-	def grailsApplication
-	def springSecurityService
+	GrailsApplication grailsApplication
+	SpringSecurityService springSecurityService
 	ApiCacheService apiCacheService
 	
 	ApiStatuses errors = new ApiStatuses()
@@ -98,15 +98,11 @@ class ApiLayerService{
 
 	boolean checkAuthority(ArrayList role) throws Exception{
 		try{
-			println("#### checking authoriuty ####")
 			List roles = role as List
-			println(roles)
 			if(roles.size()==1 && roles.contains('permitAll')){
 				return true
 			}else{
-				println("not JUST permitall")
 				if(roles.size()>0){
-					println("roles > 0")
 					List roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugin.springsecurity.authority.className).clazz.list().authority
 					println(roles2)
 					List finalRoles = []
@@ -116,22 +112,17 @@ class ApiLayerService{
 					}
 					
 					if(userRoles){
-						println("userRoles : "+userRoles)
 						List temp = roles2.intersect(roles)
-						println("temp : "+temp)
 						finalRoles = temp.intersect(userRoles)
-						println("finalRoles : "+finalRoles)
 						if(finalRoles){
 							return true
 						}else{
 							return false
 						}
 					}else{
-						println("no user roles")
 						return false
 					}
 				}else{
-					println("no roles")
 					return false
 				}
 			}
