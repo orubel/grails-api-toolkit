@@ -73,13 +73,8 @@ class ApiRequestService extends ApiLayerService{
 		List temp = request.forwardURI.split('\\/')
 		def cache = apiCacheService.getApiCache(temp[2])
 		
-		params.apiObject = cache['currentStable']
-		if(temp[1].contains("_v")){
-			List temp2 = temp[1]?.split('-')
-			if(temp2.size()>1){
-				params.apiObject = temp2[1]?.toLong()
-			}
-		}else{
+		params.apiObject = cache['currentStable']['value']
+		if(temp[1].contains("-")){
 			List temp2 = temp[1]?.split('-')
 			if(temp2.size()>1){
 				params.apiObject = temp2[1]?.toLong()

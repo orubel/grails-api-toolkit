@@ -104,7 +104,6 @@ class ApiLayerService{
 			}else{
 				if(roles.size()>0){
 					List roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugin.springsecurity.authority.className).clazz.list().authority
-					println(roles2)
 					List finalRoles = []
 					List userRoles = []
 					if (springSecurityService.isLoggedIn()){
