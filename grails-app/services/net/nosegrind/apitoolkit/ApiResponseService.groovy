@@ -140,8 +140,7 @@ class ApiResponseService extends ApiLayerService{
 				}
 			}
 		}catch(Exception e){
-		println(e)
-			//log.error("[ApiToolkitService :: handleApiResponse] : Exception - full stack trace follows:", e);
+			log.error("[ApiToolkitService :: handleApiResponse] : Exception - full stack trace follows:", e);
 		}
 	}
 	

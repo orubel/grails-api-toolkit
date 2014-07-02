@@ -37,12 +37,15 @@ import net.nosegrind.apitoolkit.*
 
 class ApiCacheService{
 
+	static transactional = false
+	
 	GrailsApplication grailsApplication
 	SpringSecurityService springSecurityService
-	ApiToolkitService apiToolkitService
+	ApiLayerService apiLayerService
+	//ApiToolkitService apiToolkitService
 	GrailsCacheManager grailsCacheManager
 	
-	static transactional = false
+
 	
 	void flushAllApiCache(){
 		grailsApplication.controllerClasses.each { controllerClass ->
@@ -76,7 +79,7 @@ class ApiCacheService{
 				cache["${methodname}"]["${apiversion}"]['receives'] = apidoc.receives
 				cache["${methodname}"]["${apiversion}"]['returns'] = apidoc.returns
 				cache["${methodname}"]["${apiversion}"]['errorcodes'] = apidoc.errorcodes
-				cache["${methodname}"]["${apiversion}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname,apiversion)
+				cache["${methodname}"]["${apiversion}"]['doc'] = apiLayerService.generateApiDoc(controllername, methodname,apiversion)
 			}else{
 				log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} ")
 			}
@@ -101,7 +104,7 @@ class ApiCacheService{
 		try{
 			def cache = getApiCache(controllername)
 			if(cache["${methodname}"]["${apiversion}"]){
-				cache["${methodname}"]["${apiversion}"]['doc'] = apiToolkitService.generateApiDoc(controllername, methodname, apiversion)
+				cache["${methodname}"]["${apiversion}"]['doc'] = apiLayerService.generateApiDoc(controllername, methodname, apiversion)
 			}else{
 				log.info"[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
 			}

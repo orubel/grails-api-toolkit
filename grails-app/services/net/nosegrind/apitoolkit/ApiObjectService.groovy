@@ -26,7 +26,8 @@ class ApiObjectService{
 
 	GrailsApplication grailsApplication
 	SpringSecurityService springSecurityService
-	ApiToolkitService apiToolkitService
+	ApiLayerService apiLayerService
+	//ApiToolkitService apiToolkitService
 	GrailsCacheManager grailsCacheManager
 	ApiCacheService apiCacheService
 	
@@ -179,7 +180,7 @@ class ApiObjectService{
 				methods["${actionname}"]["${vers.key}"] = apiDescriptor
 				
 				if(methods){
-					apiToolkitService.setApiCache(apiName,methods)
+					apiLayerService.setApiCache(apiName,methods)
 				}
 			}
 

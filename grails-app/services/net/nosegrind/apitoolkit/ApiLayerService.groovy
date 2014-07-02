@@ -163,4 +163,119 @@ class ApiLayerService{
 
 		return ['get':paramsGet,'post':paramsPost]
 	}
+	
+	void setApiCache(String controllername,LinkedHashMap apidoc){
+		apiCacheService.setApiCache(controllername,apidoc)
+		//def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
+
+		apidoc.each(){ k1,v1 ->
+			if(k1!='currentStable'){
+				v1.each() { k2,v2 ->
+					def doc = generateApiDoc(controllername, k1, k2)
+					apiCacheService.setApiDocCache(controllername,k1,k2,doc)
+				}
+			}
+		}
+	}
+	
+	Map generateApiDoc(String controllername, String actionname, String apiversion){
+		Map doc = [:]
+		def cont = apiCacheService.getApiCache(controllername)
+		String apiPrefix = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String
+		
+		if(cont){
+
+			String path = "/${apiPrefix}-${apiversion}/${controllername}/${actionname}"
+			doc = ["path":"${path}","method":cont[("${actionname}".toString())][("${apiversion}".toString())]["method"],"description":cont[("${actionname}".toString())][("${apiversion}".toString())]["description"]]
+			
+			// if(springSecurityService.principal.authorities*.authority.any { receiveVal.key==it }){
+			if(cont["${actionname}"]["${apiversion}"]["receives"]){
+
+				doc["receives"] = [:]
+				for(receiveVal in cont["${actionname}"]["${apiversion}"]["receives"]){
+					doc["receives"]["${receiveVal.key}"] = receiveVal.value
+				}
+			}
+			
+			if(cont["${actionname}"]["${apiversion}"]["returns"]){
+				doc["returns"] = [:]
+				for(returnVal in cont["${actionname}"]["${apiversion}"]["returns"]){
+					doc["returns"]["${returnVal.key}"] = returnVal.value
+				}
+				doc["json"] = [:]
+				doc["json"] = processJson(doc["returns"])
+			}
+			
+			if(cont["${actionname}"]["${apiversion}"]["errorcodes"]){
+				doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())][("${apiversion}".toString())]["errorcodes"] as HashSet)
+			}
+
+		}
+
+		return doc
+	}
+	
+	/*
+	 * TODO: Need to compare multiple authorities
+	 */
+	private String processJson(LinkedHashMap returns){
+		def json = [:]
+		returns.each{ p ->
+				p.value.each{ it ->
+					ParamsDescriptor paramDesc = it
+				
+					def j = [:]
+					if(paramDesc?.values){
+						j["${paramDesc.name}"]=[]
+					}else{
+						String dataName=(['PKEY','FKEY','INDEX'].contains(paramDesc.paramType.toString()))?'ID':paramDesc.paramType
+						j = (paramDesc?.mockData?.trim())?["${paramDesc.name}":"${paramDesc.mockData}"]:["${paramDesc.name}":"${dataName}"]
+					}
+					j.each(){ key,val ->
+						if(val instanceof List){
+							def child = [:]
+							val.each(){ it2 ->
+								it2.each(){ key2,val2 ->
+									child["${key2}"] ="${val2}"
+								}
+							}
+							json["${key}"] = child
+						}else{
+							json["${key}"]=val
+						}
+					}
+				}
+		}
+
+		if(json){
+			json = json as JSON
+		}
+		return json
+	}
+	
+	private ArrayList processDocErrorCodes(HashSet error){
+		def errors = error as List
+		def err = []
+		errors.each{ v ->
+			def code = ['code':v.code,'description':"${v.description}"]
+			err.add(code)
+		}
+		return err
+	}
+	
+	// api call now needs to detect request method and see if it matches anno request method
+	boolean isApiCall(){
+		SecurityContextHolderAwareRequestWrapper request = getRequest()
+		GrailsParameterMap params = RCH.currentRequestAttributes().params
+		String uri = request.forwardURI.split('/')[1]
+		String apiName = grailsApplication.config.apitoolkit.apiName
+		String apiVersion = grailsApplication.metadata['app.version']
+		String api
+		if(params.apiObject){
+			api = (apiName)?"${apiName}_v${apiVersion}-${params.apiObject}" as String:"v${apiVersion}-${params.apiObject}" as String
+		}else{
+			api = (apiName)?"${apiName}_v${apiVersion}" as String:"v${apiVersion}" as String
+		}
+		return uri==api
+	}
 }

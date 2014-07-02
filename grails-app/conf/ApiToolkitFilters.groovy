@@ -67,7 +67,6 @@ class ApiToolkitFilters {
 					if(cache){
 						//boolean result = apiToolkitService.handleApiRequest(cache,request,params)
 						boolean result = apiRequestService.handleApiRequest(cache,request,params)
-						println(result)
 						return result
 					}
 					
