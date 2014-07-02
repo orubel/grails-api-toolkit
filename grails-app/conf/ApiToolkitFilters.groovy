@@ -27,14 +27,19 @@ import net.nosegrind.apitoolkit.Method;
 import net.nosegrind.apitoolkit.ApiStatuses;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
+
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
 
+import net.nosegrind.apitoolkit.*
+
 class ApiToolkitFilters {
 	
-	def apiToolkitService
-	def grailsApplication
-	def apiCacheService
+	ApiRequestService apiRequestService
+	ApiToolkitService apiToolkitService
+	GrailsApplication grailsApplication
+	ApiCacheService apiCacheService
 	
 	def filters = {
 		String apiName = grailsApplication.config.apitoolkit.apiName
@@ -53,12 +58,15 @@ class ApiToolkitFilters {
 						return false
 					}
 
-					apiToolkitService.setApiObjectVersion(apiRoot, request, params)
+					//apiToolkitService.setApiObjectVersion(apiRoot, request, params)
+					apiRequestService.setApiObjectVersion(apiRoot, request, params)
 					params.action = (params.action)?params.action:'index'
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 
 					if(cache){
-						boolean result = apiToolkitService.handleApiRequest(cache,request,params)
+						//boolean result = apiToolkitService.handleApiRequest(cache,request,params)
+						boolean result = apiRequestService.handleApiRequest(cache,request,params)
+						println(result)
 						return result
 					}
 					
