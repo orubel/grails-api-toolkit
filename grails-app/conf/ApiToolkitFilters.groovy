@@ -83,7 +83,7 @@ class ApiToolkitFilters {
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					 //LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)
-					 LinkedHashMap map = apiResponseService.handleApiResponse(cache, request,response,model,params)
+					 LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response,model,params)
 					 if(!model){
 						 response.flushBuffer()
 						 return false

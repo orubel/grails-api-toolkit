@@ -37,12 +37,16 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
+import com.linkedin.grails.profiler.ProfilerFilterResponse
+
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 
 import org.springframework.cache.Cache
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
 import org.springframework.web.context.request.RequestContextHolder as RCH
+import org.springframework.ui.ModelMap
+
 import org.springframework.ui.ModelMap
 
 import net.nosegrind.apitoolkit.*
@@ -112,7 +116,7 @@ class ApiResponseService extends ApiLayerService{
 		return true
 	}
 	
-	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
+	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, ProfilerFilterResponse response, ModelMap model, GrailsParameterMap params){
 		try{
 			String type = ''
 			if(cache){
