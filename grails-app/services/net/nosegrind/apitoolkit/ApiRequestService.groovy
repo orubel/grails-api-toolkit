@@ -193,11 +193,6 @@ class ApiRequestService extends ApiLayerService{
 				if(!hasAuth){
 					return false
 				}
-				/*
-				if(!checkAuthority(cache["${params.action}"]["${params.apiObject}"]['roles']?.toList())){
-					return false
-				}
-				*/
 				
 				if(cache["${params.action}"]["${params.apiObject}"]['deprecated'][0]){
 					String depdate = cache["${params.action}"]["${params.apiObject}"]['deprecated'][0]

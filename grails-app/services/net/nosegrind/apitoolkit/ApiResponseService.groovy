@@ -92,7 +92,14 @@ class ApiResponseService extends ApiLayerService{
 				def methods = cache["${action}"]["${params.apiObject}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 				def method = (methods.contains(request.method))?request.method:null
 
-				if(checkAuthority(cache["${action}"]["${params.apiObject}"]['roles'].toArray() as List)){
+				boolean hasAuth = false
+				List roles = cache["${action}"]["${params.apiObject}"]['roles'].toArray() as List
+				roles.each{
+					if(request.isUserInRole(it)){
+						hasAuth = true
+					}
+				}
+				if(hasAuth){
 					if(params?.apiChain.combine=='true'){
 						params.apiCombine["${params.controller}/${params.action}"] = parseURIDefinitions(newModel,cache["${params.action}"]["${params.apiObject}"]['returns'])
 					}
@@ -110,7 +117,6 @@ class ApiResponseService extends ApiLayerService{
 					errors._403_FORBIDDEN(msg).send()
 					return false
 				}
-
 			}
 		}
 		return true

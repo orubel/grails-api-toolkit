@@ -98,41 +98,6 @@ class ApiLayerService{
 			//throw ex
 		}
 	}
-
-	boolean checkAuthority(ArrayList role) throws Exception{
-		try{
-			List roles = role as List
-			if(roles.size()==1 && roles.contains('permitAll')){
-				return true
-			}else{
-				if(roles.size()>0){
-					List roles2 = grailsApplication.getDomainClass(grailsApplication.config.grails.plugin.springsecurity.authority.className).clazz.list().authority
-					List finalRoles = []
-					List userRoles = []
-					if (springSecurityService.isLoggedIn()){
-						userRoles = springSecurityService.getPrincipal().getAuthorities() as List
-					}
-					
-					if(userRoles){
-						List temp = roles2.intersect(roles)
-						finalRoles = temp.intersect(userRoles)
-						if(finalRoles){
-							return true
-						}else{
-							return false
-						}
-					}else{
-						return false
-					}
-				}else{
-					return false
-				}
-			}
-		}catch(Exception ex) {
-			println(ex)
-			//throw ex
-		}
-	}
 	
 	List getApiParams(LinkedHashMap definitions){
 		String authority = springSecurityService.principal.authorities*.authority[0]
