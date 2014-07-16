@@ -155,16 +155,18 @@ class ApiResponseService extends ApiLayerService{
 	}
 	
 	GrailsParameterMap getParams(SecurityContextHolderAwareRequestWrapper request,GrailsParameterMap params){
-		List formats = ['text/html','application/json','text/xml','application/xml']
-		List tempType = request.getHeader('Content-Type')?.split(';')
+		List formats = ['text/json','application/json','text/xml','application/xml']
+		List tempType = getContentType(request.getHeader('Content-Type'))
 		String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
 		type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
 		switch(type){
+			case 'text/json':
 			case 'application/json':
 				request.JSON?.each() { key,value ->
 					params.put(key,value)
 				}
 				break
+			case 'text/xml':
 			case 'application/xml':
 				request.XML?.each() { key,value ->
 					params.put(key,value)

@@ -59,18 +59,9 @@ class ApiRequestService extends ApiLayerService{
 	//ApiStatuses errors = new ApiStatuses()
 	//GrailsCacheManager grailsCacheManager
 	
-	List getContentType(SecurityContextHolderAwareRequestWrapper request){
-		List tempType = request.getHeader('Content-Type')?.split(';')
-		if(tempType){
-			return tempType
-		}else{
-			return ['application/json']
-		}
-	}
-	
-	void setApiObjectVersion(String apiDir, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
+	void setApiObjectVersion(String apiDir, String forwardURI, GrailsParameterMap params){
 		// GET APICACHE VERSION; can be improved with regex/matcher
-		List temp = request.forwardURI.split('\\/')
+		List temp = forwardURI.split('\\/')
 		def cache = apiCacheService.getApiCache(temp[2])
 		
 		params.apiObject = cache['currentStable']['value']
@@ -105,7 +96,7 @@ class ApiRequestService extends ApiLayerService{
 	private void setApiParams(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
 		try{
 			if(!params.contentType){
-				List content = getContentType(request)
+				List content = getContentType(request.getHeader('Content-Type'))
 				params.contentType = content[0]
 				params.encoding = (content.size()>1)?content[1]:null
 				

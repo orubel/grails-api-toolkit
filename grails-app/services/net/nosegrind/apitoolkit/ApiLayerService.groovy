@@ -73,6 +73,15 @@ class ApiLayerService{
 		return RCH.currentRequestAttributes().currentResponse
 	}
 	
+	List getContentType(String contentType){
+		List tempType = contentType?.split(';')
+		if(tempType){
+			return tempType
+		}else{
+			return ['application/json']
+		}
+	}
+	
 	/*
 	 * TODO: Need to compare multiple authorities
 	 */

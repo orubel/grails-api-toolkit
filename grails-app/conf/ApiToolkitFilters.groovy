@@ -53,16 +53,15 @@ class ApiToolkitFilters {
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${apiRoot}*/**"){
 			before = {
-				//log.error
-				println("##### FILTER (BEFORE)")
+				//log.error("##### FILTER (BEFORE)")
 
 				try{
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
 						return false
 					}
 
-					//apiToolkitService.setApiObjectVersion(apiRoot, request, params)
-					apiRequestService.setApiObjectVersion(apiRoot, request, params)
+					//apiToolkitService.setApiObjectVersion(apiRoot, request.forwardURI, params)
+					apiRequestService.setApiObjectVersion(apiRoot, request.forwardURI, params)
 					params.action = (params.action)?params.action:'index'
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 
@@ -81,8 +80,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 //log.error
-				println("##### FILTER (AFTER)")
+				 //log.error("##### FILTER (AFTER)")
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					 //LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)
