@@ -38,7 +38,8 @@ class ApiToolkitFilters {
 	
 	ApiRequestService apiRequestService
 	ApiResponseService apiResponseService
-	ApiToolkitService apiToolkitService
+	
+	//ApiToolkitService apiToolkitService
 	GrailsApplication grailsApplication
 	ApiCacheService apiCacheService
 	
@@ -52,7 +53,8 @@ class ApiToolkitFilters {
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${apiRoot}*/**"){
 			before = {
-				//log.error("##### FILTER (BEFORE)")
+				//log.error
+				println("##### FILTER (BEFORE)")
 
 				try{
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
@@ -79,7 +81,8 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 //log.error("##### FILTER (AFTER)")
+				 //log.error
+				println("##### FILTER (AFTER)")
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					 //LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)

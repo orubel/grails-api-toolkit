@@ -62,6 +62,9 @@ class ApiLayerService{
 	ApiStatuses errors = new ApiStatuses()
 	GrailsCacheManager grailsCacheManager
 	
+
+
+	
 	private SecurityContextHolderAwareRequestWrapper getRequest(){
 		return RCH.currentRequestAttributes().currentRequest
 	}
@@ -187,7 +190,6 @@ class ApiLayerService{
 			String path = "/${apiPrefix}-${apiversion}/${controllername}/${actionname}"
 			doc = ["path":"${path}","method":cont[("${actionname}".toString())][("${apiversion}".toString())]["method"],"description":cont[("${actionname}".toString())][("${apiversion}".toString())]["description"]]
 			
-			// if(springSecurityService.principal.authorities*.authority.any { receiveVal.key==it }){
 			if(cont["${actionname}"]["${apiversion}"]["receives"]){
 
 				doc["receives"] = [:]

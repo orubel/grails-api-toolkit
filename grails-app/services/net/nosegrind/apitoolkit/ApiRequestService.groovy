@@ -181,10 +181,24 @@ class ApiRequestService extends ApiLayerService{
 			setApiParams(request, params)
 			// CHECK IF URI HAS CACHE
 			if(cache["${params.action}"]["${params.apiObject}"]){
+				
 				// CHECK IF PRINCIPAL HAS ACCESS TO API
+				boolean hasAuth = false
+				List roles = cache["${params.action}"]["${params.apiObject}"]['roles']?.toList()
+				roles.each{
+					if(request.isUserInRole(it)){
+						hasAuth = true
+					}
+				}
+				if(!hasAuth){
+					return false
+				}
+				/*
 				if(!checkAuthority(cache["${params.action}"]["${params.apiObject}"]['roles']?.toList())){
 					return false
 				}
+				*/
+				
 				if(cache["${params.action}"]["${params.apiObject}"]['deprecated'][0]){
 					String depdate = cache["${params.action}"]["${params.apiObject}"]['deprecated'][0]
 					String depMsg = cache["${params.action}"]["${params.apiObject}"]['deprecated'][1]
