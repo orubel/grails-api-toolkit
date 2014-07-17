@@ -68,6 +68,16 @@ class ApiLayerService{
 		return RCH.currentRequestAttributes().currentResponse
 	}
 	
+	boolean checkAuth(SecurityContextHolderAwareRequestWrapper request, List roles){
+		boolean hasAuth = false
+		roles.each{
+			if(request.isUserInRole(it)){
+				hasAuth = true
+			}
+		}
+		return hasAuth
+	}
+	
 	List getContentType(String contentType){
 		List tempType = contentType?.split(';')
 		if(tempType){

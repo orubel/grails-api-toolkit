@@ -53,7 +53,8 @@ class ApiToolkitFilters {
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
-				//log.error("##### FILTER (BEFORE)")
+				//log.error
+				println("##### FILTER (BEFORE)")
 
 				try{
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
@@ -77,7 +78,8 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				 //log.error("##### FILTER (AFTER)")
+				 //log.error
+				println("##### FILTER (AFTER)")
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					 LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response,model,params)

@@ -58,30 +58,27 @@ class ApiRequestService extends ApiLayerService{
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
 			// CHECK IF URI HAS CACHE
+			
 			if(cache[params.action][params.apiObject]){
-				
-				// CHECK IF PRINCIPAL HAS ACCESS TO API
-				boolean hasAuth = false
+				println(cache[params.action][params.apiObject])
 				List roles = cache["${params.action}"]["${params.apiObject}"]['roles']?.toList()
-				roles.each{
-					if(request.isUserInRole(it)){
-						hasAuth = true
-					}
-				}
-				if(!hasAuth){
+				if(!checkAuth(request,roles)){
 					return false
 				}
-				
+				println("auth checked")
 				if(cache[params.action][params.apiObject]['deprecated'][0]){
 					String depdate = cache[params.action][params.apiObject]['deprecated'][0]
-					String depMsg = cache[params.action][params.apiObject]['deprecated'][1]
+					
 					if(checkDeprecationDate(depdate)){
+						String depMsg = cache[params.action][params.apiObject]['deprecated'][1]
 						// replace msg with config deprecation message
 						String msg = "[ERROR] ${depMsg}"
 						error._400_BAD_REQUEST(msg)?.send()
 						return false
 					}
 				}
+				println("deprecated checked")
+				
 				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
 				def method = cache[params.action][params.apiObject]['method']?.trim()
 				
@@ -117,22 +114,26 @@ class ApiRequestService extends ApiLayerService{
 
 			}
 		}catch(Exception e){
-			log.error("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:", e);
+			//log.error("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:", e);
+			println(e)
 		}
 
 	}
 	
 	void setApiObjectVersion(LinkedHashMap cache, String apiDir, String forwardURI, GrailsParameterMap params){
-		// GET APICACHE VERSION; can be improved with regex/matcher
-		List temp = forwardURI.split('\\/')
-		//def cache = apiCacheService.getApiCache(temp[2])
-		
-		params.apiObject = cache['currentStable']['value']
-		if(temp[1].contains("-")){
-			List temp2 = temp[1]?.split('-')
-			if(temp2.size()>1){
-				params.apiObject = temp2[1]?.toLong()
+		try{
+			// GET APICACHE VERSION; can be improved with regex/matcher
+			List temp = forwardURI.split('\\/')
+			//def cache = apiCacheService.getApiCache(temp[2])
+			params.apiObject = cache['currentStable']['value']
+			if(temp[1].contains("-")){
+				List temp2 = temp[1]?.split('-')
+				if(temp2.size()>1){
+					params.apiObject = temp2[1]
+				}
 			}
+		}catch(Exception e){
+			println(e)
 		}
 	}
 	
@@ -262,8 +263,6 @@ class ApiRequestService extends ApiLayerService{
 		
 		// prematch check
 		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
-		//def cache = apiCacheService.getApiCache(controller)
-		//def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 		String methods = cache[action][params.apiObject]['method'].trim()
 
 		if(method=='GET'){

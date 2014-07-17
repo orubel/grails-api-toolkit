@@ -37,7 +37,6 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
-import com.linkedin.grails.profiler.ProfilerFilterResponse
 
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
@@ -92,14 +91,8 @@ class ApiResponseService extends ApiLayerService{
 				def methods = cache[action][params.apiObject]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 				def method = (methods.contains(request.method))?request.method:null
 
-				boolean hasAuth = false
 				List roles = cache[action][params.apiObject]['roles'].toArray() as List
-				roles.each{
-					if(request.isUserInRole(it)){
-						hasAuth = true
-					}
-				}
-				if(hasAuth){
+				if(checkAuth(request,roles)){
 					if(params?.apiChain.combine=='true'){
 						params.apiCombine["${params.controller}/${params.action}"] = parseURIDefinitions(newModel,cache[params.action][params.apiObject]['returns'])
 					}
@@ -122,7 +115,7 @@ class ApiResponseService extends ApiLayerService{
 		return true
 	}
 	
-	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, ProfilerFilterResponse response, ModelMap model, GrailsParameterMap params){
+	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, ModelMap model, GrailsParameterMap params){
 		try{
 			String type = ''
 			if(cache){
