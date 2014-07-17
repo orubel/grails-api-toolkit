@@ -52,17 +52,80 @@ class ApiRequestService extends ApiLayerService{
 
 	static transactional = false
 	
-	//GrailsApplication grailsApplication
-	//SpringSecurityService springSecurityService
+	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, String entryPoint){
+		try{
+			setApiObjectVersion(cache, entryPoint, request.forwardURI, params)
+			ApiStatuses error = new ApiStatuses()
+			setApiParams(request, params)
+			// CHECK IF URI HAS CACHE
+			if(cache[params.action][params.apiObject]){
+				
+				// CHECK IF PRINCIPAL HAS ACCESS TO API
+				boolean hasAuth = false
+				List roles = cache["${params.action}"]["${params.apiObject}"]['roles']?.toList()
+				roles.each{
+					if(request.isUserInRole(it)){
+						hasAuth = true
+					}
+				}
+				if(!hasAuth){
+					return false
+				}
+				
+				if(cache[params.action][params.apiObject]['deprecated'][0]){
+					String depdate = cache[params.action][params.apiObject]['deprecated'][0]
+					String depMsg = cache[params.action][params.apiObject]['deprecated'][1]
+					if(checkDeprecationDate(depdate)){
+						// replace msg with config deprecation message
+						String msg = "[ERROR] ${depMsg}"
+						error._400_BAD_REQUEST(msg)?.send()
+						return false
+					}
+				}
+				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
+				def method = cache[params.action][params.apiObject]['method']?.trim()
+				
+				// DOES api.methods.contains(request.method)
+				if(!isRequestMatch(method,request.method.toString())){
+					// check for apichain
+
+					// TEST FOR CHAIN PATHS
+					if(params?.apiChain){
+						List uri = [params.controller,params.action,params.id]
+						int pos = checkChainedMethodPosition(cache,request, params,uri,params?.apiChain?.order as Map)
+						if(pos==3){
+							String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
+							error._400_BAD_REQUEST(msg)?.send()
+							return false
+						}else{
+							return true
+						}
+					}else{
+						return true
+					}
+				}else{
+					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
+					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
+					if(!checkURIDefinitions(cache[params.action][params.apiObject]['receives'])){
+						String msg = 'Expected request variables do not match sent variables'
+						error._400_BAD_REQUEST(msg)?.send()
+						return false
+					}else{
+						return true
+					}
+				}
+
+			}
+		}catch(Exception e){
+			log.error("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:", e);
+		}
+
+	}
 	
-	//ApiCacheService apiCacheService
-	//ApiStatuses errors = new ApiStatuses()
-	//GrailsCacheManager grailsCacheManager
-	
-	void setApiObjectVersion(String apiDir, String forwardURI, GrailsParameterMap params){
+	void setApiObjectVersion(LinkedHashMap cache, String apiDir, String forwardURI, GrailsParameterMap params){
 		// GET APICACHE VERSION; can be improved with regex/matcher
 		List temp = forwardURI.split('\\/')
-		def cache = apiCacheService.getApiCache(temp[2])
+		//def cache = apiCacheService.getApiCache(temp[2])
 		
 		params.apiObject = cache['currentStable']['value']
 		if(temp[1].contains("-")){
@@ -166,75 +229,6 @@ class ApiRequestService extends ApiLayerService{
 		return false
 	}
 	
-	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
-		try{
-			ApiStatuses error = new ApiStatuses()
-			setApiParams(request, params)
-			// CHECK IF URI HAS CACHE
-			if(cache["${params.action}"]["${params.apiObject}"]){
-				
-				// CHECK IF PRINCIPAL HAS ACCESS TO API
-				boolean hasAuth = false
-				List roles = cache["${params.action}"]["${params.apiObject}"]['roles']?.toList()
-				roles.each{
-					if(request.isUserInRole(it)){
-						hasAuth = true
-					}
-				}
-				if(!hasAuth){
-					return false
-				}
-				
-				if(cache["${params.action}"]["${params.apiObject}"]['deprecated'][0]){
-					String depdate = cache["${params.action}"]["${params.apiObject}"]['deprecated'][0]
-					String depMsg = cache["${params.action}"]["${params.apiObject}"]['deprecated'][1]
-					if(checkDeprecationDate(depdate)){
-						// replace msg with config deprecation message
-						String msg = "[ERROR] ${depMsg}"
-						error._400_BAD_REQUEST(msg)?.send()
-						return false
-					}
-				}
-				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
-				def method = cache["${params.action}"]["${params.apiObject}"]['method']?.trim()
-				
-				// DOES api.methods.contains(request.method)
-				if(!isRequestMatch(method,request.method.toString())){
-					// check for apichain
-
-					// TEST FOR CHAIN PATHS
-					if(params?.apiChain){
-						List uri = [params.controller,params.action,params.id]
-						int pos = checkChainedMethodPosition(request, params,uri,params?.apiChain?.order as Map)
-						if(pos==3){
-							String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
-							error._400_BAD_REQUEST(msg)?.send()
-							return false
-						}else{
-							return true
-						}
-					}else{
-						return true
-					}
-				}else{
-					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
-					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
-					if(!checkURIDefinitions(cache["${params.action}"]["${params.apiObject}"]['receives'])){
-						String msg = 'Expected request variables do not match sent variables'
-						error._400_BAD_REQUEST(msg)?.send()
-						return false
-					}else{
-						return true
-					}
-				}
-
-			}
-		}catch(Exception e){
-			log.error("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:", e);
-		}
-
-	}
-	
 	boolean isRequestMatch(String protocol,String method){
 		if(['OPTIONS','TRACE','HEAD'].contains(method)){
 			return true
@@ -254,7 +248,7 @@ class ApiRequestService extends ApiLayerService{
 	 * 2 = postchain
 	 * 3 = illegal combination
 	 */
-	int checkChainedMethodPosition(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, List uri, Map path){
+	int checkChainedMethodPosition(LinkedHashMap cache,SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, List uri, Map path){
 		boolean preMatch = false
 		boolean postMatch = false
 		boolean pathMatch = false
@@ -268,9 +262,9 @@ class ApiRequestService extends ApiLayerService{
 		
 		// prematch check
 		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
-		def cache = apiCacheService.getApiCache(controller)
+		//def cache = apiCacheService.getApiCache(controller)
 		//def methods = cache["${uri[1]}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-		String methods = cache["${action}"]["${params.apiObject}"]['method'].trim()
+		String methods = cache[action][params.apiObject]['method'].trim()
 
 		if(method=='GET'){
 			if(methods != method){
@@ -288,7 +282,7 @@ class ApiRequestService extends ApiLayerService{
 			if(last && last!='return'){
 				List last2 = keys[pathSize-1].split('/')
 				cache = apiCacheService.getApiCache(last2[0])
-				methods = cache["${last2[1]}"]["${params.apiObject}"]['method'].trim()
+				methods = cache[last2[1]][params.apiObject]['method'].trim()
 				if(method=='GET'){
 					if(methods != method){
 						postMatch = true
@@ -311,7 +305,7 @@ class ApiRequestService extends ApiLayerService{
 				if(val){
 					List temp2 = val.split('/')
 					cache = apiCacheService.getApiCache(temp2[0])
-					methods = cache["${temp2[1]}"]["${params.apiObject}"]['method'].trim() as List
+					methods = cache[temp2[1]][params.apiObject]['method'].trim() as List
 					if(method=='GET'){
 						if(methods != method){
 							pathMatch = true

@@ -17,7 +17,6 @@ package net.nosegrind.apitoolkit
 
 import grails.converters.JSON
 import grails.converters.XML
-import grails.plugin.cache.GrailsCacheManager
 import grails.plugin.springsecurity.SpringSecurityService
 //import grails.spring.BeanBuilder
 //import grails.util.Holders as HOLDER
@@ -60,11 +59,7 @@ class ApiLayerService{
 	ApiCacheService apiCacheService
 	
 	ApiStatuses errors = new ApiStatuses()
-	GrailsCacheManager grailsCacheManager
-	
 
-
-	
 	private SecurityContextHolderAwareRequestWrapper getRequest(){
 		return RCH.currentRequestAttributes().currentRequest
 	}
@@ -142,7 +137,6 @@ class ApiLayerService{
 	
 	void setApiCache(String controllername,LinkedHashMap apidoc){
 		apiCacheService.setApiCache(controllername,apidoc)
-		//def cache = grailsCacheManager.getCache('ApiCache').get(controllername).get()
 
 		apidoc.each(){ k1,v1 ->
 			if(k1!='currentStable'){

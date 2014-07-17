@@ -46,12 +46,12 @@ class ApiToolkitFilters {
 	def filters = {
 		String apiName = grailsApplication.config.apitoolkit.apiName
 		String apiVersion = grailsApplication.metadata['app.version']
-		String apiRoot = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
+		String entryPoint = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
 
 		//String apiRegex = "/${apiRoot}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
 		
 		//apitoolkit(regex:apiRegex){
-		apitoolkit(uri:"/${apiRoot}*/**"){
+		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
 				//log.error("##### FILTER (BEFORE)")
 
@@ -60,14 +60,11 @@ class ApiToolkitFilters {
 						return false
 					}
 
-					//apiToolkitService.setApiObjectVersion(apiRoot, request.forwardURI, params)
-					apiRequestService.setApiObjectVersion(apiRoot, request.forwardURI, params)
 					params.action = (params.action)?params.action:'index'
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 
 					if(cache){
-						//boolean result = apiToolkitService.handleApiRequest(cache,request,params)
-						boolean result = apiRequestService.handleApiRequest(cache,request,params)
+						boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
 						return result
 					}
 					
@@ -83,7 +80,6 @@ class ApiToolkitFilters {
 				 //log.error("##### FILTER (AFTER)")
 				 try{
 				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-					 //LinkedHashMap map = apiToolkitService.handleApiResponse(cache, request,response,model,params)
 					 LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response,model,params)
 					 if(!model){
 						 response.flushBuffer()
@@ -95,8 +91,6 @@ class ApiToolkitFilters {
 					 }
 					 
 					 if(params?.apiChain?.order){
-						 // return map of variable and POP first variable off chain 'order'
-						 // boolean result = apiToolkitService.handleApiChain(cache, request,response,model,params)
 						 boolean result = apiResponseService.handleApiChain(cache, request,response,model,params)
 						 forward(controller:"${params.controller}",action:"${params.action}",id:"${map.id}")
 						 return false
@@ -113,9 +107,7 @@ class ApiToolkitFilters {
 							 case 'HEAD':
 								 break;
 							 case 'OPTIONS':
-								 // LinkedHashMap doc = apiToolkitService.getApiDoc(params)
 							 	LinkedHashMap doc = apiResponseService.getApiDoc(params)
-							 
 								 switch(params.contentType){
 									 case 'application/xml':
 										 render(text:doc as XML, contentType: "${params.contentType}")

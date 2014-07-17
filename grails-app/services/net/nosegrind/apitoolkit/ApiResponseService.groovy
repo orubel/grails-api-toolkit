@@ -89,11 +89,11 @@ class ApiResponseService extends ApiLayerService{
 				}
 
 				def currentPath = "${controller}/${action}"
-				def methods = cache["${action}"]["${params.apiObject}"]['method'].replace('[','').replace(']','').split(',')*.trim() as List
+				def methods = cache[action][params.apiObject]['method'].replace('[','').replace(']','').split(',')*.trim() as List
 				def method = (methods.contains(request.method))?request.method:null
 
 				boolean hasAuth = false
-				List roles = cache["${action}"]["${params.apiObject}"]['roles'].toArray() as List
+				List roles = cache[action][params.apiObject]['roles'].toArray() as List
 				roles.each{
 					if(request.isUserInRole(it)){
 						hasAuth = true
@@ -101,7 +101,7 @@ class ApiResponseService extends ApiLayerService{
 				}
 				if(hasAuth){
 					if(params?.apiChain.combine=='true'){
-						params.apiCombine["${params.controller}/${params.action}"] = parseURIDefinitions(newModel,cache["${params.action}"]["${params.apiObject}"]['returns'])
+						params.apiCombine["${params.controller}/${params.action}"] = parseURIDefinitions(newModel,cache[params.action][params.apiObject]['returns'])
 					}
 					params.controller = controller
 					params.action = action
@@ -110,7 +110,7 @@ class ApiResponseService extends ApiLayerService{
 					params.apiChain.order.remove("${keys[0]}")
 					
 					if(params?.apiChain.combine=='true'){
-						params.apiCombine[currentPath] = parseURIDefinitions(newModel,cache["${params.action}"]["${params.apiObject}"]['returns'])
+						params.apiCombine[currentPath] = parseURIDefinitions(newModel,cache[params.action][params.apiObject]['returns'])
 					}
 				}else{
 					String msg = "User does not have access."
@@ -126,14 +126,14 @@ class ApiResponseService extends ApiLayerService{
 		try{
 			String type = ''
 			if(cache){
-				if(cache["${params.action}"]["${params.apiObject}"]){
+				if(cache[params.action][params.apiObject]){
 					// make 'application/json' default
 					def formats = ['text/html','text/json','application/json','text/xml','application/xml']
 					type = (params.contentType)?formats.findAll{ type.startsWith(it) }[0].toString():params.contentType
 					if(type){
 							def newModel = convertModel(model)
-							response.setHeader('Authorization', cache["${params.action}"]["${params.apiObject}"]['roles'].join(', '))
-							LinkedHashMap result = parseURIDefinitions(newModel,cache["${params.action}"]["${params.apiObject}"]['returns'])
+							response.setHeader('Authorization', cache[params.action][params.apiObject]['roles'].join(', '))
+							LinkedHashMap result = parseURIDefinitions(newModel,cache[params.action][params.apiObject]['returns'])
 							if(params?.apiChain?.combine=='true'){
 								if(!params.apiCombine){ params.apiCombine = [:] }
 								String currentPath = "${params.controller}/${params.action}"
@@ -307,7 +307,7 @@ class ApiResponseService extends ApiLayerService{
 			authorities.each{
 				userRoles += it.authority
 			}
-			def roles= cache["${state}"]["${apiversion}"]['roles']
+			def roles= cache[state][apiversion]['roles']
 			List temp = roles.intersect(userRoles)
 
 			if(temp.size()>0){
@@ -460,9 +460,9 @@ class ApiResponseService extends ApiLayerService{
 		if(controller){
 			def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 			if(cache){
-				if(cache["${params.action}"]["${params.apiObject}"]){
+				if(cache[params.action][params.apiObject]){
 
-					def doc = cache["${params.action}"]["${params.apiObject}"].doc
+					def doc = cache[params.action][params.apiObject].doc
 					def path = doc?.path
 					def method = doc?.method
 					def description = doc?.description
