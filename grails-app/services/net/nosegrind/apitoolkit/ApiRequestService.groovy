@@ -60,12 +60,10 @@ class ApiRequestService extends ApiLayerService{
 			// CHECK IF URI HAS CACHE
 			
 			if(cache[params.action][params.apiObject]){
-				println(cache[params.action][params.apiObject])
 				List roles = cache["${params.action}"]["${params.apiObject}"]['roles']?.toList()
 				if(!checkAuth(request,roles)){
 					return false
 				}
-				println("auth checked")
 				if(cache[params.action][params.apiObject]['deprecated'][0]){
 					String depdate = cache[params.action][params.apiObject]['deprecated'][0]
 					
@@ -77,7 +75,6 @@ class ApiRequestService extends ApiLayerService{
 						return false
 					}
 				}
-				println("deprecated checked")
 				
 				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
 				def method = cache[params.action][params.apiObject]['method']?.trim()
