@@ -20,17 +20,9 @@ import java.util.Map
 
 import grails.converters.JSON
 import grails.converters.XML
-import net.nosegrind.apitoolkit.Api;
-import org.codehaus.groovy.grails.web.json.JSONObject
 
-import net.nosegrind.apitoolkit.Method;
-import net.nosegrind.apitoolkit.ApiStatuses;
-import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
-
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
-import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
 
 import net.nosegrind.apitoolkit.*
 
@@ -38,8 +30,7 @@ class ApiToolkitFilters {
 	
 	ApiRequestService apiRequestService
 	ApiResponseService apiResponseService
-	
-	//ApiToolkitService apiToolkitService
+
 	GrailsApplication grailsApplication
 	ApiCacheService apiCacheService
 	
@@ -71,152 +62,153 @@ class ApiToolkitFilters {
 					return false
 
 				}catch(Exception e){
-					log.error("[ApiToolkitFilters :: apitoolkit.before] : Exception - full stack trace follows:", e);
+					log.error("[ApiToolkitFilters :: preHandler] : Exception - full stack trace follows:", e);
 					return false
 				}
 			}
 			
 			after = { Map model ->
-				 //log.error("##### FILTER (AFTER)")
-				 try{
-				 	def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-					 LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response,model,params)
-					 if(!model){
-						 response.flushBuffer()
-						 return false
-					 }
-					 
-					 if(params?.apiCombine==true){
-							map = params.apiCombine
-					 }
-					 
-					 if(params?.apiChain?.order){
-						 boolean result = apiResponseService.handleApiChain(cache, request,response,model,params)
-						 forward(controller:"${params.controller}",action:"${params.action}",id:"${map.id}")
-						 return false
-					 }else if(params?.apiBatch){
-							 forward(controller:"${params.controller}",action:"${params.action}",params:params)
-							 return false
-					 }else{
-						 switch(request.method) {
-							 case 'PURGE':
-								 // cleans cache
-								 break;
-							 case 'TRACE':
-								 break;
-							 case 'HEAD':
-								 break;
-							 case 'OPTIONS':
-							 	LinkedHashMap doc = apiResponseService.getApiDoc(params)
-								 switch(params.contentType){
-									 case 'application/xml':
-										 render(text:doc as XML, contentType: "${params.contentType}")
-										 break
-									 case 'application/json':
-									 default:
-										 render(text:doc as JSON, contentType: "${params.contentType}")
-										 break
-								 }
-								 return false
-								 break;
-							 case 'GET':
-								 if(map?.isEmpty()==false){
-									 switch(params.contentType){
-										 case 'application/xml':
-											 if(params.encoding){
-												 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-											 }else{
-												 render(text:map as XML, contentType: "${params.contentType}")
-											 }
-											 break
-										 case 'text/html':
-											 break
-										 case 'application/json':
-										 default:
-											 if(params.encoding){
-												 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-											 }else{
-												 render(text:map as JSON, contentType: "${params.contentType}")
-											 }
-											 break
-									 }
-									 return false
-								 }
-								 break
-							 case 'POST':
-								 if(!map.isEmpty()){
-									 switch(params.contentType){
-										 case 'application/xml':
-											 if(params.encoding){
-												 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-											 }else{
-												 render(text:map as XML, contentType: "${params.contentType}")
-											 }
-											 break
-										 case 'application/json':
-										 default:
-											 if(params.encoding){
-												 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-											 }else{
-												 render(text:map as JSON, contentType: "${params.contentType}")
-											 }
-											 break
-									 }
-									 return false
-								 }
-								 break
-							 case 'PUT':
-								 if(!map.isEmpty()){
-									 switch(params.contentType){
-										 case 'application/xml':
-											 if(params.encoding){
-												 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-											 }else{
-												 render(text:map as XML, contentType: "${params.contentType}")
-											 }
-											 break
-										 case 'application/json':
-										 default:
-											 if(params.encoding){
-												 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-											 }else{
-												 render(text:map as JSON, contentType: "${params.contentType}")
-											 }
-											 break
-									 }
-									 return false
-								 }
-								 break
-							 case 'DELETE':
-								 if(!map.isEmpty()){
-									 switch(params.contentType){
-										 case 'application/xml':
-											 if(params.encoding){
-												 render(text:map as XML, contentType: "${params.contentType}",encoding:"${params.encoding}")
-											 }else{
-												 render(text:map as XML, contentType: "${params.contentType}")
-											 }
-											 break
-										 case 'application/json':
-										 default:
-											 if(params.encoding){
-												 render(text:map as JSON, contentType: "${params.contentType}",encoding:"${params.encoding}")
-											 }else{
-												 render(text:map as JSON, contentType: "${params.contentType}")
-											 }
-											 break
-									 }
-									 return false
-								 }
-								 break
-						 }
-					 }
-					 return false
-				}catch(Exception e){
-					log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
+				//log.error("##### FILTER (AFTER)")
+				try{
+					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
+					LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response,model,params)
+					if(!model){
+						response.flushBuffer()
+						return false
+					}
+					
+					if(params?.apiCombine==true){
+						   map = params.apiCombine
+					}
+					
+					if(params?.apiChain?.order){
+						boolean result = apiResponseService.handleApiChain(cache, request,response,model,params)
+						forward(controller:"${params.controller}",action:"${params.action}",id:"${map.id}")
+						return false
+					}else if(params?.apiBatch){
+							forward(controller:"${params.controller}",action:"${params.action}",params:params)
+							return false
+					}else{
+						String apiEncoding = (params.contentType)?params.contentType:"UTF-8"
+						switch(request.method) {
+							case 'PURGE':
+								// cleans cache
+								break;
+							case 'TRACE':
+								break;
+							case 'HEAD':
+								break;
+							case 'OPTIONS':
+								LinkedHashMap doc = apiResponseService.getApiDoc(params)
+								switch(params.contentType){
+									case 'application/xml':
+										render(text:doc as XML, contentType: params.contentType)
+										break
+									case 'application/json':
+									default:
+										render(text:doc as JSON, contentType: params.contentType)
+										break
+								}
+								return false
+								break;
+							case 'GET':
+								if(map?.isEmpty()==false){
+									switch(params.contentType){
+										case 'application/xml':
+											if(params.encoding){
+												render(text:map as XML, contentType: params.contentType,encoding:"${params.encoding}")
+											}else{
+												render(text:map as XML, contentType: params.contentType)
+											}
+											break
+										case 'text/html':
+											break
+										case 'application/json':
+										default:
+											if(params.encoding){
+												render(text:map as JSON, contentType: params.contentType,encoding:"${params.encoding}")
+											}else{
+												render(text:map as JSON, contentType: params.contentType)
+											}
+											break
+									}
+									return false
+								}
+								break
+							case 'POST':
+								if(!map.isEmpty()){
+									switch(params.contentType){
+										case 'application/xml':
+											if(params.encoding){
+												render(text:map as XML, contentType: params.contentType,encoding:"${params.encoding}")
+											}else{
+												render(text:map as XML, contentType: params.contentType)
+											}
+											break
+										case 'application/json':
+										default:
+											if(params.encoding){
+												render(text:map as JSON, contentType: params.contentType,encoding:"${params.encoding}")
+											}else{
+												render(text:map as JSON, contentType: params.contentType)
+											}
+											break
+									}
+									return false
+								}
+								break
+							case 'PUT':
+								if(!map.isEmpty()){
+									switch(params.contentType){
+										case 'application/xml':
+											if(params.encoding){
+												render(text:map as XML, contentType: params.contentType,encoding:"${params.encoding}")
+											}else{
+												render(text:map as XML, contentType: params.contentType)
+											}
+											break
+										case 'application/json':
+										default:
+											if(params.encoding){
+												render(text:map as JSON, contentType: params.contentType,encoding:"${params.encoding}")
+											}else{
+												render(text:map as JSON, contentType: params.contentType)
+											}
+											break
+									}
+									return false
+								}
+								break
+							case 'DELETE':
+								if(!map.isEmpty()){
+									switch(params.contentType){
+										case 'application/xml':
+											if(params.encoding){
+												render(text:map as XML, contentType: params.contentType,encoding:"${params.encoding}")
+											}else{
+												render(text:map as XML, contentType: params.contentType)
+											}
+											break
+										case 'application/json':
+										default:
+											if(params.encoding){
+												render(text:map as JSON, contentType: params.contentType,encoding:"${params.encoding}")
+											}else{
+												render(text:map as JSON, contentType: params.contentType)
+											}
+											break
+									}
+									return false
+								}
+								break
+						}
+					}
 					return false
-				}
-			 }
+			   }catch(Exception e){
+				   log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
+				   return false
+			   }
+			}
 
 		}
 
