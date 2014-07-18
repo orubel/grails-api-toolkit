@@ -209,9 +209,6 @@ class ApiToolkitFilters {
 				   return false
 			   }
 			}
-
 		}
-
 	}
-
 }
