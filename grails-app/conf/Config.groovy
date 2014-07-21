@@ -1,6 +1,9 @@
+import grails.util.Environment
+import groovy.util.ConfigObject
 
 apiName = grailsApplication.config.apitoolkit.apiName
 apiVersion = grailsApplication.metadata['app.version']
+apiEnv = Environment.current.name
 
 log4j = {
     error 'grails.app.controllers.net.nosegrind',
@@ -26,6 +29,7 @@ grails.cache.config = {
 
 apitoolkit.apiName = 'api'
 apitoolkit.protocol='http'
+
 
 
 apitoolkit.apiobject.type = [
@@ -66,28 +70,3 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	"/hook/**" : ['permitAll'] ,
 	"/apidoc/**" : ['permitAll']
 ]
-
-
-// Uncomment and edit the following lines to start using Grails encoding & escaping improvements
-
-/* remove this line 
-// GSP settings
-grails {
-    views {
-        gsp {
-            encoding = 'UTF-8'
-            htmlcodec = 'xml' // use xml escaping instead of HTML4 escaping
-            codecs {
-                expression = 'html' // escapes values inside null
-                scriptlet = 'none' // escapes output from scriptlets in GSPs
-                taglib = 'none' // escapes output from taglibs
-                staticparts = 'none' // escapes output from static template parts
-            }
-        }
-        // escapes all not-encoded output at final stage of outputting
-        filteringCodecForContentType {
-            //'text/html' = 'html'
-        }
-    }
-}
-remove this line */

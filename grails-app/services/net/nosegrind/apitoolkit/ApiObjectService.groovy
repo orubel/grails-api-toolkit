@@ -4,9 +4,13 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import java.lang.reflect.Method
 import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import grails.util.Holders
 
 import grails.converters.JSON
 import grails.converters.XML
+
+import groovy.util.ConfigObject
+import grails.util.Environment
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -124,25 +128,13 @@ class ApiObjectService{
 	
 	void initApiCache(){
 		apiCacheService.flushAllApiCache()
-
-		if(grailsApplication.config.grails.env=='development'){
-			new File("src/apiObject").eachFile() { file ->
-				String apiName = file.getName().split('\\.')[0].toLowerCase()
-				JSONObject json = JSON.parse(file.text)
-				parseJson(apiName,json)
-				def cache2 = apiCacheService.getApiCache(apiName)
-			 }
-		}else if(grailsApplication.config.grails.env=='production'){
-			new File("WEB-INF/classes/apiObject").eachFile() { file ->
-				String apiName = file.getName().split('\\.')[0].toLowerCase()
-				JSONObject json = JSON.parse(file.text)
-				
-				parseJson(apiName,json)
-				def cache2 = apiCacheService.getApiCache(apiName)
-			 }
+		String apiObjectSrc = grailsApplication.config.apitoolkit.apiobjectSrc
+		new File("${apiObjectSrc}").eachFile() { file ->
+			String apiName = file.getName().split('\\.')[0].toLowerCase()
+			JSONObject json = JSON.parse(file.text)
+			parseJson(apiName,json)
+			def cache2 = apiCacheService.getApiCache(apiName)
 		}
-		
-
 	}
 	
 
