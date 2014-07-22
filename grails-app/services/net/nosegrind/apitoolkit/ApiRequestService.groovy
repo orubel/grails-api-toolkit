@@ -85,6 +85,13 @@ class ApiRequestService extends ApiLayerService{
 						}else{
 							return true
 						}
+					}else if(params?.apiChain){
+						List batchRoles = cache["${params.action}"]["${params.apiObject}"]['batchRoles']?.toList()
+						if(!checkAuth(request,batchRoles)){
+							return false
+						}else{
+							return true
+						}
 					}else{
 						return true
 					}

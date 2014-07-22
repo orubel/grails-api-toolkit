@@ -29,6 +29,7 @@ class ApiDescriptor {
 	List deprecated
 	String method
 	List roles
+	List batchRoles
 	String name
     String description
 	Map doc
@@ -40,6 +41,15 @@ class ApiDescriptor {
 		deprecated(nullable:true)
 		method(nullable:false,inList: ["GET","POST","PUT","DELETE"])
 		roles(nullable:true)
+		batchRoles(nullable:true, validator: { val, obj ->
+			if (batchRoles){
+				if(obj.roles.containsAll(batchRoles)) {
+				  return true
+				}else {
+				  return false
+				}
+			}
+		})
 		name(nullable:false,maxSize:200)
 		description(nullable:true,maxSize:1000)
 		doc(nullable:true)

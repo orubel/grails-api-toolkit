@@ -76,7 +76,7 @@ class ApiObjectService{
 		return ioSet
 	}
 	
-	private ApiDescriptor createApiDescriptor(String apiname,String apiMethod, String apiDescription, List apiRoles, String uri, JSONObject values, JSONObject json, List deprecated){
+	private ApiDescriptor createApiDescriptor(String apiname,String apiMethod, String apiDescription, List apiRoles, List batchRoles, String uri, JSONObject values, JSONObject json, List deprecated){
 		LinkedHashMap<String,ParamsDescriptor> apiObject = [:]
 		ApiParams param = new ApiParams()
 		
@@ -114,6 +114,7 @@ class ApiObjectService{
 			"method":"${apiMethod}",
 			"description":"${apiDescription}",
 			"roles":[],
+			"batchRoles":[],
 			"doc":[:],
 			"receives":receives,
 			"returns":returns
@@ -122,6 +123,7 @@ class ApiObjectService{
 			service['deprecated'] = deprecated
 		}
 		service['roles'] = apiRoles
+		service['batchRoles'] = batchRoles
 
 		return service
 	}
@@ -158,9 +160,10 @@ class ApiObjectService{
 				String apiMethod = it.value.METHOD
 				String apiDescription = it.value.DESCRIPTION
 				List apiRoles = it.value.ROLES
+				List batchRoles = it.value.BATCH
 				
 				String uri = it.key
-				apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, uri, json.get('VALUES'), apiVersion, deprecated)
+				apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, batchRoles, uri, json.get('VALUES'), apiVersion, deprecated)
 
 				if(!methods["currentStable"]){
 					methods["currentStable"] = [:]
