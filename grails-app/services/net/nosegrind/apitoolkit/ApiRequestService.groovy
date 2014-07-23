@@ -30,7 +30,6 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 import javax.servlet.forward.*
-import java.text.SimpleDateFormat
 
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
@@ -213,16 +212,6 @@ class ApiRequestService extends ApiLayerService{
 		}catch(Exception e){
 			log.error("[ApiRequestService :: setApiParams] : Exception - full stack trace follows:", e);
 		}
-	}
-	
-	boolean checkDeprecationDate(String deprecationDate){
-		def ddate = new SimpleDateFormat("MM/dd/yyyy").parse(deprecationDate)
-		def deprecated = new Date(ddate.time)
-		def today = new Date()
-		if(deprecated < today ) {
-			return true
-		}
-		return false
 	}
 	
 	boolean isRequestMatch(String protocol,String method){

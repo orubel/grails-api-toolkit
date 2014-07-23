@@ -32,7 +32,7 @@ import java.util.regex.Pattern
 
 //import java.lang.reflect.Method
 import javax.servlet.forward.*
-//import java.text.SimpleDateFormat
+import java.text.SimpleDateFormat
 
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -192,6 +192,89 @@ class ApiLayerService{
 		}
 
 		return doc
+	}
+	
+	/*
+	 * TODO: Need to compare multiple authorities
+	 */
+	Map generateDoc(String controllerName, String actionName,String apiversion){
+		def newDoc = [:]
+
+		String authority = springSecurityService.principal.authorities*.authority[0]
+
+		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', controllerName)
+		def cache = apiCacheService.getApiCache(controllerName)?:null
+		
+
+		if(cache["${actionName}"]["${apiversion}"]?.doc && (cache["${actionName}"]["${apiversion}"]['roles']?.contains(authority) || cache["${actionName}"]["${apiversion}"]['roles']?.contains('permitAll'))){
+			if(cache["${actionName}"]["${apiversion}"]['deprecated'][0]){
+				String depdate = cache["${actionName}"]["${apiversion}"]['deprecated'][0]
+				if(checkDeprecationDate(depdate)){
+					return newDoc
+				}
+			}
+			
+			def doc = cache["${actionName}"]["${apiversion}"].doc
+			def path = doc.path
+			def method = doc.method
+			def description = doc.description
+			
+			if(!newDoc["${actionName}"]){
+				newDoc["${actionName}"] = [:]
+			}
+			
+			newDoc["${actionName}"]["${apiversion}"] = ["path":path,"method":method,"description":description]
+			if(doc.receives){
+
+				if(!newDoc["${actionName}"]["${apiversion}"].receives){
+					newDoc["${actionName}"]["${apiversion}"].receives = []
+				}
+				if(doc.receives?."${authority}"){
+					doc.receives["${authority}"].each{ it ->
+						newDoc["${actionName}"]["${apiversion}"].receives.add(it)
+					}
+				}else{
+					doc.receives["permitAll"].each{ it ->
+						newDoc["${actionName}"]["${apiversion}"].receives.add(it)
+					}
+				}
+			}
+	
+			if(doc.returns){
+				if(!newDoc["${actionName}"]["${apiversion}"].returns){
+					newDoc["${actionName}"]["${apiversion}"].returns = []
+				}
+				if(doc.returns?."${authority}"){
+					doc.returns["${authority}"].each{ it ->
+						newDoc["${actionName}"]["${apiversion}"].returns.add(it)
+					}
+				}else{
+					doc.returns["permitAll"].each{ it ->
+						newDoc["${actionName}"]["${apiversion}"].returns.add(it)
+
+					}
+				}
+
+				newDoc["${actionName}"]["${apiversion}"].json = doc.json
+			}
+			
+			if(doc.errorcodes){
+				newDoc["${actionName}"]["${apiversion}"].errorcodes = doc.errorcodes
+			}
+
+		}
+
+		return newDoc
+	}
+
+	boolean checkDeprecationDate(String deprecationDate){
+		def ddate = new SimpleDateFormat("MM/dd/yyyy").parse(deprecationDate)
+		def deprecated = new Date(ddate.time)
+		def today = new Date()
+		if(deprecated < today ) {
+			return true
+		}
+		return false
 	}
 	
 	/*
