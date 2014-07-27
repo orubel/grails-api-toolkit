@@ -72,7 +72,7 @@ class ApiRequestService extends ApiLayerService{
 				// DOES api.methods.contains(request.method)
 				if(!isRequestMatch(method,request.method.toString())){
 					// check for apichain
-
+					
 					// TEST FOR CHAIN PATHS
 					if(params?.apiChain){
 						List uri = [params.controller,params.action,params.id]
@@ -97,6 +97,12 @@ class ApiRequestService extends ApiLayerService{
 				}else{
 					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
 					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
+					if(params.apiBatch){
+						def temp = params.apiBatch.remove(0)
+						temp.each{ k,v ->
+							params[k] = v
+						}
+					}
 					if(!checkURIDefinitions(cache[params.action][params.apiObject]['receives'])){
 						String msg = 'Expected request variables do not match sent variables'
 						error._400_BAD_REQUEST(msg)?.send()
@@ -109,7 +115,7 @@ class ApiRequestService extends ApiLayerService{
 			}
 		}catch(Exception e){
 			//log.error("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:", e);
-			println(e)
+			println("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:"+ e);
 		}
 
 	}
@@ -132,7 +138,7 @@ class ApiRequestService extends ApiLayerService{
 	}
 	
 	
-	private void setApiParams(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
+	protected void setApiParams(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
 		try{
 			if(!params.contentType){
 				List content = getContentType(request.getHeader('Content-Type'))
@@ -151,7 +157,7 @@ class ApiRequestService extends ApiLayerService{
 								}else if(k=='batch'){
 									params.apiBatch = []
 									v.each { it ->
-										params.apiBatch.add(it.value)
+										params.apiBatch.add(it)
 									}
 									params.apiBatch = params.apiBatch.reverse()
 									request.JSON.remove("batch")
@@ -191,7 +197,8 @@ class ApiRequestService extends ApiLayerService{
 				}
 			}
 		}catch(Exception e){
-			log.error("[ApiRequestService :: setApiParams] : Exception - full stack trace follows:", e);
+			//log.error("[ApiRequestService :: setApiParams] : Exception - full stack trace follows:", e);
+			println("[ApiRequestService :: setApiParams] : Exception - full stack trace follows:"+ e);
 		}
 	}
 	

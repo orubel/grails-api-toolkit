@@ -95,12 +95,13 @@ class ApiLayerService{
 			List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
 			List requestList = getApiParams(requestDefinitions)
 			HashMap params = getMethodParams()
-	
+			
 			//GrailsParameterMap params = RCH.currentRequestAttributes().params
 			List paramsList = params.post.keySet() as List
 			paramsList.removeAll(optionalParams)
 	
 			if(paramsList.containsAll(requestList)){
+				
 				paramsList.removeAll(requestList)
 				if(!paramsList){
 					return true
