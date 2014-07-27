@@ -131,25 +131,6 @@ class ApiRequestService extends ApiLayerService{
 		}
 	}
 	
-	void setParams(SecurityContextHolderAwareRequestWrapper request,GrailsParameterMap params){
-		List formats = ['text/json','application/json','text/xml','application/xml']
-		List tempType = request.getHeader('Content-Type')?.split(';')
-		String type = (tempType)?tempType[0]:request.getHeader('Content-Type')
-		type = (request.getHeader('Content-Type'))?formats.findAll{ type.startsWith(it) }[0].toString():null
-		
-		switch(type){
-			case 'application/json':
-				request.JSON?.each() { key,value ->
-					params.put(key,value)
-				}
-				break
-			case 'application/xml':
-				request.XML?.each() { key,value ->
-					params.put(key,value)
-				}
-				break
-		}
-	}
 	
 	private void setApiParams(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
 		try{
@@ -227,97 +208,5 @@ class ApiRequestService extends ApiLayerService{
 		return false
 	}
 	
-	/*
-	 * Returns chainType
-	 * 1 = prechain
-	 * 2 = postchain
-	 * 3 = illegal combination
-	 */
-	int checkChainedMethodPosition(LinkedHashMap cache,SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, List uri, Map path){
-		boolean preMatch = false
-		boolean postMatch = false
-		boolean pathMatch = false
 
-		List keys = path.keySet() as List
-		Integer pathSize = keys.size()
-		
-		String controller = uri[0]
-		String action = uri[1]
-		Long id = uri[2]
-		
-		// prematch check
-		String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
-		String methods = cache[action][params.apiObject]['method'].trim()
-
-		if(method=='GET'){
-			if(methods != method){
-				preMatch = true
-			}
-		}else{
-			if(methods == method){
-				preMatch = true
-			}
-		}
-
-		// postmatch check
-		if(pathSize>=1){
-			String last=path[keys[pathSize-1]]
-			if(last && last!='return'){
-				List last2 = keys[pathSize-1].split('/')
-				cache = apiCacheService.getApiCache(last2[0])
-				methods = cache[last2[1]][params.apiObject]['method'].trim()
-				if(method=='GET'){
-					if(methods != method){
-						postMatch = true
-					}
-				}else{
-					if(methods == method){
-						postMatch = true
-					}
-				}
-			}else{
-				postMatch = true
-			}
-		}
-
-		// path check
-		int start = 1
-		int end = pathSize-2
-		if(start<end){
-			keys[0..(pathSize-1)].each{ val ->
-				if(val){
-					List temp2 = val.split('/')
-					cache = apiCacheService.getApiCache(temp2[0])
-					methods = cache[temp2[1]][params.apiObject]['method'].trim() as List
-					if(method=='GET'){
-						if(methods != method){
-							pathMatch = true
-						}
-					}else{
-						if(methods == method){
-							pathMatch = true
-						}
-					}
-				}
-			}
-		}
-
-		if(pathMatch || (preMatch && postMatch)){
-			return 3
-		}else{
-			if(preMatch){
-				setParams(request,params)
-				return 1
-			}else if(postMatch){
-				setParams(request,params)
-				return 2
-			}
-		}
-		
-		// path but but no position
-		// could be trying to make api call and url encode data
-		// if so, not restful; does not comply
-		return 3
-
-	}
 }

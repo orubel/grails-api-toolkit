@@ -16,16 +16,16 @@
 package net.nosegrind.apitoolkit;
 
 /*
- * Method		Idempotent	Safe	Optional
- * OPTIONS		yes			yes		yes
- * HEAD			yes			yes		yes
+ * Method		Idempotent	Safe
+ * OPTIONS		yes			yes
+ * HEAD			yes			yes
  * 
- * GET			yes			yes		no
- * PUT			yes			no		no
- * POST			no			no		no
- * DELETE		yes			no		no
- * PATCH		no			no		no
- * TRACE		no			yes		no
+ * GET			yes			yes
+ * PUT			yes			no
+ * POST			no			no
+ * DELETE		yes			no
+ * PATCH		no			no
+ * TRACE		no			yes
  */
 
 public enum Method {

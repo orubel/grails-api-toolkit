@@ -74,7 +74,7 @@ class ApiResponseService extends ApiLayerService{
 		Long id = newModel.id
 		
 		if(keys[0] && (params?.apiChain?.order["${keys[0]}"]='null' && params?.apiChain?.order["${keys[0]}"]!='return')){
-			int pos = checkChainedMethodPosition(request,params,uri,params?.apiChain?.order as Map)
+			int pos = checkChainedMethodPosition(cache,request,params,uri,params?.apiChain?.order as Map)
 			if(pos==3){
 				String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
 				errors._403_FORBIDDEN(msg).send()
