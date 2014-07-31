@@ -44,7 +44,7 @@ class ApiRequestService extends ApiLayerService{
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, String entryPoint){
 		try{
-			setApiObjectVersion(cache, entryPoint, request.forwardURI, params)
+			// setApiObjectVersion(cache, entryPoint, request.forwardURI, params)
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
 			// CHECK IF URI HAS CACHE

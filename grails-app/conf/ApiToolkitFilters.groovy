@@ -38,6 +38,10 @@ class ApiToolkitFilters {
 		String apiName = grailsApplication.config.apitoolkit.apiName
 		String apiVersion = grailsApplication.metadata['app.version']
 		String entryPoint = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
+		
+		
+		
+		
 
 		//String apiRegex = "/${apiRoot}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
 		
@@ -45,7 +49,7 @@ class ApiToolkitFilters {
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
 				//log.error("##### FILTER (BEFORE)")
-
+				
 				try{
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
 						return false
@@ -55,6 +59,7 @@ class ApiToolkitFilters {
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 
 					if(cache){
+						params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']
 						boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
 						return result
 					}

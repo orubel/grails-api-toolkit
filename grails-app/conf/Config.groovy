@@ -30,6 +30,8 @@ grails.cache.config = {
 apitoolkit.apiName = 'api'
 apitoolkit.protocol='http'
 
+apitoolkit.chaining.enabled=true
+apitoolkit.batching.enabled=true
 
 
 apitoolkit.apiobject.type = [

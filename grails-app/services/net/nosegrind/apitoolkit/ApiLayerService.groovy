@@ -331,13 +331,11 @@ class ApiLayerService{
 		SecurityContextHolderAwareRequestWrapper request = getRequest()
 		GrailsParameterMap params = RCH.currentRequestAttributes().params
 		String uri = request.forwardURI.split('/')[1]
-		String apiName = grailsApplication.config.apitoolkit.apiName
-		String apiVersion = grailsApplication.metadata['app.version']
 		String api
 		if(params.apiObject){
-			api = (apiName)?"${apiName}_v${apiVersion}-${params.apiObject}" as String:"v${apiVersion}-${params.apiObject}" as String
+			api = (apiName)?"${params.apiName}_v${params.apiVersion}-${params.apiObject}" as String:"v${params.apiVersion}-${params.apiObject}" as String
 		}else{
-			api = (apiName)?"${apiName}_v${apiVersion}" as String:"v${apiVersion}" as String
+			api = (apiName)?"${params.apiName}_v${params.apiVersion}" as String:"v${params.apiVersion}" as String
 		}
 		return uri==api
 	}
