@@ -44,7 +44,6 @@ class ApiRequestService extends ApiLayerService{
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, String entryPoint){
 		try{
-			// setApiObjectVersion(cache, entryPoint, request.forwardURI, params)
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
 			// CHECK IF URI HAS CACHE
@@ -118,23 +117,6 @@ class ApiRequestService extends ApiLayerService{
 			println("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:"+ e);
 		}
 
-	}
-	
-	void setApiObjectVersion(LinkedHashMap cache, String apiDir, String forwardURI, GrailsParameterMap params){
-		try{
-			// GET APICACHE VERSION; can be improved with regex/matcher
-			List temp = forwardURI.split('\\/')
-			//def cache = apiCacheService.getApiCache(temp[2])
-			params.apiObject = cache['currentStable']['value']
-			if(temp[1].contains("-")){
-				List temp2 = temp[1]?.split('-')
-				if(temp2.size()>1){
-					params.apiObject = temp2[1]
-				}
-			}
-		}catch(Exception e){
-			println(e)
-		}
 	}
 	
 	
