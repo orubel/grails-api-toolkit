@@ -55,13 +55,6 @@ class ApiResponseService extends ApiLayerService{
 
 	static transactional = false
 	
-	//def grailsApplication
-	//SpringSecurityService springSecurityService
-	
-	//ApiCacheService apiCacheService
-	//ApiStatuses errors = new ApiStatuses()
-	//GrailsCacheManager grailsCacheManager
-	
 	boolean handleApiChain(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
 		List keys = params?.apiChain?.order.keySet() as List
 		List uri = [params.controller,params.action,params.id]

@@ -44,6 +44,7 @@ class ApiRequestService extends ApiLayerService{
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, String entryPoint){
 		try{
+			
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
 			// CHECK IF URI HAS CACHE
@@ -73,19 +74,12 @@ class ApiRequestService extends ApiLayerService{
 					// check for apichain
 					
 					// TEST FOR CHAIN PATHS
-					if(params?.apiChain){
+					if(chain && params?.apiChain){
 						List uri = [params.controller,params.action,params.id]
 						int pos = checkChainedMethodPosition(cache,request, params,uri,params?.apiChain?.order as Map)
 						if(pos==3){
 							String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
 							error._400_BAD_REQUEST(msg)?.send()
-							return false
-						}else{
-							return true
-						}
-					}else if(params?.apiChain){
-						List batchRoles = cache["${params.action}"]["${params.apiObject}"]['batchRoles']?.toList()
-						if(!checkAuth(request,batchRoles)){
 							return false
 						}else{
 							return true
@@ -96,11 +90,17 @@ class ApiRequestService extends ApiLayerService{
 				}else{
 					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
 					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
-					if(params.apiBatch){
+					if(batch && params.apiBatch){
 						def temp = params.apiBatch.remove(0)
 						temp.each{ k,v ->
 							params[k] = v
 						}
+					}
+					List batchRoles = cache["${params.action}"]["${params.apiObject}"]['batchRoles']?.toList()
+					if(!checkAuth(request,batchRoles)){
+						return false
+					}else{
+						return true
 					}
 					if(!checkURIDefinitions(cache[params.action][params.apiObject]['receives'])){
 						String msg = 'Expected request variables do not match sent variables'
@@ -132,11 +132,11 @@ class ApiRequestService extends ApiLayerService{
 					case 'application/json':
 						if(request?.JSON){
 							request?.JSON.each{ k,v ->
-								if(k=='chain'){
+								if(chain && k=='chain'){
 									params.apiChain = [:]
 									params.apiChain = request.JSON.chain
 									request.JSON.remove("chain")
-								}else if(k=='batch'){
+								}else if(batch && k=='batch'){
 									params.apiBatch = []
 									v.each { it ->
 										params.apiBatch.add(it)
@@ -146,7 +146,7 @@ class ApiRequestService extends ApiLayerService{
 								}else{
 									params[k]=v
 								}
-								if(params?.apiChain?.combine=='true'){
+								if(chain && params?.apiChain?.combine=='true'){
 									if(!params.apiCombine){ params.apiCombine = [:] }
 								}
 							}
@@ -156,11 +156,11 @@ class ApiRequestService extends ApiLayerService{
 					case 'application/xml':
 						if(request?.XML){
 							request?.XML.each{ k,v ->
-								if(k=='chain'){
+								if(chain && k=='chain'){
 									params.apiChain = [:]
 									params.apiChain = request.XML.chain
 									request.XML.remove("chain")
-								}else if(k=='batch'){
+								}else if(batch && k=='batch'){
 									params.apiBatch = []
 									v.each { it ->
 										params.apiBatch.add(it.value)
@@ -170,7 +170,7 @@ class ApiRequestService extends ApiLayerService{
 								}else{
 									params[k]=v
 								}
-								if(params?.apiChain?.combine=='true'){
+								if(chain && params?.apiChain?.combine=='true'){
 									if(!params.apiCombine){ params.apiCombine = [:] }
 								}
 							}

@@ -39,9 +39,10 @@ class ApiToolkitFilters {
 		String apiVersion = grailsApplication.metadata['app.version']
 		String entryPoint = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
 		
-		
-		
-		
+		boolean chain = grailsApplication.config.apitoolkit.chaining.enabled
+		apiRequestService.setChain(chain)
+		boolean batch = grailsApplication.config.apitoolkit.batching.enabled
+		apiRequestService.setBatch(batch)
 
 		//String apiRegex = "/${apiRoot}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
 		
@@ -86,11 +87,11 @@ class ApiToolkitFilters {
 						   map = params.apiCombine
 					}
 					
-					if(params?.apiChain?.order){
+					if(chain && params?.apiChain?.order){
 						boolean result = apiResponseService.handleApiChain(cache, request,response,model,params)
 						forward(controller:"${params.controller}",action:"${params.action}",id:"${map.id}")
 						return false
-					}else if(params?.apiBatch){
+					}else if(batch && params?.apiBatch){
 							forward(controller:"${params.controller}",action:"${params.action}",params:params)
 							return false
 					}else{

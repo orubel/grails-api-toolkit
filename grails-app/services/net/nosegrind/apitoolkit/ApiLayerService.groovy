@@ -60,6 +60,17 @@ class ApiLayerService{
 	
 	ApiStatuses errors = new ApiStatuses()
 
+	boolean chain = false
+	boolean batch = false
+	
+	void setBatch(Boolean val){
+		this.batch = val
+	}
+	
+	void setChain(Boolean val){
+		this.chain = val
+	}
+	
 	private SecurityContextHolderAwareRequestWrapper getRequest(){
 		return RCH.currentRequestAttributes().currentRequest
 	}
