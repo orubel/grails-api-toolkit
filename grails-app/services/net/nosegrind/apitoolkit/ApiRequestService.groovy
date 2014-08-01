@@ -44,6 +44,8 @@ class ApiRequestService extends ApiLayerService{
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, String entryPoint){
 		try{
+			setChain()
+			setBatch()
 			
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)

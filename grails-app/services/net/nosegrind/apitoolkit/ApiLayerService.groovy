@@ -63,8 +63,8 @@ class ApiLayerService{
 	boolean chain = false
 	boolean batch = false
 	
-	void setBatch(Boolean val){
-		this.batch = val
+	void setBatch(){
+		this.batch = grailsApplication.config.apitoolkit.batching.enabled
 	}
 	
 	void setChain(Boolean val){
@@ -120,8 +120,7 @@ class ApiLayerService{
 			}
 			return false
 		}catch(Exception ex) {
-			println(ex)
-			//throw ex
+			throw ex
 		}
 	}
 	
