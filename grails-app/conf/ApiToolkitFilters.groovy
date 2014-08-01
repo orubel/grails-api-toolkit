@@ -76,13 +76,14 @@ class ApiToolkitFilters {
 			after = { Map model ->
 				//log.error("##### FILTER (AFTER)")
 				try{
-
-					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-					LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response,model,params)
 					if(!model){
 						render(status: 404, contentType: "${params.contentType}", encoding: "ISO-8859-1")
 						return false
 					}
+					
+					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
+					LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response,model,params)
+
 
 					if(params?.apiCombine==true){
 						   map = params.apiCombine
