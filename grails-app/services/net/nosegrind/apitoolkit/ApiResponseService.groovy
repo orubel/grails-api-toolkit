@@ -491,7 +491,6 @@ class ApiResponseService extends ApiLayerService{
 	}
 	
 	Map convertModel(Map map){
-		
 		Map newMap = [:]
 		String k = map?.entrySet()?.toList()?.first()?.key
 		if(map && (!map?.response && !map?.metaClass && !map?.params)){
@@ -499,6 +498,8 @@ class ApiResponseService extends ApiLayerService{
 				newMap = formatDomainObject(map[k])
 			}else{
 				switch(map[k].getClass()){
+					case 'class java.util.LinkedList':
+					case 'class java.util.ArrayList':
 						map[k].eachWithIndex(){ val, key ->
 							if(key){
 								if(grailsApplication.isDomainClass(val.getClass())){
@@ -515,22 +516,24 @@ class ApiResponseService extends ApiLayerService{
 							}
 						}
 						break
+					case 'class java.util.Map':
+					case 'class java.util.LinkedHashMap':
 					default:
-					map[k].each(){ key, val ->
-						if(val){
-							if(grailsApplication.isDomainClass(val.getClass())){
-								newMap[key]=formatDomainObject(val)
-							}else{
-								if(val in java.util.ArrayList || val in java.util.List){
-									newMap[key] = val
-								}else if(val in java.util.Map){
-									newMap[key]= val
+						map[k].each(){ key, val ->
+							if(val){
+								if(grailsApplication.isDomainClass(val.getClass())){
+									newMap[key]=formatDomainObject(val)
 								}else{
-									newMap[key]=val.toString()
+									if(val in java.util.ArrayList || val in java.util.List){
+										newMap[key] = val
+									}else if(val in java.util.Map){
+										newMap[key]= val
+									}else{
+										newMap[key]=val.toString()
+									}
 								}
 							}
 						}
-					}
 						break
 				}
 			}
