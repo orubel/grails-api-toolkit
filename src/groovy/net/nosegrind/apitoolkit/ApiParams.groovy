@@ -16,17 +16,17 @@
 package net.nosegrind.apitoolkit
 
 import net.nosegrind.apitoolkit.ParamsDescriptor
-import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
-import grails.util.Holders
-import org.springframework.web.context.request.RequestContextHolder as RCH
+//import org.codehaus.groovy.grails.commons.GrailsClass
+//import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+//import grails.util.Holders
+//import org.springframework.web.context.request.RequestContextHolder as RCH
 
 class ApiParams{
 
-	def applicationContext
-	def grailsApplication
-	def apiDocService
-	def springSecurityService
+	//def applicationContext
+	//def grailsApplication
+	//def apiDocService
+	//def springSecurityService
 
 	ParamsDescriptor param
 	

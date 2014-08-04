@@ -391,8 +391,8 @@ class ApiResponseService extends ApiLayerService{
 	}
 	
 	private ArrayList processDocErrorCodes(HashSet error){
-		def errors = error as List
-		def err = []
+		List errors = error as List
+		ArrayList err = []
 		errors.each{ v ->
 			def code = ['code':v.code,'description':"${v.description}"]
 			err.add(code)

@@ -39,6 +39,7 @@ apitoolkit.apiobject.type = [
 	"FKEY":["type":"Long","description":""],
 	"INDEX":["type":"String","references":"self","description":"Foreign Key"],
 	"String":["type":"String","description":"String"],
+	"Date":["type":"String","description":"String"],
 	"Long":["type":"Long","description":"Long"],
 	"Boolean":["type":"Boolean","description":"Boolean"],
 	"Float":["type":"Float","description":"Floating Point"],

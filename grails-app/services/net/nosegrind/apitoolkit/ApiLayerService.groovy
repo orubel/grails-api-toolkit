@@ -295,28 +295,30 @@ class ApiLayerService{
 		def json = [:]
 		returns.each{ p ->
 				p.value.each{ it ->
-					ParamsDescriptor paramDesc = it
-				
-					def j = [:]
-					if(paramDesc?.values){
-						j["${paramDesc.name}"]=[]
-					}else{
-						String dataName=(['PKEY','FKEY','INDEX'].contains(paramDesc.paramType.toString()))?'ID':paramDesc.paramType
-						j = (paramDesc?.mockData?.trim())?["${paramDesc.name}":"${paramDesc.mockData}"]:["${paramDesc.name}":"${dataName}"]
-					}
-					j.each(){ key,val ->
-						if(val instanceof List){
-							def child = [:]
-							val.each(){ it2 ->
-								it2.each(){ key2,val2 ->
-									child["${key2}"] ="${val2}"
-								}
-							}
-							json["${key}"] = child
+					if(it){
+						ParamsDescriptor paramDesc = it
+					
+						def j = [:]
+						if(paramDesc?.values){
+							j["${paramDesc.name}"]=[]
 						}else{
-							json["${key}"]=val
+							String dataName=(['PKEY','FKEY','INDEX'].contains(paramDesc?.paramType?.toString()))?'ID':paramDesc.paramType
+							j = (paramDesc?.mockData?.trim())?["${paramDesc.name}":"${paramDesc.mockData}"]:["${paramDesc.name}":"${dataName}"]
 						}
-					}
+						j.each(){ key,val ->
+							if(val instanceof List){
+								def child = [:]
+								val.each(){ it2 ->
+									it2.each(){ key2,val2 ->
+										child["${key2}"] ="${val2}"
+									}
+								}
+								json["${key}"] = child
+							}else{
+								json["${key}"]=val
+							}
+						}
+						}
 				}
 		}
 
