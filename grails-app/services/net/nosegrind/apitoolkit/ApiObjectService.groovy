@@ -1,3 +1,6 @@
+/* ****************************************************************************
+ * Copyright 2014 Owen Rubel
+ *****************************************************************************/
 package net.nosegrind.apitoolkit
 
 import org.codehaus.groovy.grails.web.json.JSONObject
