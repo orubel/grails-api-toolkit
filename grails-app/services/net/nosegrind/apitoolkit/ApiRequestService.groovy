@@ -7,8 +7,6 @@ import grails.converters.JSON
 import grails.converters.XML
 import grails.plugin.cache.GrailsCacheManager
 import grails.plugin.springsecurity.SpringSecurityService
-//import grails.spring.BeanBuilder
-//import grails.util.Holders as HOLDER
 
 import java.util.ArrayList
 import java.util.HashSet
