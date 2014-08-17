@@ -2,12 +2,7 @@ grails.project.work.dir = 'target'
 grails.project.dependency.resolver = "maven" // or ivy
 grails.project.dependency.resolution = {
 
-	inherits("global") {
-		// specify dependency exclusions here; for example, uncomment this to disable ehcache:
-		// excludes 'ehcache'
-		excludes  "grails-plugin-log4j", "log4j"
-	}
-
+	inherits("global")
     log 'warn'
 
     repositories {
@@ -28,10 +23,11 @@ grails.project.dependency.resolution = {
 			 export = false
 		}
 		compile(":cache:1.1.6")
-		compile(":spring-security-core:2.0-RC3")
+		compile(":spring-security-core:2.0-RC4")
 		
 		compile(":rest:0.8"){
 			export=false
 		}
     }
 }
+

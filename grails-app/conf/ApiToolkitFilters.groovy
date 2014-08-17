@@ -82,15 +82,18 @@ class ApiToolkitFilters {
 					}
 					
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-					LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response,model,params)
+					
 
+					//println(response.response.getResponse().response)
+					
+					LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response.response.getResponse().response,model,params)
 
 					if(params?.apiCombine==true){
 						   map = params.apiCombine
 					}
 					
 					if(chain && params?.apiChain?.order){
-						boolean result = apiResponseService.handleApiChain(cache, request,response,model,params)
+						boolean result = apiResponseService.handleApiChain(cache, request,response.response ,model,params)
 						forward(controller:"${params.controller}",action:"${params.action}",id:"${map.id}")
 						return false
 					}else if(batch && params?.apiBatch){
