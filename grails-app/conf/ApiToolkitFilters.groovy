@@ -23,7 +23,7 @@ import grails.converters.XML
 
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
 import org.codehaus.groovy.grails.commons.GrailsApplication
-
+import javax.servlet.http.HttpServletResponse
 import net.nosegrind.apitoolkit.*
 
 class ApiToolkitFilters {
@@ -77,8 +77,8 @@ class ApiToolkitFilters {
 				//log.error("##### FILTER (AFTER)")
 				try{
 					if(!model){
-						render(status: 404, contentType: "${params.contentType}", encoding: "ISO-8859-1")
-						return false
+						render(status:HttpServletResponse.SC_BAD_REQUEST)
+						return null
 					}
 					
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
@@ -95,10 +95,8 @@ class ApiToolkitFilters {
 					if(chain && params?.apiChain?.order){
 						boolean result = apiResponseService.handleApiChain(cache, request,response.response ,model,params)
 						forward(controller:"${params.controller}",action:"${params.action}",id:"${map.id}")
-						return false
 					}else if(batch && params?.apiBatch){
-							forward(controller:"${params.controller}",action:"${params.action}",params:params)
-							return false
+						forward(controller:"${params.controller}",action:"${params.action}",params:params)
 					}else{
 						String apiEncoding = (params.contentType)?params.contentType:"UTF-8"
 						switch(request.method) {
@@ -114,13 +112,15 @@ class ApiToolkitFilters {
 								switch(params.contentType){
 									case 'application/xml':
 										render(text:doc as XML, contentType: params.contentType)
+										return null
 										break
 									case 'application/json':
 									default:
 										render(text:doc as JSON, contentType: params.contentType)
+										return null
 										break
 								}
-								return false
+								return null
 								break;
 							case 'GET':
 								if(map?.isEmpty()==false){
@@ -128,8 +128,10 @@ class ApiToolkitFilters {
 										case 'application/xml':
 											if(params.encoding){
 												render(text:map as XML, contentType: params.contentType,encoding:"${params.encoding}")
+												return null
 											}else{
 												render(text:map as XML, contentType: params.contentType)
+												return null
 											}
 											break
 										case 'text/html':
@@ -138,12 +140,14 @@ class ApiToolkitFilters {
 										default:
 											if(params.encoding){
 												render(text:map as JSON, contentType: params.contentType,encoding:"${params.encoding}")
+												return null
 											}else{
 												render(text:map as JSON, contentType: params.contentType)
+												return null
 											}
 											break
 									}
-									return false
+									return null
 								}
 								break
 							case 'POST':
@@ -152,20 +156,24 @@ class ApiToolkitFilters {
 										case 'application/xml':
 											if(params.encoding){
 												render(text:map as XML, contentType: params.contentType,encoding:"${params.encoding}")
+												return null
 											}else{
 												render(text:map as XML, contentType: params.contentType)
+												return null
 											}
 											break
 										case 'application/json':
 										default:
 											if(params.encoding){
 												render(text:map as JSON, contentType: params.contentType,encoding:"${params.encoding}")
+												return null
 											}else{
 												render(text:map as JSON, contentType: params.contentType)
+												return null
 											}
 											break
 									}
-									return false
+									return null
 								}
 								break
 							case 'PUT':
@@ -174,20 +182,24 @@ class ApiToolkitFilters {
 										case 'application/xml':
 											if(params.encoding){
 												render(text:map as XML, contentType: params.contentType,encoding:"${params.encoding}")
+												return null
 											}else{
 												render(text:map as XML, contentType: params.contentType)
+												return null
 											}
 											break
 										case 'application/json':
 										default:
 											if(params.encoding){
 												render(text:map as JSON, contentType: params.contentType,encoding:"${params.encoding}")
+												return null
 											}else{
 												render(text:map as JSON, contentType: params.contentType)
+												return null
 											}
 											break
 									}
-									return false
+									return null
 								}
 								break
 							case 'DELETE':
@@ -196,25 +208,29 @@ class ApiToolkitFilters {
 										case 'application/xml':
 											if(params.encoding){
 												render(text:map as XML, contentType: params.contentType,encoding:"${params.encoding}")
+												return null
 											}else{
 												render(text:map as XML, contentType: params.contentType)
+												return null
 											}
 											break
 										case 'application/json':
 										default:
 											if(params.encoding){
 												render(text:map as JSON, contentType: params.contentType,encoding:"${params.encoding}")
+												return null
 											}else{
 												render(text:map as JSON, contentType: params.contentType)
+												return null
 											}
 											break
 									}
-									return false
+									return null
 								}
 								break
 						}
 					}
-					return false
+					return null
 			   }catch(Exception e){
 				   log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
 				   return false
