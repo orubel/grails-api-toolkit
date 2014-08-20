@@ -138,11 +138,10 @@ class ApiObjectService{
 			String apiName = file.getName().split('\\.')[0].toLowerCase()
 			JSONObject json = JSON.parse(file.text)
 			parseJson(apiName,json)
-			def cache2 = apiCacheService.getApiCache(apiName)
+			//def cache = apiCacheService.getApiCache(apiName)
 		}
 	}
 	
-
 	Boolean parseJson(String apiName,JSONObject json){
 		Map methods = [:]
 		json.VERSION.each() { vers ->
