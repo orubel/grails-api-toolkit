@@ -22,11 +22,9 @@ grails.project.dependency.resolution = {
 		build(":release:3.0.0",":rest-client-builder:1.0.3") {
 			 export = false
 		}
-		compile(":cache:1.1.6")
+		compile(":cache:latest.release")
 		compile(":spring-security-core:2.0-RC4")
-		
 		compile(":rest:0.8"){
-			excludes("jcl-over-slfj","slfj-api")
 			export=false
 		}
     }
