@@ -26,6 +26,7 @@ grails.project.dependency.resolution = {
 		compile(":spring-security-core:2.0-RC4")
 		
 		compile(":rest:0.8"){
+			excludes("jcl-over-slfj","slfj-api")
 			export=false
 		}
     }

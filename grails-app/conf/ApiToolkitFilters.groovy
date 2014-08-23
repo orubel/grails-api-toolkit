@@ -17,6 +17,9 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map
+import grails.util.Holders as HOLDER
+import javax.servlet.ServletContext
+
 
 import grails.converters.JSON
 import grails.converters.XML
@@ -50,7 +53,6 @@ class ApiToolkitFilters {
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
 				//log.error("##### FILTER (BEFORE)")
-				
 				try{
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
 						return false
@@ -82,7 +84,6 @@ class ApiToolkitFilters {
 					}
 					
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-					
 
 					//println(response.response.getResponse().response)
 					
