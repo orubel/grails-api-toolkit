@@ -1,0 +1,182 @@
+.controllerList{
+	margin-left: auto;
+	margin-right: auto;
+	width: 800px;
+	font-weight: normal;
+}
+
+.methodList{
+	display:inline-box;
+}
+
+.controllerName{
+	float:left;
+	width: 600px;
+	line-height:20px;
+	font-size:15px;
+	font-family: "Droid Sans", sans-serif;
+	font-weight: bold;
+	color:black;
+}
+
+.controllerName a{
+		text-decoration:none;
+		color: #848484 !important;
+}
+.controllerName a:hover{
+	color: #000 !important;
+}
+
+.functions{
+	text-align:right;
+	float:right;
+	width: 200px;
+	line-height:20px;
+    font-size:12px;
+    height:20px;
+	font-family: "Droid Sans", sans-serif;
+	color:grey;
+}
+
+.method{
+	position:relative;
+	z-index:999;
+	-webkit-border-top-left-radius: 5px !important;
+	-webkit-border-bottom-left-radius: 5px !important;
+	border-top-left-radius: 5px !important;
+	border-bottom-left-radius: 5px !important;
+	-moz-border-radius-topleft: 7px !important;
+	-moz-border-radius-bottomleft: 5px !important;
+	float:left;
+	width: 75px;
+	line-height:20px;
+	padding-left:18px;
+	font-size:15px;
+	font-family: "Droid Sans", sans-serif;
+	font-weight: bold;
+	color:white;
+	border-top: 1px solid white;
+	border-bottom: 1px solid white;
+}
+
+.method a{
+		text-decoration:none;
+		color: #fff !important;
+}
+.method a:hover{
+	color: #000 !important;
+}
+
+.path{
+	position:relative;
+	z-index:999;
+	-webkit-border-top-right-radius: 5px !important;
+	-webkit-border-bottom-right-radius: 5px !important;
+	border-top-right-radius: 5px !important;
+	border-bottom-right-radius: 5px !important;
+	-moz-border-radius-topright: 5px !important;
+	-moz-border-radius-bottomright: 5px !important;
+	float:right;
+	width: 707px;
+	line-height:20px;
+    font-size:15px;
+    height:20px;
+	font-family: "Droid Sans", sans-serif;
+	color:black;
+	border-top: 1px solid white;
+	border-bottom: 1px solid white;
+}
+	
+.methodSeparator{
+	z-index:999;
+	float:left;
+	background-color:white;
+	height:20px;
+	width:2px;
+}
+	
+.getDark{
+	background-color: #66cc33 !important;
+}
+.getLight{
+	background-color: #b3e19c !important;
+}
+.getDesc{
+	text-align:right;
+	float:right;
+	padding-right:10px;
+	color: #4e9d27;
+}
+
+.putDark{
+	background-color: #ff9900 !important;
+}
+.putLight{
+	background-color: #fedaa3 !important;
+}
+.putDesc{
+	text-align:right;
+	float:right;
+	padding-right:10px;
+	color: #cf7c00;
+}
+
+.postDark{
+	background-color: #6699ff !important;
+}
+.postLight{
+	background-color: #b1c8fe !important;
+}
+.postDesc{
+	text-align:right;
+	float:right;
+	padding-right:10px;
+	color: #4c73bf
+}
+
+.deleteDark{
+	background-color: #ff3300 !important;
+}
+.deleteLight{
+	background-color: #fdbfb1 !important;
+}
+.deleteDesc{
+	text-align:right;
+	float:right;
+	padding-right:10px;
+	color: #c52700;
+}
+
+.infoBox{
+	z-index:1;
+	position:relative;top:-3px;
+	-webkit-border-bottom-left-radius: 5px !important;
+	-webkit-border-bottom-right-radius: 5px !important;
+	border-bottom-left-radius: 5px !important;
+	border-bottom-right-radius: 5px !important;
+	-moz-border-radius-bottomleft: 5px !important;
+	-moz-border-radius-bottomright: 5px !important;
+	line-height:20px;
+	padding-left:18px;
+	font-size:15px;
+	font-family: "Droid Sans", sans-serif;
+	font-weight: bold;
+	background-color:#e0e0e0;
+	width:782px;
+	clear: both;
+	display:inline-box;
+	padding-top:3px;
+}
+
+.json{
+	display: table;border: 1px solid #ff9900;
+	width:730px;
+	background-color:#fedaa3;
+	color:#cf7c00;
+	line-height:20px;
+	padding-left:18px;
+	font-size:15px;
+	font-family: "Droid Sans", sans-serif;
+	font-weight: normal;
+}
+
