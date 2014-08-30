@@ -53,7 +53,7 @@ class ApiLayerService{
 	
 	void setEnv(){
 		this.batch = grailsApplication.config.apitoolkit.batching.enabled
-		this.chain = this.grailsApplication.config.apitoolkit.chaining.enabled
+		this.chain = grailsApplication.config.apitoolkit.chaining.enabled
 	}
 	
 	private SecurityContextHolderAwareRequestWrapper getRequest(){
