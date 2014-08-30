@@ -131,7 +131,8 @@ class ApiResponseService extends ApiLayerService{
 				}
 			}
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: handleApiResponse] : Exception - full stack trace follows:"+e)
+			//throw new Exception
+			println("[ApiResponseService :: handleApiResponse] : Exception - full stack trace follows:"+e)
 		}
 	}
 	
@@ -515,7 +516,8 @@ class ApiResponseService extends ApiLayerService{
 			}
 			return newMap
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
+			//throw new Exception
+			println("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
 		}
 	}
 
