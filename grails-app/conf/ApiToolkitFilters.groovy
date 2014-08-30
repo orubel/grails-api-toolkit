@@ -110,13 +110,15 @@ class ApiToolkitFilters {
 							case 'OPTIONS':
 								LinkedHashMap doc = apiResponseService.getApiDoc(params)
 								switch(params.contentType){
+									case 'text/xml':
 									case 'application/xml':
-										render(text:doc as XML, contentType: params.contentType)
+										render(text:doc as XML, contentType: 'application/xml')
 										return false
 										break
+									case 'text/json':
 									case 'application/json':
 									default:
-										render(text:doc as JSON, contentType: params.contentType)
+										render(text:doc as JSON, contentType: 'application/json')
 										return false
 										break
 								}
@@ -125,6 +127,7 @@ class ApiToolkitFilters {
 							case 'GET':
 								if(map?.isEmpty()==false){
 									switch(params.contentType){
+										case 'text/xml':
 										case 'application/xml':
 											if(params.encoding){
 												render(text:map as XML, contentType: 'application/xml',encoding:"${params.encoding}")
@@ -136,6 +139,7 @@ class ApiToolkitFilters {
 											break
 										case 'text/html':
 											break
+										case 'text/json':
 										case 'application/json':
 										default:
 											if(params.encoding){
@@ -153,22 +157,24 @@ class ApiToolkitFilters {
 							case 'POST':
 								if(!map.isEmpty()){
 									switch(params.contentType){
+										case 'text/xml':
 										case 'application/xml':
 											if(params.encoding){
-												render(text:map as XML, contentType: params.contentType,encoding:"${params.encoding}")
+												render(text:map as XML, contentType: 'application/xml',encoding:"${params.encoding}")
 												return false
 											}else{
-												render(text:map as XML, contentType: params.contentType)
+												render(text:map as XML, contentType: 'application/xml')
 												return false
 											}
 											break
+										case 'text/json':
 										case 'application/json':
 										default:
 											if(params.encoding){
-												render(text:map as JSON, contentType: params.contentType,encoding:"${params.encoding}")
+												render(text:map as JSON, contentType: 'application/json',encoding:"${params.encoding}")
 												return false
 											}else{
-												render(text:map as JSON, contentType: params.contentType)
+												render(text:map as JSON, contentType: 'application/json')
 												return false
 											}
 											break
@@ -179,22 +185,24 @@ class ApiToolkitFilters {
 							case 'PUT':
 								if(!map.isEmpty()){
 									switch(params.contentType){
+										case 'text/xml':
 										case 'application/xml':
 											if(params.encoding){
-												render(text:map as XML, contentType: params.contentType,encoding:"${params.encoding}")
+												render(text:map as XML, contentType: 'application/xml',encoding:"${params.encoding}")
 												return false
 											}else{
-												render(text:map as XML, contentType: params.contentType)
+												render(text:map as XML, contentType: 'application/xml')
 												return false
 											}
 											break
+										case 'text/json':
 										case 'application/json':
 										default:
 											if(params.encoding){
-												render(text:map as JSON, contentType: params.contentType,encoding:"${params.encoding}")
+												render(text:map as JSON, contentType: 'application/json',encoding:"${params.encoding}")
 												return false
 											}else{
-												render(text:map as JSON, contentType: params.contentType)
+												render(text:map as JSON, contentType: 'application/json')
 												return false
 											}
 											break
@@ -205,22 +213,24 @@ class ApiToolkitFilters {
 							case 'DELETE':
 								if(!map.isEmpty()){
 									switch(params.contentType){
+										case 'text/xml':
 										case 'application/xml':
 											if(params.encoding){
-												render(text:map as XML, contentType: params.contentType,encoding:"${params.encoding}")
+												render(text:map as XML, contentType: 'application/xml',encoding:"${params.encoding}")
 												return false
 											}else{
-												render(text:map as XML, contentType: params.contentType)
+												render(text:map as XML, contentType: 'application/xml')
 												return false
 											}
 											break
+										case 'text/json':
 										case 'application/json':
 										default:
 											if(params.encoding){
-												render(text:map as JSON, contentType: params.contentType,encoding:"${params.encoding}")
+												render(text:map as JSON, contentType: 'application/json',encoding:"${params.encoding}")
 												return false
 											}else{
-												render(text:map as JSON, contentType: params.contentType)
+												render(text:map as JSON, contentType: 'application/json')
 												return false
 											}
 											break
@@ -233,9 +243,8 @@ class ApiToolkitFilters {
 					}
 					return null
 			   }catch(Exception e){
-				   log.error
-				   println("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:"+ e);
-				   //return false
+				   log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
+				   return false
 			   }
 			}
 		}

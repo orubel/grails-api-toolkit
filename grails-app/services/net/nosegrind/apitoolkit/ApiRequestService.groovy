@@ -37,10 +37,13 @@ class ApiRequestService extends ApiLayerService{
 			// CHECK IF URI HAS CACHE
 			
 			if(cache[params.action][params.apiObject]){
+				// CHECK ACCESS TO METHOD
 				List roles = cache["${params.action}"]["${params.apiObject}"]['roles']?.toList()
 				if(!checkAuth(request,roles)){
 					return false
 				}
+				
+				// CHECK VERSION DEPRECATION DATE
 				if(cache[params.action][params.apiObject]['deprecated'][0]){
 					String depdate = cache[params.action][params.apiObject]['deprecated'][0]
 					
@@ -103,7 +106,6 @@ class ApiRequestService extends ApiLayerService{
 			throw new Exception("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:"+ e);
 		}
 	}
-	
 	
 	protected void setApiParams(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params){
 		try{

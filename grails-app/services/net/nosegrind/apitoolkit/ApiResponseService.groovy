@@ -109,9 +109,9 @@ class ApiResponseService extends ApiLayerService{
 			if(cache){
 				if(cache[params.action][params.apiObject]){
 					// make 'application/json' default
-					def formats = ['text/html','text/json','application/json','text/xml','application/xml']
-					type = (params.contentType)?formats.findAll{ type.startsWith(it) }[0].toString():params.contentType
-					if(type){
+					//def formats = ['text/html','text/json','application/json','text/xml','application/xml']
+					//type = (params.contentType)?formats.findAll{ type.startsWith(it) }[0].toString():params.contentType
+					//if(type){
 							def newModel = convertModel(model)
 							response.setHeader('Authorization', cache[params.action][params.apiObject]['roles'].join(', '))
 							LinkedHashMap result = parseURIDefinitions(newModel,cache[params.action][params.apiObject]['returns'])
@@ -121,10 +121,10 @@ class ApiResponseService extends ApiLayerService{
 								params.apiCombine[currentPath] = result
 							}
 							return result
-					}else{
+					//}else{
 						//return true
 						//render(view:params.action,model:model)
-					}
+					//}
 				}else{
 					//return true
 					//render(view:params.action,model:model)
@@ -481,13 +481,7 @@ class ApiResponseService extends ApiLayerService{
 									if(grailsApplication.isDomainClass(val.getClass())){
 										newMap[key]=formatDomainObject(val)
 									}else{
-										if(val in java.util.ArrayList || val in java.util.List){
-											newMap[key] = val
-										}else if(val in java.util.Map){
-											newMap[key]= val
-										}else{
-											newMap[key]=val.toString()
-										}
+										newMap[key] = ((val in java.util.ArrayList || val in java.util.List) || val in java.util.Map)?val:val.toString()
 									}
 								}
 							}
@@ -500,13 +494,7 @@ class ApiResponseService extends ApiLayerService{
 									if(grailsApplication.isDomainClass(val.getClass())){
 										newMap[key]=formatDomainObject(val)
 									}else{
-										if(val in java.util.ArrayList || val in java.util.List){
-											newMap[key] = val
-										}else if(val in java.util.Map){
-											newMap[key]= val
-										}else{
-											newMap[key]=val.toString()
-										}
+										newMap[key] = ((val in java.util.ArrayList || val in java.util.List) || val in java.util.Map)?val:val.toString()
 									}
 								}
 							}
