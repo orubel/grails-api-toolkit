@@ -23,7 +23,7 @@ grails.project.dependency.resolution = {
 			 export = false
 		}
 		compile(":cache:latest.release")
-		compile(":spring-security-core:2.0-RC4")
+		compile(":spring-security-core:2.0-RC3")
 		compile(":rest:0.8"){
 			export=false
 		}
