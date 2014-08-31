@@ -80,6 +80,7 @@ class ApiRequestService extends ApiLayerService{
 					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
 					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
 					if(batch && params.apiBatch){
+						
 						def temp = params.apiBatch.remove(0)
 						temp.each{ k,v ->
 							params[k] = v
@@ -127,7 +128,7 @@ class ApiRequestService extends ApiLayerService{
 									v.each { it ->
 										params.apiBatch.add(it)
 									}
-									params.apiBatch = params.apiBatch.reverse()
+									params.apiBatch = params.apiBatch
 									request.JSON.remove("batch")
 								}else{
 									params[k]=v
