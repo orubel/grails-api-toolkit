@@ -94,10 +94,10 @@ class ApiLayerService{
 	/*
 	 * TODO: Need to compare multiple authorities
 	 */
-	boolean checkURIDefinitions(LinkedHashMap requestDefinitions){
+	boolean checkURIDefinitions(SecurityContextHolderAwareRequestWrapper request, LinkedHashMap requestDefinitions){
 		try{
 			List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
-			List requestList = getApiParams(requestDefinitions)
+			List requestList = getApiParams(request, requestDefinitions)
 			HashMap params = getMethodParams()
 			
 			//GrailsParameterMap params = RCH.currentRequestAttributes().params
@@ -117,14 +117,15 @@ class ApiLayerService{
 		}
 	}
 	
-	List getApiParams(LinkedHashMap definitions){
+	List getApiParams(SecurityContextHolderAwareRequestWrapper request, LinkedHashMap definitions){
 		try{
-			String authority = springSecurityService.principal.authorities*.authority[0]
-			ParamsDescriptor[] temp = (definitions["${authority}"])?definitions["${authority}"]:definitions["permitAll"]
 			List apiList = []
-			temp.each{ it ->
-				if(it){
-					apiList.add(it.name)
+			definitions.each{ key,val ->
+				if(request.isUserInRole(key) || key=='permitAll'){
+					ParamsDescriptor[] temp = definitions["${key}"]
+					temp.each{ val2 ->
+						apiList.add(val2.name)
+					}
 				}
 			}
 			return apiList

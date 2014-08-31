@@ -35,7 +35,6 @@ class ApiRequestService extends ApiLayerService{
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
 			// CHECK IF URI HAS CACHE
-			
 			if(cache[params.action][params.apiObject]){
 				// CHECK ACCESS TO METHOD
 				List roles = cache["${params.action}"]["${params.apiObject}"]['roles']?.toList()
@@ -92,7 +91,7 @@ class ApiRequestService extends ApiLayerService{
 					}else{
 						return true
 					}
-					if(!checkURIDefinitions(cache[params.action][params.apiObject]['receives'])){
+					if(!checkURIDefinitions(request,cache[params.action][params.apiObject]['receives'])){
 						String msg = 'Expected request variables do not match sent variables'
 						error._400_BAD_REQUEST(msg)?.send()
 						return false

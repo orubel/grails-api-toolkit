@@ -114,7 +114,7 @@ class ApiResponseService extends ApiLayerService{
 					//if(type){
 							def newModel = convertModel(model)
 							response.setHeader('Authorization', cache[params.action][params.apiObject]['roles'].join(', '))
-							LinkedHashMap result = parseURIDefinitions(newModel,cache[params.action][params.apiObject]['returns'])
+							LinkedHashMap result = parseURIDefinitions(request,newModel,cache[params.action][params.apiObject]['returns'])
 							if(params?.apiChain?.combine=='true'){
 								if(!params.apiCombine){ params.apiCombine = [:] }
 								String currentPath = "${params.controller}/${params.action}"
@@ -131,8 +131,7 @@ class ApiResponseService extends ApiLayerService{
 				}
 			}
 		}catch(Exception e){
-			//throw new Exception
-			println("[ApiResponseService :: handleApiResponse] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiResponseService :: handleApiResponse] : Exception - full stack trace follows:"+e)
 		}
 	}
 	
@@ -188,12 +187,12 @@ class ApiResponseService extends ApiLayerService{
 	/*
 	 * TODO: Need to compare multiple authorities
 	 */
-	LinkedHashMap parseURIDefinitions(LinkedHashMap model,LinkedHashMap responseDefinitions){
+	LinkedHashMap parseURIDefinitions(SecurityContextHolderAwareRequestWrapper request, LinkedHashMap model,LinkedHashMap responseDefinitions){
 		try{
 			ApiStatuses errors = new ApiStatuses()
 			String msg = "Error. Invalid variables being returned. Please see your administrator"
 			List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
-			List responseList = getApiParams(responseDefinitions)
+			List responseList = getApiParams(request,responseDefinitions)
 			
 			HashMap params = getMethodParams()
 			//GrailsParameterMap params = RCH.currentRequestAttributes().params
@@ -504,8 +503,7 @@ class ApiResponseService extends ApiLayerService{
 			}
 			return newMap
 		}catch(Exception e){
-			//throw new Exception
-			println("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
 		}
 	}
 
