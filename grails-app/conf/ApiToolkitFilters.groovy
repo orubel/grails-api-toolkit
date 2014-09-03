@@ -52,8 +52,7 @@ class ApiToolkitFilters {
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
-				println("##### FILTER (BEFORE)")
-				println(params)
+				//println("##### FILTER (BEFORE)")
 				try{
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
 						return false
@@ -76,38 +75,36 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				println("##### FILTER (AFTER)")
-
-
-		
+				//println("##### FILTER (AFTER)")
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)
 						return null
 					}
 					
-					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-					//println(response.response.getResponse().response)
-					
-					println(model)
-					def newModel = (model)?apiResponseService.convertModel(model):model
-					println(newModel)
-					
 					if(params?.apiCombine==true){
-						   map = params.apiCombine
+						model = params.apiCombine
 					}
+					def newModel = (model)?apiResponseService.convertModel(model):model
+					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
+
+					//println(response.response.getResponse().response)
+					LinkedHashMap map
 					
 					if(chain && params?.apiChain?.order){
+						//if(!['null','return'].contains(params?.apiChain?.order["${keys.last()}"].split(':'))){
 						boolean result = apiResponseService.handleApiChain(cache, request,response ,newModel,params)
 						forward(controller:"${params.controller}",action:"${params.action}",id:"${params.id}")
 						return false
-					}
-					
-					LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response.response.getResponse().response,newModel,params)
-					
-					if(batch && params?.apiBatch){
+						//}
+					}else if(batch && params?.apiBatch){
 						forward(controller:"${params.controller}",action:"${params.action}",params:params)
+						return false
 					}else{
+						map = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
+					}
+						
+					if(map){
 						String apiEncoding = (params.contentType)?params.contentType:"UTF-8"
 						switch(request.method) {
 							case 'PURGE':

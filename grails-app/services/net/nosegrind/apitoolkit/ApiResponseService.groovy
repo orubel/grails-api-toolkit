@@ -47,25 +47,24 @@ class ApiResponseService extends ApiLayerService{
 	
 	boolean handleApiChain(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
 		try{
-			Long firstKey = 0
-			List temp = request.forwardURI.split('/')
-			String reqCont=(grailsApplication.config.grails.app.context=="/")?temp[1]:temp[2]
+			List uri = [params.controller,params.action,params.id]
+			ApiStatuses errors = new ApiStatuses()
+			List keys = []
+			String controller
+			String action
+			List uri2 = []
 			
-			if(params.controller==reqCont){
-				firstKey=params.key
+			if(params?.apiChain?.order!='null'){
+				keys = params?.apiChain?.order.keySet() as List
+				uri2 = keys.last().split('/')
+				controller = uri2[0]
+				action = uri2[1]
 			}
 			
-			List keys = params?.apiChain?.order.keySet() as List
-			List uri = [params.controller,params.action,params.id]
-			
-			ApiStatuses errors = new ApiStatuses()
-			
-			List uri2 = keys[0].split('/')
-			String controller = uri2[0]
-			String action = uri2[1]
 			Long id = model.id
+
 			
-			if(keys.last() && (params?.apiChain?.order["${keys.last()}"]='null' && params?.apiChain?.order["${keys.last()}"]!='return')){
+			if(keys.last() && (params?.apiChain?.order["${keys.last()}"]!='null' && params?.apiChain?.order["${keys.last()}"]!='return')){
 				int pos = checkChainedMethodPosition(cache,request,params,uri,params?.apiChain?.order as Map)
 				if(pos==3){
 					String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
@@ -74,48 +73,52 @@ class ApiResponseService extends ApiLayerService{
 				}else{
 					if(!uri2){
 						String msg = "Path was unable to be parsed. Check your path variables and try again."
-						//redirect(uri: "/")
 						errors._404_NOT_FOUND(msg).send()
 						return false
 					}
-	
+					
 					def currentPath = "${controller}/${action}"
-					def methods = cache[action][params.apiObject]['method'].replace('[','').replace(']','').split(',')*.trim() as List
-					def method = (methods.contains(request.method))?request.method:null
-	
 					List roles = cache[action][params.apiObject]['roles'].toArray() as List
 					if(checkAuth(request,roles)){
+						/*
 						if(params?.apiChain.combine=='true'){
 							params.apiCombine["${params.controller}/${params.action}"] = parseURIDefinitions(model,cache[params.action][params.apiObject]['returns'])
 						}
+						*/
 						params.controller = controller
 						params.action = action
-						if(params.controller==reqCont){
-							params.id=params.key
+
+						if(params.apiChain.key){
+							params.id = model."${params.apiChain.key}"
+							params.apiChain.remove("key")
 						}else{
 							params.id = model.id
 						}
-						
-						params.apiChain.order.remove("${keys.last()}")
-						
+
 						if(params?.apiChain.combine=='true'){
 							params.apiCombine[currentPath] = parseURIDefinitions(model,cache[params.action][params.apiObject]['returns'])
 						}
+						
+						params?.apiChain?.order.remove(keys.last())
+						return true
 					}else{
 						String msg = "User does not have access."
 						errors._403_FORBIDDEN(msg).send()
 						return false
 					}
 				}
+			}else{
+				params.remove("apiChain")
 			}
-			return true
+			//params.remove("apiChain")
+			return false
 		}catch(Exception e){
 			throw new Exception("[ApiResponseService :: handleApiChain] : Exception - full stack trace follows:"+e)
 		}
 	}
 	
 	//LinkedHashMap, SecurityContextHolderAwareRequestWrapper, SaveToSessionResponseWrapper, ModelMap, GrailsParameterMap
-	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, HttpServletResponse response, ModelMap model, GrailsParameterMap params){
+	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, HttpServletResponse response, LinkedHashMap model, GrailsParameterMap params){
 		try{
 			String type = ''
 			if(cache){
@@ -481,7 +484,6 @@ class ApiResponseService extends ApiLayerService{
 			String k = map?.entrySet()?.toList()?.first()?.key
 			if(map && (!map?.response && !map?.metaClass && !map?.params)){
 				if(grailsApplication.isDomainClass(map[k].getClass())){
-					println("############formating doamin object1##########")
 					newMap = formatDomainObject(map[k])
 					return newMap
 				}else{

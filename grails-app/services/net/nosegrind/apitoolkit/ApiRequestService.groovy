@@ -126,14 +126,14 @@ class ApiRequestService extends ApiLayerService{
 								if(chain && k=='chain'){
 									params.apiChain = [:]
 									params.apiChain = request.JSON.chain
-									request.JSON.chain = null
+									request.JSON.remove("chain")
 								}else if(batch && k=='batch'){
 									params.apiBatch = []
 									v.each { it ->
 										params.apiBatch.add(it)
 									}
 									params.apiBatch = params.apiBatch
-									request.JSON.batch=null
+									request.JSON.remove("batch")
 								}else{
 									params[k]=v
 								}
@@ -147,7 +147,7 @@ class ApiRequestService extends ApiLayerService{
 								if(chain && k=='chain'){
 									params.apiChain = [:]
 									params.apiChain = request.XML.chain
-									request.XML.chain = null
+									request.XML.remove("chain")
 								}else if(batch && k=='batch'){
 									params.apiBatch = []
 									v.each { it ->

@@ -416,7 +416,7 @@ class ApiLayerService{
 			boolean preMatch = false
 			boolean postMatch = false
 			boolean pathMatch = false
-	println(path)
+
 			List keys = path.keySet() as List
 			Integer pathSize = keys.size()
 
