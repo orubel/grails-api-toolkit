@@ -114,6 +114,10 @@ class ApiRequestService extends ApiLayerService{
 				params.contentType = content[0]
 				params.encoding = (content.size()>1)?content[1]:null
 				
+				if(chain && params?.apiChain?.combine=='true'){
+					if(!params.apiCombine){ params.apiCombine = [:] }
+				}
+				
 				switch(params?.contentType){
 					case 'text/json':
 					case 'application/json':
@@ -122,19 +126,16 @@ class ApiRequestService extends ApiLayerService{
 								if(chain && k=='chain'){
 									params.apiChain = [:]
 									params.apiChain = request.JSON.chain
-									request.JSON.remove("chain")
+									request.JSON.chain = null
 								}else if(batch && k=='batch'){
 									params.apiBatch = []
 									v.each { it ->
 										params.apiBatch.add(it)
 									}
 									params.apiBatch = params.apiBatch
-									request.JSON.remove("batch")
+									request.JSON.batch=null
 								}else{
 									params[k]=v
-								}
-								if(chain && params?.apiChain?.combine=='true'){
-									if(!params.apiCombine){ params.apiCombine = [:] }
 								}
 							}
 						}
@@ -146,7 +147,7 @@ class ApiRequestService extends ApiLayerService{
 								if(chain && k=='chain'){
 									params.apiChain = [:]
 									params.apiChain = request.XML.chain
-									request.XML.remove("chain")
+									request.XML.chain = null
 								}else if(batch && k=='batch'){
 									params.apiBatch = []
 									v.each { it ->
@@ -156,9 +157,6 @@ class ApiRequestService extends ApiLayerService{
 									request.XML.remove("batch")
 								}else{
 									params[k]=v
-								}
-								if(chain && params?.apiChain?.combine=='true'){
-									if(!params.apiCombine){ params.apiCombine = [:] }
 								}
 							}
 						}

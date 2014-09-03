@@ -416,10 +416,10 @@ class ApiLayerService{
 			boolean preMatch = false
 			boolean postMatch = false
 			boolean pathMatch = false
-	
+	println(path)
 			List keys = path.keySet() as List
 			Integer pathSize = keys.size()
-			
+
 			String controller = uri[0]
 			String action = uri[1]
 			Long id = uri[2]
@@ -445,6 +445,7 @@ class ApiLayerService{
 					List last2 = keys[pathSize-1].split('/')
 					cache = apiCacheService.getApiCache(last2[0])
 					methods = cache[last2[1]][params.apiObject]['method'].trim()
+
 					if(method=='GET'){
 						if(methods != method){
 							postMatch = true

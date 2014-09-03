@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map
 import grails.util.Holders as HOLDER
 import javax.servlet.ServletContext
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 import grails.converters.JSON
 import grails.converters.XML
@@ -51,7 +52,8 @@ class ApiToolkitFilters {
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
-				//println("##### FILTER (BEFORE)")
+				println("##### FILTER (BEFORE)")
+				println(params)
 				try{
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
 						return false
@@ -74,7 +76,10 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				//println("##### FILTER (AFTER)")
+				println("##### FILTER (AFTER)")
+
+
+		
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)
@@ -84,16 +89,23 @@ class ApiToolkitFilters {
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					//println(response.response.getResponse().response)
 					
-					LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response.response.getResponse().response,model,params)
-
+					println(model)
+					def newModel = (model)?apiResponseService.convertModel(model):model
+					println(newModel)
+					
 					if(params?.apiCombine==true){
 						   map = params.apiCombine
 					}
 					
 					if(chain && params?.apiChain?.order){
-						boolean result = apiResponseService.handleApiChain(cache, request,response.response ,model,params)
-						forward(controller:"${params.controller}",action:"${params.action}",id:"${map.id}")
-					}else if(batch && params?.apiBatch){
+						boolean result = apiResponseService.handleApiChain(cache, request,response ,newModel,params)
+						forward(controller:"${params.controller}",action:"${params.action}",id:"${params.id}")
+						return false
+					}
+					
+					LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response.response.getResponse().response,newModel,params)
+					
+					if(batch && params?.apiBatch){
 						forward(controller:"${params.controller}",action:"${params.action}",params:params)
 					}else{
 						String apiEncoding = (params.contentType)?params.contentType:"UTF-8"

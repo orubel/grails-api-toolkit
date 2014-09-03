@@ -47,17 +47,25 @@ class ApiResponseService extends ApiLayerService{
 	
 	boolean handleApiChain(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
 		try{
+			Long firstKey = 0
+			List temp = request.forwardURI.split('/')
+			String reqCont=(grailsApplication.config.grails.app.context=="/")?temp[1]:temp[2]
+			
+			if(params.controller==reqCont){
+				firstKey=params.key
+			}
+			
 			List keys = params?.apiChain?.order.keySet() as List
 			List uri = [params.controller,params.action,params.id]
-			def newModel = (model)?convertModel(model):model
+			
 			ApiStatuses errors = new ApiStatuses()
 			
 			List uri2 = keys[0].split('/')
 			String controller = uri2[0]
 			String action = uri2[1]
-			Long id = newModel.id
+			Long id = model.id
 			
-			if(keys[0] && (params?.apiChain?.order["${keys[0]}"]='null' && params?.apiChain?.order["${keys[0]}"]!='return')){
+			if(keys.last() && (params?.apiChain?.order["${keys.last()}"]='null' && params?.apiChain?.order["${keys.last()}"]!='return')){
 				int pos = checkChainedMethodPosition(cache,request,params,uri,params?.apiChain?.order as Map)
 				if(pos==3){
 					String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
@@ -78,16 +86,20 @@ class ApiResponseService extends ApiLayerService{
 					List roles = cache[action][params.apiObject]['roles'].toArray() as List
 					if(checkAuth(request,roles)){
 						if(params?.apiChain.combine=='true'){
-							params.apiCombine["${params.controller}/${params.action}"] = parseURIDefinitions(newModel,cache[params.action][params.apiObject]['returns'])
+							params.apiCombine["${params.controller}/${params.action}"] = parseURIDefinitions(model,cache[params.action][params.apiObject]['returns'])
 						}
 						params.controller = controller
 						params.action = action
-						params.id = newModel.id
+						if(params.controller==reqCont){
+							params.id=params.key
+						}else{
+							params.id = model.id
+						}
 						
-						params.apiChain.order.remove("${keys[0]}")
+						params.apiChain.order.remove("${keys.last()}")
 						
 						if(params?.apiChain.combine=='true'){
-							params.apiCombine[currentPath] = parseURIDefinitions(newModel,cache[params.action][params.apiObject]['returns'])
+							params.apiCombine[currentPath] = parseURIDefinitions(model,cache[params.action][params.apiObject]['returns'])
 						}
 					}else{
 						String msg = "User does not have access."
@@ -112,9 +124,8 @@ class ApiResponseService extends ApiLayerService{
 					//def formats = ['text/html','text/json','application/json','text/xml','application/xml']
 					//type = (params.contentType)?formats.findAll{ type.startsWith(it) }[0].toString():params.contentType
 					//if(type){
-							def newModel = convertModel(model)
 							response.setHeader('Authorization', cache[params.action][params.apiObject]['roles'].join(', '))
-							LinkedHashMap result = parseURIDefinitions(request,newModel,cache[params.action][params.apiObject]['returns'])
+							LinkedHashMap result = parseURIDefinitions(request,model,cache[params.action][params.apiObject]['returns'])
 							if(params?.apiChain?.combine=='true'){
 								if(!params.apiCombine){ params.apiCombine = [:] }
 								String currentPath = "${params.controller}/${params.action}"
@@ -470,7 +481,9 @@ class ApiResponseService extends ApiLayerService{
 			String k = map?.entrySet()?.toList()?.first()?.key
 			if(map && (!map?.response && !map?.metaClass && !map?.params)){
 				if(grailsApplication.isDomainClass(map[k].getClass())){
+					println("############formating doamin object1##########")
 					newMap = formatDomainObject(map[k])
+					return newMap
 				}else{
 					switch(map[k].getClass()){
 						case 'class java.util.LinkedList':
@@ -484,6 +497,7 @@ class ApiResponseService extends ApiLayerService{
 									}
 								}
 							}
+							return newMap
 							break
 						case 'class java.util.Map':
 						case 'class java.util.LinkedHashMap':
@@ -497,6 +511,7 @@ class ApiResponseService extends ApiLayerService{
 									}
 								}
 							}
+							return newMap
 							break
 					}
 				}
