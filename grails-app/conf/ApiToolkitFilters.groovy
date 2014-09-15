@@ -79,12 +79,13 @@ class ApiToolkitFilters {
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)
-						return null
+						return false
 					}
 					
 					if(params?.apiCombine==true){
 						model = params.apiCombine
 					}
+					
 					def newModel = (model)?apiResponseService.convertModel(model):model
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 

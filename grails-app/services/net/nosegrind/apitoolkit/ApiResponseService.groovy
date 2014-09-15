@@ -96,7 +96,7 @@ class ApiResponseService extends ApiLayerService{
 						}
 
 						if(params?.apiChain.combine=='true'){
-							params.apiCombine[currentPath] = parseURIDefinitions(model,cache[params.action][params.apiObject]['returns'])
+							params.apiCombine[currentPath] = parseURIDefinitions(request,model,cache[params.action][params.apiObject]['returns'])
 						}
 						
 						params?.apiChain?.order.remove(keys.last())
@@ -207,7 +207,7 @@ class ApiResponseService extends ApiLayerService{
 			String msg = "Error. Invalid variables being returned. Please see your administrator"
 			List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
 			List responseList = getApiParams(request,responseDefinitions)
-			
+
 			HashMap params = getMethodParams()
 			//GrailsParameterMap params = RCH.currentRequestAttributes().params
 			List paramsList = model.keySet() as List
@@ -491,7 +491,7 @@ class ApiResponseService extends ApiLayerService{
 						case 'class java.util.LinkedList':
 						case 'class java.util.ArrayList':
 							map[k].eachWithIndex(){ val, key ->
-								if(key){
+								if(val){
 									if(grailsApplication.isDomainClass(val.getClass())){
 										newMap[key]=formatDomainObject(val)
 									}else{

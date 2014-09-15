@@ -427,9 +427,9 @@ class ApiLayerService{
 			// prematch check
 			String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
 			String methods = cache[action][params.apiObject]['method'].trim()
-	
-			if(method=='GET'){
-				if(methods != method){
+
+			if(methods=='GET'){
+				if(methods != method && params?.apiChain?.type=='prechain'){
 					preMatch = true
 				}
 			}else{
@@ -441,13 +441,13 @@ class ApiLayerService{
 			// postmatch check
 			if(pathSize>=1){
 				String last=path[keys[pathSize-1]]
-				if(last && last!='return'){
+				if(last && (last!='return' || last!='null')){
 					List last2 = keys[pathSize-1].split('/')
 					cache = apiCacheService.getApiCache(last2[0])
 					methods = cache[last2[1]][params.apiObject]['method'].trim()
 
-					if(method=='GET'){
-						if(methods != method){
+					if(methods=='GET'){
+						if(methods != method && params?.apiChain?.type=='postchain'){
 							postMatch = true
 						}
 					}else{
@@ -459,7 +459,8 @@ class ApiLayerService{
 					postMatch = true
 				}
 			}
-	
+			
+
 			// path check
 			int start = 1
 			int end = pathSize-2
@@ -469,8 +470,8 @@ class ApiLayerService{
 						List temp2 = val.split('/')
 						cache = apiCacheService.getApiCache(temp2[0])
 						methods = cache[temp2[1]][params.apiObject]['method'].trim() as List
-						if(method=='GET'){
-							if(methods != method){
+						if(methods=='GET'){
+							if(methods != method && params?.apiChain?.type=='blankchain'){
 								pathMatch = true
 							}
 						}else{
@@ -484,6 +485,7 @@ class ApiLayerService{
 	
 			if(pathMatch || (preMatch && postMatch)){
 				// check for 
+				
 				if(params?.apiChain?.type=='blankchain'){
 					return 0
 				}else{

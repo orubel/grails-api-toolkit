@@ -126,18 +126,19 @@ class ApiRequestService extends ApiLayerService{
 								if(chain && k=='chain'){
 									params.apiChain = [:]
 									params.apiChain = request.JSON.chain
-									request.JSON.remove("chain")
 								}else if(batch && k=='batch'){
 									params.apiBatch = []
 									v.each { it ->
 										params.apiBatch.add(it)
 									}
 									params.apiBatch = params.apiBatch
-									request.JSON.remove("batch")
+									//request.JSON.remove("batch")
 								}else{
 									params[k]=v
 								}
 							}
+							request.JSON.remove("chain")
+							request.JSON.remove("batch")
 						}
 						break
 					case 'text/xml':
@@ -147,22 +148,25 @@ class ApiRequestService extends ApiLayerService{
 								if(chain && k=='chain'){
 									params.apiChain = [:]
 									params.apiChain = request.XML.chain
-									request.XML.remove("chain")
+									//request.XML.remove("chain")
 								}else if(batch && k=='batch'){
 									params.apiBatch = []
 									v.each { it ->
 										params.apiBatch.add(it.value)
 									}
 									params.apiBatch = params.apiBatch.reverse()
-									request.XML.remove("batch")
+									//request.XML.remove("batch")
 								}else{
 									params[k]=v
 								}
 							}
+							request.XML.remove("chain")
+							request.XML.remove("batch")
 						}
 						break
 				}
 			}
+			
 		}catch(Exception e){
 			throw new Exception("[ApiRequestService :: setApiParams] : Exception - full stack trace follows:"+ e);
 		}
