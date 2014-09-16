@@ -64,7 +64,8 @@ class ApiResponseService extends ApiLayerService{
 			Long id = model.id
 
 			
-			if(keys.last() && (params?.apiChain?.order["${keys.last()}"]!='null' && params?.apiChain?.order["${keys.last()}"]!='return')){
+			//if(keys.last() && (params?.apiChain?.order["${keys.last()}"]!='null' && params?.apiChain?.order["${keys.last()}"]!='return')){
+			if(keys.last()){
 				int pos = checkChainedMethodPosition(cache,request,params,uri,params?.apiChain?.order as Map)
 				if(pos==3){
 					String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
@@ -78,7 +79,7 @@ class ApiResponseService extends ApiLayerService{
 					}
 					
 					def currentPath = "${controller}/${action}"
-					List roles = cache[action][params.apiObject]['roles'].toArray() as List
+					List roles = cache[params.action][params.apiObject]['roles'].toArray() as List
 					if(checkAuth(request,roles)){
 						/*
 						if(params?.apiChain.combine=='true'){
@@ -99,7 +100,10 @@ class ApiResponseService extends ApiLayerService{
 							params.apiCombine[currentPath] = parseURIDefinitions(request,model,cache[params.action][params.apiObject]['returns'])
 						}
 						
-						params?.apiChain?.order.remove(keys.last())
+						if(keys.last() && (params?.apiChain?.order["${keys.last()}"]=='null' && params?.apiChain?.order["${keys.last()}"]=='return')){
+							params.remove("apiChain")
+						}
+						params?.apiChain?.order.remove("$currentPath")
 						return true
 					}else{
 						String msg = "User does not have access."
@@ -107,10 +111,11 @@ class ApiResponseService extends ApiLayerService{
 						return false
 					}
 				}
-			}else{
-				params.remove("apiChain")
 			}
-			//params.remove("apiChain")
+			//}else{
+			//	params.remove("apiChain")
+			//}
+
 			return false
 		}catch(Exception e){
 			throw new Exception("[ApiResponseService :: handleApiChain] : Exception - full stack trace follows:"+e)
