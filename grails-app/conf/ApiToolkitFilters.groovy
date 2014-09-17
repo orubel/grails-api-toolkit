@@ -79,7 +79,7 @@ class ApiToolkitFilters {
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)
-						return false
+						return null
 					}
 					
 					if(params?.apiCombine==true){
@@ -228,7 +228,7 @@ class ApiToolkitFilters {
 												return false
 											}else{
 												render(text:map as XML, contentType: 'application/xml')
-												return false
+												rreturn false
 											}
 											break
 										case 'text/json':
@@ -247,7 +247,7 @@ class ApiToolkitFilters {
 								}
 								break
 						}
-						return null
+						return false
 					}
 					return null
 			   }catch(Exception e){
