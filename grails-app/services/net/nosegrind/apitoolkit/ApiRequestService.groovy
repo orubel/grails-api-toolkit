@@ -35,19 +35,20 @@ class ApiRequestService extends ApiLayerService{
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
 			// CHECK IF URI HAS CACHE
-			if(cache[params.action][params.apiObject]){
+			if(cache[params.apiObject][params.action]){
+
 				// CHECK ACCESS TO METHOD
-				List roles = cache["${params.action}"]["${params.apiObject}"]['roles']?.toList()
+				List roles = cache[params.apiObject][params.action]['roles']?.toList()
 				if(!checkAuth(request,roles)){
 					return false
 				}
-				
+
 				// CHECK VERSION DEPRECATION DATE
-				if(cache[params.action][params.apiObject]['deprecated'][0]){
-					String depdate = cache[params.action][params.apiObject]['deprecated'][0]
+				if(cache[params.apiObject][params.action]['deprecated']?.get(0)){
+					String depdate = cache[params.apiObject][params.action]['deprecated'][0]
 					
 					if(checkDeprecationDate(depdate)){
-						String depMsg = cache[params.action][params.apiObject]['deprecated'][1]
+						String depMsg = cache[params.apiObject][params.action]['deprecated'][1]
 						// replace msg with config deprecation message
 						String msg = "[ERROR] ${depMsg}"
 						error._400_BAD_REQUEST(msg)?.send()
@@ -56,7 +57,7 @@ class ApiRequestService extends ApiLayerService{
 				}
 				
 				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
-				def method = cache[params.action][params.apiObject]['method']?.trim()
+				def method = cache[params.apiObject][params.action]['method']?.trim()
 				
 				// DOES api.methods.contains(request.method)
 				if(!isRequestMatch(method,request.method.toString())){
@@ -86,13 +87,13 @@ class ApiRequestService extends ApiLayerService{
 							params[k] = v
 						}
 					}
-					List batchRoles = cache["${params.action}"]["${params.apiObject}"]['batchRoles']?.toList()
+					List batchRoles = cache[params.apiObject][params.action]['batchRoles']?.toList()
 					if(!checkAuth(request,batchRoles)){
 						return false
 					}else{
 						return true
 					}
-					if(!checkURIDefinitions(request,cache[params.action][params.apiObject]['receives'])){
+					if(!checkURIDefinitions(request,cache[params.apiObject][params.action]['receives'])){
 						String msg = 'Expected request variables do not match sent variables'
 						error._400_BAD_REQUEST(msg)?.send()
 						return false

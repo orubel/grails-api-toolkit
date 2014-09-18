@@ -79,7 +79,7 @@ class ApiResponseService extends ApiLayerService{
 					}
 					
 					def currentPath = "${controller}/${action}"
-					List roles = cache[params.action][params.apiObject]['roles'].toArray() as List
+					List roles = cache[params.apiObject][params.action]['roles'].toArray() as List
 					if(checkAuth(request,roles)){
 						/*
 						if(params?.apiChain.combine=='true'){
@@ -90,18 +90,18 @@ class ApiResponseService extends ApiLayerService{
 						params.action = action
 
 						if(params.apiChain.key){
-							params.id = model."${params.apiChain.key}"
-							params.apiChain.remove("key")
+							params.id = model[params.apiChain.key]
+							params.apiChain.remove('key')
 						}else{
 							params.id = model.id
 						}
 
 						if(params?.apiChain.combine=='true'){
-							params.apiCombine[currentPath] = parseURIDefinitions(request,model,cache[params.action][params.apiObject]['returns'])
+							params.apiCombine[currentPath] = parseURIDefinitions(request,model,cache[params.apiObject][params.action]['returns'])
 						}
 						
 						if(keys.last() && (params?.apiChain?.order["${keys.last()}"]=='null' && params?.apiChain?.order["${keys.last()}"]=='return')){
-							params.remove("apiChain")
+							params.remove('apiChain')
 						}
 						params?.apiChain?.order.remove("$currentPath")
 						return true
@@ -127,13 +127,13 @@ class ApiResponseService extends ApiLayerService{
 		try{
 			String type = ''
 			if(cache){
-				if(cache[params.action][params.apiObject]){
+				if(cache[params.apiObject][params.action]){
 					// make 'application/json' default
 					//def formats = ['text/html','text/json','application/json','text/xml','application/xml']
 					//type = (params.contentType)?formats.findAll{ type.startsWith(it) }[0].toString():params.contentType
 					//if(type){
-							response.setHeader('Authorization', cache[params.action][params.apiObject]['roles'].join(', '))
-							LinkedHashMap result = parseURIDefinitions(request,model,cache[params.action][params.apiObject]['returns'])
+							response.setHeader('Authorization', cache[params.apiObject][params.action]['roles'].join(', '))
+							LinkedHashMap result = parseURIDefinitions(request,model,cache[params.apiObject][params.action]['returns'])
 							if(params?.apiChain?.combine=='true'){
 								if(!params.apiCombine){ params.apiCombine = [:] }
 								String currentPath = "${params.controller}/${params.action}"
@@ -273,20 +273,20 @@ class ApiResponseService extends ApiLayerService{
 		value.each{ v ->
 			Map val = [:]
 			val = [
-				'paramType':"${v.paramType}",
-				'name':"${v.name}",
-				'description':"${v.description}"
+				'paramType':v.paramType,
+				'name':v.name,
+				'description':v.description
 			]
 			
 			if(v.paramType=='PKEY' || v.paramType=='FKEY'){
-				val["idReferences"] = "${v.idReferences}"
+				val["idReferences"] = v.idReferences
 			}
 	
 			if(v.required==false){
 				val['required'] = false
 			}
 			if(v.mockData){
-				val['mockData'] = "${value.mockData}"
+				val['mockData'] = value.mockData
 			}
 			if(v.values){
 				val['values'] = processDocValues(v.values)
@@ -303,7 +303,7 @@ class ApiResponseService extends ApiLayerService{
 		List errors = error as List
 		ArrayList err = []
 		errors.each{ v ->
-			def code = ['code':v.code,'description':"${v.description}"]
+			def code = ['code':v.code,'description':v.description]
 			err.add(code)
 		}
 		return err
@@ -320,22 +320,22 @@ class ApiResponseService extends ApiLayerService{
 				
 					def j = [:]
 					if(paramDesc?.values){
-						j["${paramDesc.name}"]=[]
+						j[paramDesc.name]=[]
 					}else{
 						String dataName=(['PKEY','FKEY','INDEX'].contains(paramDesc.paramType.toString()))?'ID':paramDesc.paramType
-						j = (paramDesc?.mockData?.trim())?["${paramDesc.name}":"${paramDesc.mockData}"]:["${paramDesc.name}":"${dataName}"]
+						j = (paramDesc?.mockData?.trim())?["${paramDesc.name}":paramDesc.mockData]:["${paramDesc.name}":dataName]
 					}
 					j.each(){ key,val ->
 						if(val instanceof List){
 							def child = [:]
 							val.each(){ it2 ->
 								it2.each(){ key2,val2 ->
-									child["$key2"] ="$val2"
+									child[key2] = val2
 								}
 							}
-							json["$key"] = child
+							json[key] = child
 						}else{
-							json["$key"]=val
+							json[key]=val
 						}
 					}
 				}
@@ -356,41 +356,40 @@ class ApiResponseService extends ApiLayerService{
 		if(controller){
 			def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
 			if(cache){
-				if(cache[params.action][params.apiObject]){
+				if(cache[params.apiObject][params.action]){
 
-					def doc = cache[params.action][params.apiObject].doc
+					def doc = cache[params.apiObject][params.action].doc
 					def path = doc?.path
 					def method = doc?.method
 					def description = doc?.description
 
 					def authority = springSecurityService.principal.authorities*.authority[0]
-					newDoc["${params.action}"] = ['path':"$path",'method':method,'description':"$description"]
+					newDoc[params.action] = ['path':path,'method':method,'description':description]
 					if(doc.receives){
-						newDoc["${params.action}"].receives = [:]
+						newDoc[params.action].receives = [:]
 						doc.receives.each{ it ->
 							if(authority==it.key || it.key=='permitAll'){
-								newDoc["${params.action}"].receives["${it.key}"] = it.value
+								newDoc[params.action].receives[it.key] = it.value
 							}
 						}
 					}
 
 					if(doc.returns){
-						newDoc["${params.action}"].returns = [:]
+						newDoc[params.action].returns = [:]
 						doc.returns.each(){ v ->
 							if(authority==v.key || v.key=='permitAll'){
-								newDoc["${params.action}"].returns["${v.key}"] = v.value
+								newDoc[params.action].returns[v.key] = v.value
 							}
 						}
 
-						newDoc["${params.action}"].json = processJson(newDoc["${params.action}"].returns)
+						newDoc[params.action].json = processJson(newDoc[params.action].returns)
 					}
 
 					if(doc.errorcodes){
 						doc.errorcodes.each{ it ->
-							newDoc["${params.action}"].errorcodes.add(it)
+							newDoc[params.action].errorcodes.add(it)
 						}
 					}
-
 					
 					return newDoc
 				}

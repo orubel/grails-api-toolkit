@@ -166,8 +166,10 @@ class ApiLayerService{
 		apidoc.each(){ k1,v1 ->
 			if(k1!='currentStable'){
 				v1.each() { k2,v2 ->
-					def doc = generateApiDoc(controllername, k1, k2)
-					apiCacheService.setApiDocCache(controllername,k1,k2,doc)
+					if(!['deprecated','defaultAction'].contains(k2)){
+						def doc = generateApiDoc(controllername, k2, k1)
+						apiCacheService.setApiDocCache(controllername,k2,k1,doc)
+					}
 				}
 			}
 		}
@@ -176,29 +178,27 @@ class ApiLayerService{
 	Map generateApiDoc(String controllername, String actionname, String apiversion){
 		try{
 			Map doc = [:]
-			def cont = apiCacheService.getApiCache(controllername)
+			def cache = apiCacheService.getApiCache(controllername)
 			String apiPrefix = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String
 			
-			if(cont){
-	
+			if(cache){
 				String path = "/${apiPrefix}-${apiversion}/${controllername}/${actionname}"
-				doc = ["path":"${path}","method":cont[("${actionname}".toString())][("${apiversion}".toString())]["method"],"description":cont[("${actionname}".toString())][("${apiversion}".toString())]["description"]]
-				
-				if(cont["${actionname}"]["${apiversion}"]["receives"]){
+				doc = ['path':"$path",'method':cache[apiversion][actionname]['method'],'description':cache[apiversion][actionname]['description']]
+				if(cache[apiversion][actionname]['receives']){
 	
-					doc["receives"] = [:]
-					for(receiveVal in cont["${actionname}"]["${apiversion}"]["receives"]){
-						doc["receives"]["${receiveVal.key}"] = receiveVal.value
+					doc['receives'] = [:]
+					for(receiveVal in cache[apiversion][actionname]['receives']){
+						doc['receives']["$receiveVal.key"] = receiveVal.value
 					}
 				}
 				
-				if(cont["${actionname}"]["${apiversion}"]["returns"]){
-					doc["returns"] = [:]
-					for(returnVal in cont["${actionname}"]["${apiversion}"]["returns"]){
-						doc["returns"]["${returnVal.key}"] = returnVal.value
+				if(cache[apiversion][actionname]['returns']){
+					doc['returns'] = [:]
+					for(returnVal in cache[apiversion][actionname]['returns']){
+						doc['returns']["$returnVal.key"] = returnVal.value
 					}
-					doc["json"] = [:]
-					doc["json"] = processJson(doc["returns"])
+					doc['json'] = [:]
+					doc['json'] = processJson(doc["returns"])
 				}
 				
 				//if(cont["${actionname}"]["${apiversion}"]["errorcodes"]){
@@ -240,22 +240,22 @@ class ApiLayerService{
 						
 							def j = [:]
 							if(paramDesc?.values){
-								j["${paramDesc.name}"]=[]
+								j["$paramDesc.name"]=[]
 							}else{
 								String dataName=(['PKEY','FKEY','INDEX'].contains(paramDesc?.paramType?.toString()))?'ID':paramDesc.paramType
-								j = (paramDesc?.mockData?.trim())?["${paramDesc.name}":"${paramDesc.mockData}"]:["${paramDesc.name}":"${dataName}"]
+								j = (paramDesc?.mockData?.trim())?["$paramDesc.name":"$paramDesc.mockData"]:["$paramDesc.name":"$dataName"]
 							}
 							j.each(){ key,val ->
 								if(val instanceof List){
 									def child = [:]
 									val.each(){ it2 ->
 										it2.each(){ key2,val2 ->
-											child["${key2}"] ="${val2}"
+											child[key2] = val2
 										}
 									}
-									json["${key}"] = child
+									json[key] = child
 								}else{
-									json["${key}"]=val
+									json[key]=val
 								}
 							}
 							}
@@ -351,7 +351,7 @@ class ApiLayerService{
 			
 			// prematch check
 			String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
-			String methods = cache[action][params.apiObject]['method'].trim()
+			String methods = cache[params.apiObject][action]['method'].trim()
 
 			if(methods=='GET'){
 				if(methods != method && params?.apiChain?.type=='prechain'){
@@ -369,7 +369,7 @@ class ApiLayerService{
 				if(last && (last!='return' || last!='null')){
 					List last2 = keys[pathSize-1].split('/')
 					cache = apiCacheService.getApiCache(last2[0])
-					methods = cache[last2[1]][params.apiObject]['method'].trim()
+					methods = cache[params.apiObject][last2[1]]['method'].trim()
 
 					if(methods=='GET'){
 						if(methods != method && params?.apiChain?.type=='postchain'){
@@ -394,7 +394,7 @@ class ApiLayerService{
 					if(val){
 						List temp2 = val.split('/')
 						cache = apiCacheService.getApiCache(temp2[0])
-						methods = cache[temp2[1]][params.apiObject]['method'].trim() as List
+						methods = cache[params.apiObject][temp2[1]]['method'].trim() as List
 						if(methods=='GET'){
 							if(methods != method && params?.apiChain?.type=='blankchain'){
 								pathMatch = true

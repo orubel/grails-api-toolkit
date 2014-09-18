@@ -51,16 +51,16 @@ class ApiObjectService{
 
 		io.each{ k, v ->
 			// init
-			if(!ioSet["$k"]){
-				ioSet["$k"] = []
+			if(!ioSet[k]){
+				ioSet[k] = []
 			}
 			
 
 			def roleVars=v.toList()
 			roleVars.each{ val ->
 				if(v.contains(val)){
-					if(!ioSet["$k"].contains(apiObject["$val"])){
-						ioSet["$k"].add(apiObject["$val"])
+					if(!ioSet[k].contains(apiObject[val])){
+						ioSet[k].add(apiObject[val])
 					}
 				}
 			}
@@ -70,8 +70,8 @@ class ApiObjectService{
 		// add permitAll vars to other roles after processing
 		ioSet.each(){ key, val ->
 			if(key!='permitAll'){
-				ioSet["permitAll"].each(){ it ->
-						ioSet["${key}"].add(it)
+				ioSet['permitAll'].each(){ it ->
+						ioSet[key].add(it)
 				}
 			}
 		}
@@ -79,7 +79,7 @@ class ApiObjectService{
 		return ioSet
 	}
 	
-	private ApiDescriptor createApiDescriptor(String defaultAction,String apiname,String apiMethod, String apiDescription, List apiRoles, List batchRoles, String uri, JSONObject values, JSONObject json, List deprecated){
+	private ApiDescriptor createApiDescriptor(String apiname,String apiMethod, String apiDescription, List apiRoles, List batchRoles, String uri, JSONObject values, JSONObject json){
 		LinkedHashMap<String,ParamsDescriptor> apiObject = [:]
 		ApiParams param = new ApiParams()
 		
@@ -90,31 +90,29 @@ class ApiObjectService{
 			
 			v.type = (v.references)?getKeyType(v.references, v.type):v.type
 
-			param.setParam(v.type,"$k")
+			param.setParam(v.type,k)
 			
 			def configType = grailsApplication.config.apitoolkit.apiobject.type."${v.type}"
 			
 			hasDescription = (configType?.description)?configType.description:hasDescription
 			hasDescription = (v?.description)?v.description:hasDescription
-			if(hasDescription){ param.hasDescription("$hasDescription") }
+			if(hasDescription){ param.hasDescription(hasDescription) }
 			
 			references = (configType?.references)?configType.references:""
 			references = (v?.references)?v.references:references
 			if(references){ param.referencedBy(references) }
 			
 			hasMockData = (v?.mockData)?v.mockData:hasMockData
-			if(hasMockData){ param.hasMockData("$hasMockData") }
+			if(hasMockData){ param.hasMockData(hasMockData) }
 
 			// collect api vars into list to use in apiDescriptor
-			apiObject["${param.param.name}"] = param.toObject()
+			apiObject[param.param.name] = param.toObject()
 		}
 		
-		LinkedHashMap receives = getIOSet(json.URI["$uri"]?.REQUEST,apiObject)
-		LinkedHashMap returns = getIOSet(json.URI["$uri"]?.RESPONSE,apiObject)
+		LinkedHashMap receives = getIOSet(json.URI[uri]?.REQUEST,apiObject)
+		LinkedHashMap returns = getIOSet(json.URI[uri]?.RESPONSE,apiObject)
 		
 		ApiDescriptor service = new ApiDescriptor(
-			'defaultAction':"$defaultAction",
-			'deprecated':[],
 			'method':"$apiMethod",
 			'description':"$apiDescription",
 			'roles':[],
@@ -123,9 +121,6 @@ class ApiObjectService{
 			'receives':receives,
 			'returns':returns
 		)
-		if(deprecated){
-			service['deprecated'] = deprecated
-		}
 		service['roles'] = apiRoles
 		service['batchRoles'] = batchRoles
 
@@ -150,7 +145,7 @@ class ApiObjectService{
 			List deprecated = (vers.value.DEPRECATED)?vers.value.DEPRECATED:[]
 			vers.value.URI.each() { it ->
 
-				JSONObject apiVersion = json.VERSION["${vers.key}"]
+				JSONObject apiVersion = json.VERSION[vers.key]
 				
 				List temp = it.key.split('/')
 				String actionname = temp[1]
@@ -166,22 +161,30 @@ class ApiObjectService{
 				List batchRoles = it.value.BATCH
 				
 				String uri = it.key
-				apiDescriptor = createApiDescriptor(defaultAction, apiName, apiMethod, apiDescription, apiRoles, batchRoles, uri, json.get('VALUES'), apiVersion, deprecated)
-
+				apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, batchRoles, uri, json.get('VALUES'), apiVersion)
+				if(!methods[vers.key]){
+					methods[vers.key] = [:]
+				}
+				
 				if(!methods['currentStable']){
 					methods['currentStable'] = [:]
 					methods['currentStable']['value'] = json.CURRENTSTABLE
 				}
-				if(!methods["$actionname"]){
-					methods["$actionname"] = [:]
+				if(!methods[vers.key]['deprecated']){
+					methods[vers.key]['deprecated'] = []
+					methods[vers.key]['deprecated'] = deprecated
 				}
-				methods["$actionname"]["${vers.key}"] = apiDescriptor
 				
-				if(methods){
-					apiLayerService.setApiCache(apiName,methods)
+				if(!methods[vers.key]['defaultAction']){
+					methods[vers.key]['defaultAction'] = defaultAction
 				}
-			}
 
+				methods[vers.key][actionname] = apiDescriptor
+
+			}
+			if(methods){
+				apiLayerService.setApiCache(apiName,methods)
+			}
 		}
 	}
 

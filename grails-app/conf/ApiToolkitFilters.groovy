@@ -64,7 +64,7 @@ class ApiToolkitFilters {
 						params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']
 						
 						if(!params.action){
-							params.action = cache[params.apiObject]['defaultAction']
+							params.action = cache[params.apiObject]['defaultAction'].split('/')[1]
 						}
 						
 						
@@ -75,7 +75,8 @@ class ApiToolkitFilters {
 					return false
 
 				}catch(Exception e){
-					log.error("[ApiToolkitFilters :: preHandler] : Exception - full stack trace follows:", e);
+					//log.error("[ApiToolkitFilters :: preHandler] : Exception - full stack trace follows:", e);
+					println("[ApiToolkitFilters :: preHandler] : Exception - full stack trace follows:"+ e);
 					return false
 				}
 			}
@@ -101,11 +102,11 @@ class ApiToolkitFilters {
 					if(chain && params?.apiChain?.order){
 						//if(!['null','return'].contains(params?.apiChain?.order["${keys.last()}"].split(':'))){
 						boolean result = apiResponseService.handleApiChain(cache, request,response ,newModel,params)
-						forward(controller:"${params.controller}",action:"${params.action}",id:"${params.id}")
+						forward(controller:params.controller,action:params.action,id:params.id)
 						return false
 						//}
 					}else if(batch && params?.apiBatch){
-						forward(controller:"${params.controller}",action:"${params.action}",params:params)
+						forward(controller:params.controller,action:params.action,params:params)
 						return false
 					}else{
 						map = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
@@ -144,7 +145,7 @@ class ApiToolkitFilters {
 										case 'text/xml':
 										case 'application/xml':
 											if(params.encoding){
-												render(text:map as XML, contentType: 'application/xml',encoding:"${params.encoding}")
+												render(text:map as XML, contentType: 'application/xml',encoding:params.encoding)
 												return false
 											}else{
 												render(text:map as XML, contentType: 'application/xml')
@@ -157,7 +158,7 @@ class ApiToolkitFilters {
 										case 'application/json':
 										default:
 											if(params.encoding){
-												render(text:map as JSON, contentType: 'application/json',encoding:"${params.encoding}")
+												render(text:map as JSON, contentType: 'application/json',encoding:params.encoding)
 												return false
 											}else{
 												render(text:map as JSON, contentType: 'application/json')
@@ -174,7 +175,7 @@ class ApiToolkitFilters {
 										case 'text/xml':
 										case 'application/xml':
 											if(params.encoding){
-												render(text:map as XML, contentType: 'application/xml',encoding:"${params.encoding}")
+												render(text:map as XML, contentType: 'application/xml',encoding:params.encoding)
 												return false
 											}else{
 												render(text:map as XML, contentType: 'application/xml')
@@ -185,7 +186,7 @@ class ApiToolkitFilters {
 										case 'application/json':
 										default:
 											if(params.encoding){
-												render(text:map as JSON, contentType: 'application/json',encoding:"${params.encoding}")
+												render(text:map as JSON, contentType: 'application/json',encoding:params.encoding)
 												return false
 											}else{
 												render(text:map as JSON, contentType: 'application/json')
@@ -202,7 +203,7 @@ class ApiToolkitFilters {
 										case 'text/xml':
 										case 'application/xml':
 											if(params.encoding){
-												render(text:map as XML, contentType: 'application/xml',encoding:"${params.encoding}")
+												render(text:map as XML, contentType: 'application/xml',encoding:params.encoding)
 												return false
 											}else{
 												render(text:map as XML, contentType: 'application/xml')
@@ -213,7 +214,7 @@ class ApiToolkitFilters {
 										case 'application/json':
 										default:
 											if(params.encoding){
-												render(text:map as JSON, contentType: 'application/json',encoding:"${params.encoding}")
+												render(text:map as JSON, contentType: 'application/json',encoding:params.encoding)
 												return false
 											}else{
 												render(text:map as JSON, contentType: 'application/json')
@@ -230,7 +231,7 @@ class ApiToolkitFilters {
 										case 'text/xml':
 										case 'application/xml':
 											if(params.encoding){
-												render(text:map as XML, contentType: 'application/xml',encoding:"${params.encoding}")
+												render(text:map as XML, contentType: 'application/xml',encoding:params.encoding)
 												return false
 											}else{
 												render(text:map as XML, contentType: 'application/xml')
@@ -241,7 +242,7 @@ class ApiToolkitFilters {
 										case 'application/json':
 										default:
 											if(params.encoding){
-												render(text:map as JSON, contentType: 'application/json',encoding:"${params.encoding}")
+												render(text:map as JSON, contentType: 'application/json',encoding:params.encoding)
 												return false
 											}else{
 												render(text:map as JSON, contentType: 'application/json')
@@ -257,7 +258,8 @@ class ApiToolkitFilters {
 					}
 					return null
 			   }catch(Exception e){
-				   log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
+				   //log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
+				   println("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:"+ e);
 				   return false
 			   }
 			}

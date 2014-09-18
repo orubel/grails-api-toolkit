@@ -61,25 +61,19 @@ class ApiCacheService{
 	LinkedHashMap setApiCache(String controllername,String methodname,ApiDescriptor apidoc, String apiversion){
 		try{
 			def cache = getApiCache(controllername)
-			if(cache["${methodname}"]["${apiversion}"]){
-				cache["${methodname}"]["${apiversion}"]['name'] = apidoc.name
-				cache["${methodname}"]["${apiversion}"]['description'] = apidoc.description
-				cache["${methodname}"]["${apiversion}"]['receives'] = apidoc.receives
-				cache["${methodname}"]["${apiversion}"]['returns'] = apidoc.returns
-				cache["${methodname}"]["${apiversion}"]['errorcodes'] = apidoc.errorcodes
-				cache["${methodname}"]["${apiversion}"]['doc'] = apiLayerService.generateApiDoc(controllername, methodname,apiversion)
+			if(!cache[apiversion][methodname]){
+				cache[apiversion][methodname] = [:]
+			}
+			if(cache[apiversion][methodname]){
+				cache[apiversion][methodname]['name'] = apidoc.name
+				cache[apiversion][methodname]['description'] = apidoc.description
+				cache[apiversion][methodname]['receives'] = apidoc.receives
+				cache[apiversion][methodname]['returns'] = apidoc.returns
+				cache[apiversion][methodname]['errorcodes'] = apidoc.errorcodes
+				cache[apiversion][methodname]['doc'] = apiLayerService.generateApiDoc(controllername, methodname,apiversion)
 			}else{
 				log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} ")
 			}
-			if(!cache["${methodname}"]["${apiversion}"]){
-				cache["${methodname}"]["${apiversion}"] = [:]
-			}
-
-			cache["${methodname}"]["${apiversion}"]['name'] = apidoc.name
-			cache["${methodname}"]["${apiversion}"]['description'] = apidoc.description
-			cache["${methodname}"]["${apiversion}"]['receives'] = apidoc.receives
-			cache["${methodname}"]["${apiversion}"]['returns'] = apidoc.returns
-			cache["${methodname}"]["${apiversion}"]['errorcodes'] = apidoc.errorcodes
 
 			return cache
 		}catch(Exception e){
@@ -91,8 +85,8 @@ class ApiCacheService{
 	LinkedHashMap setApiDocCache(String controllername,String methodname, String apiversion, Map apidoc){
 		try{
 			def cache = getApiCache(controllername)
-			if(cache["${methodname}"]["${apiversion}"]){
-				cache["${methodname}"]["${apiversion}"]['doc'] = apiLayerService.generateApiDoc(controllername, methodname, apiversion)
+			if(cache[apiversion][methodname]){
+				cache[apiversion][methodname]['doc'] = apiLayerService.generateApiDoc(controllername, methodname, apiversion)
 			}else{
 				log.info"[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
 			}
