@@ -14,6 +14,7 @@ log4j = {
 			  'grails.app.filters.your.package'
 }
 
+
 grails.converters.default.pretty.print = true
 grails.cache.enabled = true
 grails.cache.clearAtStartup	= true

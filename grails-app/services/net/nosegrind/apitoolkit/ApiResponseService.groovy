@@ -68,12 +68,12 @@ class ApiResponseService extends ApiLayerService{
 			if(keys.last()){
 				int pos = checkChainedMethodPosition(cache,request,params,uri,params?.apiChain?.order as Map)
 				if(pos==3){
-					String msg = "[ERROR] Bad combination of unsafe METHODS in api chain."
+					String msg = '[ERROR] Bad combination of unsafe METHODS in api chain.'
 					errors._403_FORBIDDEN(msg).send()
 					return false
 				}else{
 					if(!uri2){
-						String msg = "Path was unable to be parsed. Check your path variables and try again."
+						String msg = 'Path was unable to be parsed. Check your path variables and try again.'
 						errors._404_NOT_FOUND(msg).send()
 						return false
 					}
@@ -209,7 +209,7 @@ class ApiResponseService extends ApiLayerService{
 	LinkedHashMap parseURIDefinitions(SecurityContextHolderAwareRequestWrapper request, LinkedHashMap model,LinkedHashMap responseDefinitions){
 		try{
 			ApiStatuses errors = new ApiStatuses()
-			String msg = "Error. Invalid variables being returned. Please see your administrator"
+			String msg = 'Error. Invalid variables being returned. Please see your administrator'
 			List optionalParams = ['action','controller','apiName_v','contentType', 'encoding','apiChain', 'apiBatch', 'apiCombine', 'apiObject','apiObjectVersion', 'chain']
 			List responseList = getApiParams(request,responseDefinitions)
 
@@ -255,88 +255,6 @@ class ApiResponseService extends ApiLayerService{
 		return urlValidator.isValid(url)
 	}
 	
-	// need to add these roles to apiObject
-	boolean checkHookAuthority(ArrayList roles){
-		if (springSecurityService.isLoggedIn()){
-			List userRoles = springSecurityService.getPrincipal().getAuthorities()
-			if(userRoles){
-				if(userRoles.intersect(roles)){
-					return true
-				}
-			}
-		}
-		return false
-	}
-	
-	void callHook(String service, String state, Map data, String apiversion) {
-		send(data, state, apiversion, service)
-	}
-	
-	void callHook(String service,String state, Object data, String apiversion) {
-		data = formatDomainObject(data)
-		send(data, state, apiversion, service)
-	}
-	
-	private boolean send(Map data, String state, String apiversion, String service) {
-		List hooks = grailsApplication.getClassForName(grailsApplication.config.apitoolkit.domain).findAll("from Hook where service='${service}/${state}'")
-		def cache = apiCacheService.getApiCache(service)
-		hooks.each { hook ->
-			// get cache and check each users authority for hook
-			List userRoles = []
-			LinkedHashSet authorities = hook.user.getAuthorities()
-			authorities.each{
-				userRoles += it.authority
-			}
-			def roles= cache[state][apiversion]['roles']
-			List temp = roles.intersect(userRoles)
-
-			if(temp.size()>0){
-				String format = hook.format.toLowerCase()
-				if(hook.attempts>=grailsApplication.config.apitoolkit.attempts){
-					data = 	[message:'Number of attempts exceeded. Please reset hook via web interface']
-				}
-				String hookData
-	
-				try{
-					URL url = new URL(hook.callback)
-					URLConnection conn = url.openConnection()
-					conn.setRequestMethod("POST")
-					conn.setRequestProperty("User-Agent",'Mozilla/5.0')
-					conn.setRequestProperty("Accept-Language", "en-US,en;q=0.5")
-					conn.setDoOutput(true)
-					def queryString = []
-					switch(format){
-						case 'xml':
-							hookData = (data as XML).toString()
-							queryString << "state=${state}&xml=${hookData}"
-							break
-						case 'json':
-						default:
-							hookData = (data as JSON).toString()
-							queryString << "state=${state}&json=${hookData}"
-							break
-					}
-					
-					def writer = new OutputStreamWriter(conn.getOutputStream())
-					writer.write(queryString)
-					writer.flush()
-					writer.close()
-					String output = conn.content.text
-					conn.connect()
-				}catch(Exception e){
-					// ignore missing GSP/JSP exception
-					if(!(e in java.io.FileNotFoundException)){
-						hook.attempts+=1
-						hook.save()
-						log.info("[Hook] net.nosegrind.apitoolkit.ApiResponseService : " + e)
-					}
-				}
-			}else{
-				hook.delete(flush:true)
-			}
-		}
-	}
-	
 	boolean isRequestRedirected(){
 		if(request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null){
 			return true
@@ -346,8 +264,6 @@ class ApiResponseService extends ApiLayerService{
 	}
 	
 	List getRedirectParams(){
-		// params.controller = temp[0]
-		// params.action = temp[1]
 		def uri = HOLDER.getServletContext().getControllerActionUri(request)
 		return uri[1..(uri.size()-1)].split('/')
 	}
@@ -357,9 +273,9 @@ class ApiResponseService extends ApiLayerService{
 		value.each{ v ->
 			Map val = [:]
 			val = [
-				"paramType":"${v.paramType}",
-				"name":"${v.name}",
-				"description":"${v.description}"
+				'paramType':"${v.paramType}",
+				'name':"${v.name}",
+				'description':"${v.description}"
 			]
 			
 			if(v.paramType=='PKEY' || v.paramType=='FKEY'){
@@ -367,16 +283,16 @@ class ApiResponseService extends ApiLayerService{
 			}
 	
 			if(v.required==false){
-				val["required"] = false
+				val['required'] = false
 			}
 			if(v.mockData){
-				val["mockData"] = "${value.mockData}"
+				val['mockData'] = "${value.mockData}"
 			}
 			if(v.values){
-				val["values"] = processDocValues(v.values)
+				val['values'] = processDocValues(v.values)
 			}
 			if(v.roles){
-				val["roles"] = v.roles
+				val['roles'] = v.roles
 			}
 			val2.add(val)
 		}
@@ -414,12 +330,12 @@ class ApiResponseService extends ApiLayerService{
 							def child = [:]
 							val.each(){ it2 ->
 								it2.each(){ key2,val2 ->
-									child["${key2}"] ="${val2}"
+									child["$key2"] ="$val2"
 								}
 							}
-							json["${key}"] = child
+							json["$key"] = child
 						}else{
-							json["${key}"]=val
+							json["$key"]=val
 						}
 					}
 				}
@@ -448,7 +364,7 @@ class ApiResponseService extends ApiLayerService{
 					def description = doc?.description
 
 					def authority = springSecurityService.principal.authorities*.authority[0]
-					newDoc["${params.action}"] = ["path":"${path}","method":method,"description":"${description}"]
+					newDoc["${params.action}"] = ['path':"$path",'method':method,'description':"$description"]
 					if(doc.receives){
 						newDoc["${params.action}"].receives = [:]
 						doc.receives.each{ it ->

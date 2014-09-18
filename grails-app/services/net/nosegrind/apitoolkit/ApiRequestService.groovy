@@ -137,8 +137,12 @@ class ApiRequestService extends ApiLayerService{
 									params[k]=v
 								}
 							}
-							request.JSON.remove("chain")
-							request.JSON.remove("batch")
+							if(request?.JSON?.chain){
+								request.JSON.remove('chain')
+							}
+							if(request?.JSON?.batch){
+								request.JSON.remove('batch')
+							}
 						}
 						break
 					case 'text/xml':
@@ -160,8 +164,12 @@ class ApiRequestService extends ApiLayerService{
 									params[k]=v
 								}
 							}
-							request.XML.remove("chain")
-							request.XML.remove("batch")
+							if(request?.XML.chain){
+								request.XML.remove('chain')
+							}
+							if(request?.XML.batch){
+								request.XML.remove('batch')
+							}
 						}
 						break
 				}

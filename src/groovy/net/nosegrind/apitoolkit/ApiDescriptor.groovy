@@ -13,7 +13,7 @@ import grails.validation.Validateable
 //@grails.validation.Validateable
 @Validateable
 class ApiDescriptor {
-
+	String defaultAction
 	List deprecated
 	String method
 	List roles
@@ -26,6 +26,7 @@ class ApiDescriptor {
     ErrorCodeDescriptor[] errorcodes
 
 	static constraints = { 
+		defaultAction(nullable:false)
 		deprecated(nullable:true)
 		method(nullable:false,inList: ["GET","POST","PUT","DELETE"])
 		roles(nullable:true)

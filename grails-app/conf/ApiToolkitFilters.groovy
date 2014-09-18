@@ -58,10 +58,16 @@ class ApiToolkitFilters {
 						return false
 					}
 
-					params.action = (params.action)?params.action:'index'
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 					if(cache){
+
 						params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']
+						
+						if(!params.action){
+							params.action = cache[params.apiObject]['defaultAction']
+						}
+						
+						
 						boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
 						return result
 					}

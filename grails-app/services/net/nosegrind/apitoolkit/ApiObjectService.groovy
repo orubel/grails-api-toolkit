@@ -51,16 +51,16 @@ class ApiObjectService{
 
 		io.each{ k, v ->
 			// init
-			if(!ioSet["${k}"]){
-				ioSet["${k}"] = []
+			if(!ioSet["$k"]){
+				ioSet["$k"] = []
 			}
 			
 
 			def roleVars=v.toList()
 			roleVars.each{ val ->
 				if(v.contains(val)){
-					if(!ioSet["${k}"].contains(apiObject["${val}"])){
-						ioSet["${k}"].add(apiObject["${val}"])
+					if(!ioSet["$k"].contains(apiObject["$val"])){
+						ioSet["$k"].add(apiObject["$val"])
 					}
 				}
 			}
@@ -79,7 +79,7 @@ class ApiObjectService{
 		return ioSet
 	}
 	
-	private ApiDescriptor createApiDescriptor(String apiname,String apiMethod, String apiDescription, List apiRoles, List batchRoles, String uri, JSONObject values, JSONObject json, List deprecated){
+	private ApiDescriptor createApiDescriptor(String defaultAction,String apiname,String apiMethod, String apiDescription, List apiRoles, List batchRoles, String uri, JSONObject values, JSONObject json, List deprecated){
 		LinkedHashMap<String,ParamsDescriptor> apiObject = [:]
 		ApiParams param = new ApiParams()
 		
@@ -90,37 +90,38 @@ class ApiObjectService{
 			
 			v.type = (v.references)?getKeyType(v.references, v.type):v.type
 
-			param.setParam(v.type,"${k}")
+			param.setParam(v.type,"$k")
 			
 			def configType = grailsApplication.config.apitoolkit.apiobject.type."${v.type}"
 			
 			hasDescription = (configType?.description)?configType.description:hasDescription
 			hasDescription = (v?.description)?v.description:hasDescription
-			if(hasDescription){ param.hasDescription("${hasDescription}") }
+			if(hasDescription){ param.hasDescription("$hasDescription") }
 			
 			references = (configType?.references)?configType.references:""
 			references = (v?.references)?v.references:references
 			if(references){ param.referencedBy(references) }
 			
 			hasMockData = (v?.mockData)?v.mockData:hasMockData
-			if(hasMockData){ param.hasMockData("${hasMockData}") }
+			if(hasMockData){ param.hasMockData("$hasMockData") }
 
 			// collect api vars into list to use in apiDescriptor
 			apiObject["${param.param.name}"] = param.toObject()
 		}
 		
-		LinkedHashMap receives = getIOSet(json.URI["${uri}"]?.REQUEST,apiObject)
-		LinkedHashMap returns = getIOSet(json.URI["${uri}"]?.RESPONSE,apiObject)
+		LinkedHashMap receives = getIOSet(json.URI["$uri"]?.REQUEST,apiObject)
+		LinkedHashMap returns = getIOSet(json.URI["$uri"]?.RESPONSE,apiObject)
 		
 		ApiDescriptor service = new ApiDescriptor(
-			"deprecated":[],
-			"method":"${apiMethod}",
-			"description":"${apiDescription}",
-			"roles":[],
-			"batchRoles":[],
-			"doc":[:],
-			"receives":receives,
-			"returns":returns
+			'defaultAction':"$defaultAction",
+			'deprecated':[],
+			'method':"$apiMethod",
+			'description':"$apiDescription",
+			'roles':[],
+			'batchRoles':[],
+			'doc':[:],
+			'receives':receives,
+			'returns':returns
 		)
 		if(deprecated){
 			service['deprecated'] = deprecated
@@ -134,7 +135,7 @@ class ApiObjectService{
 	void initApiCache(){
 		apiCacheService.flushAllApiCache()
 		String apiObjectSrc = grailsApplication.config.apitoolkit.apiobjectSrc
-		new File("${apiObjectSrc}").eachFile() { file ->
+		new File("$apiObjectSrc").eachFile() { file ->
 			String apiName = file.getName().split('\\.')[0].toLowerCase()
 			JSONObject json = JSON.parse(file.text)
 			parseJson(apiName,json)
@@ -145,7 +146,7 @@ class ApiObjectService{
 	Boolean parseJson(String apiName,JSONObject json){
 		Map methods = [:]
 		json.VERSION.each() { vers ->
-			
+			String defaultAction = (vers.value.DEFAULTACTION)?vers.value.DEFAULTACTION:'index'
 			List deprecated = (vers.value.DEPRECATED)?vers.value.DEPRECATED:[]
 			vers.value.URI.each() { it ->
 
@@ -165,16 +166,16 @@ class ApiObjectService{
 				List batchRoles = it.value.BATCH
 				
 				String uri = it.key
-				apiDescriptor = createApiDescriptor(apiName, apiMethod, apiDescription, apiRoles, batchRoles, uri, json.get('VALUES'), apiVersion, deprecated)
+				apiDescriptor = createApiDescriptor(defaultAction, apiName, apiMethod, apiDescription, apiRoles, batchRoles, uri, json.get('VALUES'), apiVersion, deprecated)
 
-				if(!methods["currentStable"]){
-					methods["currentStable"] = [:]
-					methods["currentStable"]['value'] = json.CURRENTSTABLE
+				if(!methods['currentStable']){
+					methods['currentStable'] = [:]
+					methods['currentStable']['value'] = json.CURRENTSTABLE
 				}
-				if(!methods["${actionname}"]){
-					methods["${actionname}"] = [:]
+				if(!methods["$actionname"]){
+					methods["$actionname"] = [:]
 				}
-				methods["${actionname}"]["${vers.key}"] = apiDescriptor
+				methods["$actionname"]["${vers.key}"] = apiDescriptor
 				
 				if(methods){
 					apiLayerService.setApiCache(apiName,methods)
