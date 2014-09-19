@@ -20,9 +20,10 @@ import org.springframework.cache.Cache
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
-
 import net.nosegrind.apitoolkit.*
+import grails.compiler.GrailsCompileStatic
 
+//@GrailsCompileStatic
 class ApiCacheService{
 
 	static transactional = false
@@ -36,8 +37,8 @@ class ApiCacheService{
 
 	
 	void flushAllApiCache(){
-		grailsApplication.controllerClasses.each { controllerClass ->
-			String controllername = controllerClass.logicalPropertyName
+		grailsApplication?.controllerClasses?.each { controllerClass ->
+			String controllername = controllerClass?.logicalPropertyName
 			if(controllername!='aclClass'){
 				flushApiCache(controllername)
 			}
@@ -101,7 +102,7 @@ class ApiCacheService{
 			def cache = grailsCacheManager.getCache('ApiCache').get(controllername)
 
 			if(cache){
-				return cache.get()
+				return cache.get() as LinkedHashMap
 			}
 
 		}catch(Exception e){

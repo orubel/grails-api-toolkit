@@ -8,7 +8,9 @@ import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
+import grails.compiler.GrailsCompileStatic
 
+//@GrailsCompileStatic
 class ApiStatuses{
 
 	def grailsApplication
@@ -25,11 +27,11 @@ class ApiStatuses{
 	private ApiStatuses() {}
 	
 	SecurityContextHolderAwareRequestWrapper getRequest(){
-		return RCH.currentRequestAttributes().currentRequest
+		return RCH.currentRequestAttributes()?.currentRequest
 	}
 	
 	GrailsContentBufferingResponse getResponse(){
-		return RCH.currentRequestAttributes().currentResponse
+		return RCH.currentRequestAttributes()?.currentResponse
 	}
 
 	String getContentType(){

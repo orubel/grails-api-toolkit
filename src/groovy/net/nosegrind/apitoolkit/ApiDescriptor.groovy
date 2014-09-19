@@ -8,10 +8,13 @@ import net.nosegrind.apitoolkit.ErrorCodeDescriptor
 import net.nosegrind.apitoolkit.ParamsDescriptor
 import grails.validation.Validateable
 
+import grails.compiler.GrailsCompileStatic
+
 // name is name of the object used
 
 //@grails.validation.Validateable
 @Validateable
+//@GrailsCompileStatic
 class ApiDescriptor {
 	String defaultAction
 	List deprecated
@@ -30,7 +33,7 @@ class ApiDescriptor {
 		roles(nullable:true)
 		batchRoles(nullable:true, validator: { val, obj ->
 			if (batchRoles){
-				if(obj.roles.containsAll(batchRoles)) {
+				if(obj?.roles.containsAll(batchRoles)) {
 				  return true
 				}else {
 				  return false

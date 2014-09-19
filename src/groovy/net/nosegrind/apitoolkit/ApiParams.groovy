@@ -4,11 +4,9 @@
 package net.nosegrind.apitoolkit
 
 import net.nosegrind.apitoolkit.ParamsDescriptor
-//import org.codehaus.groovy.grails.commons.GrailsClass
-//import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
-//import grails.util.Holders
-//import org.springframework.web.context.request.RequestContextHolder as RCH
+import grails.compiler.GrailsCompileStatic
 
+//@GrailsCompileStatic
 class ApiParams{
 
 	//def applicationContext
@@ -27,11 +25,6 @@ class ApiParams{
 	def toObject(){
 		return this.param
 	}
-
-	def hasRoles(List roles){
-		this.param.roles = roles
-		return this
-	}
 	
 	def hasMockData(String data){
 		this.param.mockData = data
@@ -43,11 +36,6 @@ class ApiParams{
 		return this
 	}
 	
-	def isRequired(boolean data){
-		this.param.required = data
-		return this
-	}
-	
 	def hasParams(ParamsDescriptor[] values){
 		this.param.values = values
 		return this
@@ -55,11 +43,6 @@ class ApiParams{
 
 	def referencedBy(String data){
 		this.param.idReferences = data
-		return this
-	}
-	
-	def isVisible(boolean data){
-		this.param.visible = data
 		return this
 	}
 	

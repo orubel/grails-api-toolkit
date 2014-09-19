@@ -5,9 +5,13 @@ package net.nosegrind.apitoolkit;
 
 import grails.util.Holders
 import grails.validation.Validateable
+import grails.compiler.GrailsCompileStatic
+import groovy.transform.TypeCheckingMode
 
-//@grails.validation.Validateable
+
+
 @Validateable
+//@GrailsCompileStatic
 class ParamsDescriptor {
 
 	String paramType
