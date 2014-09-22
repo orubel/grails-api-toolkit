@@ -24,6 +24,7 @@ import org.springframework.security.web.servletapi.SecurityContextHolderAwareReq
 
 import net.nosegrind.apitoolkit.*
 
+
 class ApiRequestService extends ApiLayerService{
 
 	static transactional = false
@@ -38,9 +39,12 @@ class ApiRequestService extends ApiLayerService{
 			if(cache[params.apiObject][params.action]){
 
 				// CHECK ACCESS TO METHOD
-				List roles = cache[params.apiObject][params.action]['roles']?.toList()
-				if(!checkAuth(request,roles)){
-					return false
+				if(localAuth==true){
+					println("localauth enabled")
+					List roles = cache[params.apiObject][params.action]['roles']?.toList()
+					if(!checkAuth(request,roles)){
+						return false
+					}
 				}
 
 				// CHECK VERSION DEPRECATION DATE
@@ -87,11 +91,15 @@ class ApiRequestService extends ApiLayerService{
 							params[k] = v
 						}
 					}
-					List batchRoles = cache[params.apiObject][params.action]['batchRoles']?.toList()
-					if(!checkAuth(request,batchRoles)){
-						return false
-					}else{
-						return true
+					
+					if(localAuth==true){
+						println("localauth enabled")
+						List batchRoles = cache[params.apiObject][params.action]['batchRoles']?.toList()
+						if(!checkAuth(request,batchRoles)){
+							return false
+						}else{
+							return true
+						}
 					}
 					if(!checkURIDefinitions(request,cache[params.apiObject][params.action]['receives'])){
 						String msg = 'Expected request variables do not match sent variables'

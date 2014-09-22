@@ -47,7 +47,7 @@ class ApiToolkitFilters {
 		boolean batch = grailsApplication.config.apitoolkit.batching.enabled
 		apiRequestService.setBatch(batch)
 
-		//String apiRegex = "/${apiRoot}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
+		//String apiRegex = "/${entryPoint}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
 		
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${entryPoint}*/**"){
@@ -63,10 +63,7 @@ class ApiToolkitFilters {
 
 						params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']
 						
-						if(!params.action){
-							params.action = cache[params.apiObject]['defaultAction'].split('/')[1]
-						}
-						
+						if(!params.action){ params.action = cache[params.apiObject]['defaultAction'].split('/')[1] }
 						
 						boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
 						return result
@@ -75,8 +72,7 @@ class ApiToolkitFilters {
 					return false
 
 				}catch(Exception e){
-					//log.error("[ApiToolkitFilters :: preHandler] : Exception - full stack trace follows:", e);
-					println("[ApiToolkitFilters :: preHandler] : Exception - full stack trace follows:"+ e);
+					log.error("[ApiToolkitFilters :: preHandler] : Exception - full stack trace follows:", e);
 					return false
 				}
 			}
@@ -235,7 +231,7 @@ class ApiToolkitFilters {
 												return false
 											}else{
 												render(text:map as XML, contentType: 'application/xml')
-												rreturn false
+												return false
 											}
 											break
 										case 'text/json':
@@ -258,8 +254,7 @@ class ApiToolkitFilters {
 					}
 					return null
 			   }catch(Exception e){
-				   //log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
-				   println("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:"+ e);
+				   log.error("[ApiToolkitFilters :: apitoolkit.after] : Exception - full stack trace follows:", e);
 				   return false
 			   }
 			}

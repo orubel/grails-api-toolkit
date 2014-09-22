@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *****************************************************************************/
-import grails.util.Holders
 
 class ApiToolkitUrlMappings {
 
@@ -21,11 +20,8 @@ class ApiToolkitUrlMappings {
 		String apiName = grails.util.Holders.getGrailsApplication().config.apitoolkit.apiName
 		String apiVersion = grails.util.Holders.getGrailsApplication().metadata['app.version']
 		
-		"/apidoc/show" (controller:'apidoc',action:'show', parseRequest: true)
-		"/hook" (controller:'hook',action:'list', parseRequest: true)
-		
 		if(apiName){
-			"/$apiName_v$apiVersion-$apiObjectVersion/$controller/$action?/$id**" {
+			"/${apiName}_v${apiVersion}-$apiObjectVersion/$controller/$action?/$id**" {
 				controller = controller
 				action = action
 				//parseRequest = true
@@ -34,13 +30,13 @@ class ApiToolkitUrlMappings {
 				}
 			}
 			
-			"/$apiName_v$apiVersion/$controller/$action?/$id**" {
+			"/${apiName}_v${apiVersion}/$controller/$action?/$id**" {
 				controller = controller
 				action = action
 				//parseRequest = true
 			}
 			
-			"/$apiName_v$apiVersion-$apiObjectVersion/$controller/$action" {
+			"/${apiName}_v${apiVersion}-$apiObjectVersion/$controller/$action" {
 				controller = controller
 				action = action
 				parseRequest = true
@@ -49,7 +45,7 @@ class ApiToolkitUrlMappings {
 				}
 			}
 			
-			"/$apiName_v$apiVersion/$controller/$action" {
+			"/${apiName}_v${apiVersion}/$controller/$action" {
 				controller = controller
 				action = action
 				parseRequest = true
@@ -83,7 +79,6 @@ class ApiToolkitUrlMappings {
 				controller = controller
 				action = action
 				parseRequest = true
-				
 			}
 		}
 	}

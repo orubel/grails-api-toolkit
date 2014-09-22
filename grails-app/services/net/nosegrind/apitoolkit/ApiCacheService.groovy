@@ -21,9 +21,8 @@ import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import net.nosegrind.apitoolkit.*
-import grails.compiler.GrailsCompileStatic
 
-//@GrailsCompileStatic
+
 class ApiCacheService{
 
 	static transactional = false
@@ -38,7 +37,7 @@ class ApiCacheService{
 	
 	void flushAllApiCache(){
 		grailsApplication?.controllerClasses?.each { controllerClass ->
-			String controllername = controllerClass?.logicalPropertyName
+			String controllername = controllerClass.logicalPropertyName
 			if(controllername!='aclClass'){
 				flushApiCache(controllername)
 			}
@@ -73,12 +72,12 @@ class ApiCacheService{
 				cache[apiversion][methodname]['errorcodes'] = apidoc.errorcodes
 				cache[apiversion][methodname]['doc'] = apiLayerService.generateApiDoc(controllername, methodname,apiversion)
 			}else{
-				log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} ")
+				throw new Exception("[ApiCacheService :: setApiCache] : sts for controller/action pair of ${controllername}/${methodname}")
 			}
 
 			return cache
 		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
+			throw new Exception("[ApiCacheService :: setApiCache] : Exception - full stack trace follows:"+e)
 		}
 	}
 
@@ -89,11 +88,11 @@ class ApiCacheService{
 			if(cache[apiversion][methodname]){
 				cache[apiversion][methodname]['doc'] = apiLayerService.generateApiDoc(controllername, methodname, apiversion)
 			}else{
-				log.info"[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller/action pair of ${controllername}/${methodname} "
+				throw new Exception("[ApiCacheService :: setApiCache] : No Cache exists for controller/action pair of ${controllername}/${methodname}")
 			}
 			return cache
 		}catch(Exception e){
-			log.info("[Error]: net.nosegrind.apitoolkit.ApiCacheService.setApiCache : No Cache exists for controller '${controllername}' ")
+			throw new Exception("[ApiCacheService :: setApiDocCache] : Exception - full stack trace follows:"+e)
 		}
 	}
 	
@@ -106,7 +105,7 @@ class ApiCacheService{
 			}
 
 		}catch(Exception e){
-			log.error("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:", e);
+			throw new Exception("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:"+e)
 		}
 
 	}

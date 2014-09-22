@@ -38,6 +38,7 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 import net.nosegrind.apitoolkit.*
 
 
+
 class ApiLayerService{
 
 	static transactional = false
@@ -48,12 +49,14 @@ class ApiLayerService{
 
 	boolean chain = true
 	boolean batch = true
+	boolean localAuth = true
 	
 	ApiStatuses errors = new ApiStatuses()
 	
 	void setEnv(){
 		this.batch = grailsApplication.config.apitoolkit.batching.enabled
 		this.chain = grailsApplication.config.apitoolkit.chaining.enabled
+		this.localAuth = grailsApplication.config.apitoolkit.localAuth.enabled
 	}
 	
 	private SecurityContextHolderAwareRequestWrapper getRequest(){
