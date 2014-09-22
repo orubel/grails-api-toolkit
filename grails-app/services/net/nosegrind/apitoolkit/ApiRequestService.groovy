@@ -37,10 +37,8 @@ class ApiRequestService extends ApiLayerService{
 			setApiParams(request, params)
 			// CHECK IF URI HAS CACHE
 			if(cache[params.apiObject][params.action]){
-
 				// CHECK ACCESS TO METHOD
-				if(localAuth==true){
-					println("localauth enabled")
+				if(localauth==true){
 					List roles = cache[params.apiObject][params.action]['roles']?.toList()
 					if(!checkAuth(request,roles)){
 						return false
@@ -92,8 +90,7 @@ class ApiRequestService extends ApiLayerService{
 						}
 					}
 					
-					if(localAuth==true){
-						println("localauth enabled")
+					if(localauth==true){
 						List batchRoles = cache[params.apiObject][params.action]['batchRoles']?.toList()
 						if(!checkAuth(request,batchRoles)){
 							return false

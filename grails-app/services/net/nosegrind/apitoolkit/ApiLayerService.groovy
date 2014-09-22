@@ -49,14 +49,14 @@ class ApiLayerService{
 
 	boolean chain = true
 	boolean batch = true
-	boolean localAuth = true
+	boolean localauth = true
 	
 	ApiStatuses errors = new ApiStatuses()
 	
 	void setEnv(){
 		this.batch = grailsApplication.config.apitoolkit.batching.enabled
 		this.chain = grailsApplication.config.apitoolkit.chaining.enabled
-		this.localAuth = grailsApplication.config.apitoolkit.localAuth.enabled
+		this.localauth = grailsApplication.config.apitoolkit.localauth.enabled
 	}
 	
 	private SecurityContextHolderAwareRequestWrapper getRequest(){
