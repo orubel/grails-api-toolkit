@@ -110,7 +110,7 @@ class ApiToolkitFilters {
 						List uriVars = apiResponseService.parseUri(request.forwardURI,entryPoint)
 						if(uriVars.size()>2){
 							params.apiObject = uriVars[0]
-							uriVars.drop(0)
+							uriVars.drop(1)
 						}
 						
 						forward(controller:uriVars[0],action:uriVars[1],id:params.id)

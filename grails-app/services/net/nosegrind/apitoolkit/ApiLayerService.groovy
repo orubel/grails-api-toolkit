@@ -105,7 +105,7 @@ class ApiLayerService{
 				uriVars[0] = temp2[1]
 				return uriVars
 			}else{
-				uriVars.drop(0)
+				uriVars.drop(1)
 				return uriVars
 			}
 		}else{
