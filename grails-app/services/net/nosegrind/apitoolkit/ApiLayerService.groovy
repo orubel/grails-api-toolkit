@@ -94,6 +94,25 @@ class ApiLayerService{
 		}
 	}
 	
+	// set version,controller,action / controller,action
+	List parseUri(String uri, String entrypoint){
+		if(uri[0]=='/'){ uri=uri[1..-1] }
+		List uriVars = uri.split('/')
+		if(uriVars.size()==3){
+			List temp2 = entrypoint.split('-')
+			if(temp2.size()>1){
+				// version
+				uriVars[0] = temp2[1]
+				return uriVars
+			}else{
+				uriVars.drop(0)
+				return uriVars
+			}
+		}else{
+			return uriVars
+		}
+	}
+	
 	/*
 	 * TODO: Need to compare multiple authorities
 	 */
@@ -125,9 +144,10 @@ class ApiLayerService{
 			List apiList = []
 			definitions.each{ key,val ->
 				if(request.isUserInRole(key) || key=='permitAll'){
-					ParamsDescriptor[] temp = definitions["${key}"]
-					temp.each{ val2 ->
-						apiList.add(val2.name)
+					val.each{ it ->
+						if(it){
+							apiList.add(it.name)
+						}
 					}
 				}
 			}

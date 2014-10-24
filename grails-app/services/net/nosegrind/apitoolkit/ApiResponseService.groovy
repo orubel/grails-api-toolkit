@@ -122,7 +122,6 @@ class ApiResponseService extends ApiLayerService{
 		}
 	}
 	
-	//LinkedHashMap, SecurityContextHolderAwareRequestWrapper, SaveToSessionResponseWrapper, ModelMap, GrailsParameterMap
 	def handleApiResponse(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, HttpServletResponse response, LinkedHashMap model, GrailsParameterMap params){
 		try{
 			String type = ''
@@ -203,9 +202,7 @@ class ApiResponseService extends ApiLayerService{
 		}
 	}
 	
-	/*
-	 * TODO: Need to compare multiple authorities
-	 */
+
 	LinkedHashMap parseURIDefinitions(SecurityContextHolderAwareRequestWrapper request, LinkedHashMap model,LinkedHashMap responseDefinitions){
 		try{
 			ApiStatuses errors = new ApiStatuses()

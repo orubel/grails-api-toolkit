@@ -20,11 +20,9 @@ if (configFile.exists()) {
 	}
 	
 	println """
-	*************************************************************
-	* SUCCESS! You have successfully installed the API Toolkit..*
-	* Please run 'grails apitoolkit-init' to finish the install *
-	* process...                                                *
-	*************************************************************
+	************************************************************
+	* SUCCESS! You have successfully installed the API Toolkit *
+	************************************************************
 """
 }
 

@@ -17,8 +17,11 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map
+
 import grails.util.Holders as HOLDER
+
 import javax.servlet.ServletContext
+
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 import grails.converters.JSON
@@ -26,7 +29,9 @@ import grails.converters.XML
 
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
 import org.codehaus.groovy.grails.commons.GrailsApplication
+
 import javax.servlet.http.HttpServletResponse
+
 import net.nosegrind.apitoolkit.*
 
 class ApiToolkitFilters {
@@ -36,11 +41,13 @@ class ApiToolkitFilters {
 
 	GrailsApplication grailsApplication
 	ApiCacheService apiCacheService
-	
+
 	def filters = {
 		String apiName = grailsApplication.config.apitoolkit.apiName
 		String apiVersion = grailsApplication.metadata['app.version']
-		String entryPoint = (apiName)?"${apiName}_v${apiVersion}":"v${apiVersion}"
+		String apinameEntrypoint = "{apiName}_v${apiVersion}"
+		String versionEntrypoint = "v${apiVersion}"
+		String entryPoint = (apiName)?apinameEntrypoint:versionEntrypoint
 		
 		boolean chain = grailsApplication.config.apitoolkit.chaining.enabled
 		apiRequestService.setChain(chain)
@@ -53,6 +60,7 @@ class ApiToolkitFilters {
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
 				//println("##### FILTER (BEFORE)")
+
 				try{
 					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
 						return false
@@ -79,6 +87,7 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 				//println("##### FILTER (AFTER)")
+
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)
@@ -98,7 +107,13 @@ class ApiToolkitFilters {
 					if(chain && params?.apiChain?.order){
 						//if(!['null','return'].contains(params?.apiChain?.order["${keys.last()}"].split(':'))){
 						boolean result = apiResponseService.handleApiChain(cache, request,response ,newModel,params)
-						forward(controller:params.controller,action:params.action,id:params.id)
+						List uriVars = apiResponseService.parseUri(request.forwardURI,entryPoint)
+						if(uriVars.size()>2){
+							params.apiObject = uriVars[0]
+							uriVars.drop(0)
+						}
+						
+						forward(controller:uriVars[0],action:uriVars[1],id:params.id)
 						return false
 						//}
 					}else if(batch && params?.apiBatch){
