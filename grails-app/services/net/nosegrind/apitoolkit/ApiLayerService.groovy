@@ -38,7 +38,6 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 import net.nosegrind.apitoolkit.*
 
 
-
 class ApiLayerService{
 
 	static transactional = false
