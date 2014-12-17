@@ -122,11 +122,9 @@ class ApiLayerService{
 			HashMap params = getMethodParams()
 			
 			//GrailsParameterMap params = RCH.currentRequestAttributes().params
-			List paramsList = params.post.keySet() as List
+			List paramsList = (request.method=='GET')?params.get.keySet() as List:params.post.keySet() as List
 			paramsList.removeAll(optionalParams)
-	
 			if(paramsList.containsAll(requestList)){
-				
 				paramsList.removeAll(requestList)
 				if(!paramsList){
 					return true
@@ -174,8 +172,11 @@ class ApiLayerService{
 			}else{
 				paramsGet = WebUtils.fromQueryString(request.getQueryString() ?: "")
 				paramsPost = paramsRequest.minus(paramsGet)
+				if(paramsPost['id']){
+					paramsGet['id'] = paramsPost['id']
+					paramsPost.remove('id')
+				}
 			}
-	
 			return ['get':paramsGet,'post':paramsPost]
 		}catch(Exception e){
 			throw new Exception("[ApiLayerService :: getMethodParams] : Exception - full stack trace follows:"+e)

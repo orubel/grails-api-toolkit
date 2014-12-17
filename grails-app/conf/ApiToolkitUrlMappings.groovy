@@ -14,6 +14,8 @@
  * limitations under the License.
  *****************************************************************************/
 
+import org.springframework.web.context.request.RequestContextHolder as RCH
+ 
 class ApiToolkitUrlMappings {
 
 	static mappings = {
@@ -24,7 +26,7 @@ class ApiToolkitUrlMappings {
 			"/${apiName}_v${apiVersion}-$apiObjectVersion/$controller/$action?/$id**" {
 				controller = controller
 				action = action
-				//parseRequest = true
+				parseRequest = true
 				constraints {
 					apiObjectVersion(matches:/^[0-9]?[0-9]?(\\.[0-9][0-9]?)?/)
 				}
@@ -33,7 +35,7 @@ class ApiToolkitUrlMappings {
 			"/${apiName}_v${apiVersion}/$controller/$action?/$id**" {
 				controller = controller
 				action = action
-				//parseRequest = true
+				parseRequest = true
 			}
 			
 			"/${apiName}_v${apiVersion}-$apiObjectVersion/$controller/$action" {
@@ -48,6 +50,19 @@ class ApiToolkitUrlMappings {
 			"/${apiName}_v${apiVersion}/$controller/$action" {
 				controller = controller
 				action = action
+				parseRequest = true
+			}
+			
+			"/${apiName}_v${apiVersion}-$apiObjectVersion/$controller?/$id" {
+				controller = controller
+				parseRequest = true
+				constraints {
+					apiObjectVersion(matches:/^[0-9]?[0-9]?(\\.[0-9][0-9]?)?/)
+				}
+			}
+			
+			"/${apiName}_v${apiVersion}/$controller?/$id" {
+				controller = controller
 				parseRequest = true
 			}
 		}else{
@@ -79,6 +94,19 @@ class ApiToolkitUrlMappings {
 				controller = controller
 				action = action
 				parseRequest = true
+			}
+
+			"/v$apiVersion/$controller?/$id" {
+				controller = controller
+				parseRequest = true
+			}
+			
+			"/v$apiVersion-$apiObjectVersion/$controller?/$id" {
+				controller = controller
+				parseRequest = true
+				constraints {
+					apiObjectVersion(matches:/^[0-9]?[0-9]?(\\.[0-9][0-9]?)?/)
+				}
 			}
 		}
 	}
