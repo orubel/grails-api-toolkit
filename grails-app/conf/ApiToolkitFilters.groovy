@@ -62,33 +62,30 @@ class ApiToolkitFilters {
 				//println("##### FILTER (BEFORE)")
 				def methods = ['get':'show','put':'update','post':'create','delete':'delete']
 				try{
-					if(!request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
-						return false
-					}
-
-					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-					if(cache){
-						params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']
-						String methodAction = methods[request.method.toLowerCase()]
-						if(!params.action){ 
-							if(!cache[params.apiObject][methodAction]){
-								params.action = cache[params.apiObject]['defaultAction'].split('/')[1] 
-							}else{
-								params.action = methodAction
+					if(request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
+						def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
+						if(cache){
+							params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']
+							if(!params.action){ 
+								if(!cache[params.apiObject][methodAction]){
+									params.action = cache[params.apiObject]['defaultAction'].split('/')[1] 
+								}else{
+									params.action = methods[request.method.toLowerCase()]
+									
+									// FORWARD FOR REST DEFAULTS WITH NO ACTION
+									def tempUri = request.getRequestURI().split("/")
+									if(tempUri[2].contains('dispatch')){
+										if("${params.controller}.dispatch" == tempUri[2]){
+											forward(controller:params.controller,action:params.action,params:params)
+											return false
+										}
+									}
+								}
 							}
+	
+							boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
+							return result
 						}
-						
-						// FORWARD FOR REST DEFAULTS WITH NO ACTION
-						def tempUri = request.getRequestURI().split("/")
-						if(tempUri[2].contains('dispatch')){
-							if("${params.controller}.dispatch" == tempUri[2]){
-								forward(controller:params.controller,action:params.action,params:params)
-								return false
-							}
-						}
-						
-						boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
-						return result
 					}
 					
 					return false
@@ -105,7 +102,7 @@ class ApiToolkitFilters {
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)
-						return null
+						return false
 					}
 					
 					if(params?.apiCombine==true){
