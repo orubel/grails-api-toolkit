@@ -4,25 +4,26 @@
 package net.nosegrind.apitoolkit
 
 import org.codehaus.groovy.grails.web.json.JSONObject
+
 import java.lang.reflect.Method
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import grails.util.Holders
 
+import grails.util.Holders
 import grails.converters.JSON
 import grails.converters.XML
-
 import groovy.util.ConfigObject
 import grails.util.Environment
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import grails.plugin.cache.GrailsCacheManager
 import grails.plugin.springsecurity.SpringSecurityService
 
 import org.springframework.cache.Cache
-
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
@@ -144,12 +145,14 @@ class ApiObjectService{
 		json.VERSION.each() { vers ->
 			String defaultAction = (vers.value.DEFAULTACTION)?vers.value.DEFAULTACTION:'index'
 			List deprecated = (vers.value.DEPRECATED)?vers.value.DEPRECATED:[]
+			String domainPackage = (vers.value.DOMAINPACKAGE.size()>0)?vers.value.DOMAINPACKAGE:null
 			vers.value.URI.each() { it ->
 
 				JSONObject apiVersion = json.VERSION[vers.key]
 				
-				List temp = it.key.split('/')
-				String actionname = temp[1]
+				//List temp = it.key.split('/')
+				//String actionname = temp[1]
+				String actionname = it.key
 				
 				ApiStatuses error = new ApiStatuses()
 				
@@ -178,6 +181,10 @@ class ApiObjectService{
 				
 				if(!methods[vers.key]['defaultAction']){
 					methods[vers.key]['defaultAction'] = defaultAction
+				}
+
+				if(!methods[vers.key]['domainPackage']){
+					methods[vers.key]['domainPackage'] = domainPackage
 				}
 
 				methods[vers.key][actionname] = apiDescriptor

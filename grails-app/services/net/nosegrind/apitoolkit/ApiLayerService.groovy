@@ -9,6 +9,7 @@ import grails.plugin.springsecurity.SpringSecurityService
 //import grails.spring.BeanBuilder
 //import grails.util.Holders as HOLDER
 
+
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.HashSet
@@ -19,7 +20,9 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 //import java.lang.reflect.Method
+
 import javax.servlet.forward.*
+
 import java.text.SimpleDateFormat
 
 import org.codehaus.groovy.grails.commons.*
@@ -34,6 +37,7 @@ import org.springframework.cache.Cache
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
 import org.springframework.web.context.request.RequestContextHolder as RCH
 //import org.springframework.ui.ModelMap
+
 
 import net.nosegrind.apitoolkit.*
 
@@ -185,17 +189,17 @@ class ApiLayerService{
 	
 	void setApiCache(String controllername,LinkedHashMap apidoc){
 		apiCacheService.setApiCache(controllername,apidoc)
-
 		apidoc.each(){ k1,v1 ->
 			if(k1!='currentStable'){
 				v1.each() { k2,v2 ->
-					if(!['deprecated','defaultAction'].contains(k2)){
+					if(!['deprecated','defaultAction','domainPackage'].contains(k2)){
 						def doc = generateApiDoc(controllername, k2, k1)
 						apiCacheService.setApiDocCache(controllername,k2,k1,doc)
 					}
 				}
 			}
 		}
+		def cache = apiCacheService.getApiCache(controllername)
 	}
 	
 	Map generateApiDoc(String controllername, String actionname, String apiversion){
@@ -456,4 +460,5 @@ class ApiLayerService{
 			throw new Exception("[ApiLayerService :: checkChainedMethodPosition] : Exception - full stack trace follows:"+e)
 		}
 	}
+	
 }

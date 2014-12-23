@@ -36,7 +36,10 @@ class ApiRequestService extends ApiLayerService{
 			ApiStatuses error = new ApiStatuses()
 			setApiParams(request, params)
 			// CHECK IF URI HAS CACHE
+			println(params.apiObject)
+			println(params.action)
 			if(cache[params.apiObject][params.action]){
+				println("has cache")
 				// CHECK ACCESS TO METHOD
 				if(localauth==true){
 					List roles = cache[params.apiObject][params.action]['roles']?.toList()

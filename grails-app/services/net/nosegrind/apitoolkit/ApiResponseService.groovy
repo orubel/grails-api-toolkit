@@ -394,7 +394,41 @@ class ApiResponseService extends ApiLayerService{
 		}
 		return [:]
 	}
+
+	Map formatDomainObject(Object data){
+		try{
+			def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
+			def newMap = [:]
+			
+			if(data?.id){
+				newMap['id'] = data.id
+			}
+			data.getProperties().each { key, val ->
+				if (!nonPersistent.contains(key)) {
+					if(grailsApplication.isDomainClass(val.getClass())){
+						newMap.put key, val.id
+					}else{
+						newMap.put key, val
+					}
+				}
+			}
+			return newMap
+		}catch(Exception e){
+			throw new Exception("[ApiResponseService :: formatDomainObject] : Exception - full stack trace follows:"+e)
+		}
+	}
 	
+	
+	/*
+	 * TODO: Need to compare multiple authorities
+	 */
+	def apiRoles(List list) {
+		if(springSecurityService.principal.authorities*.authority.any { list.contains(it) }){
+			return true
+		}
+		return ['validation.customRuntimeMessage', 'ApiCommandObject does not validate. Check that your data validates or that requesting user has access to api method and all fields in api command object.']
+	}
+
 	Map convertModel(Map map){
 		try{
 			Map newMap = [:]
@@ -440,39 +474,4 @@ class ApiResponseService extends ApiLayerService{
 			throw new Exception("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
 		}
 	}
-
-	Map formatDomainObject(Object data){
-		try{
-			def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
-			def newMap = [:]
-			
-			if(data?.id){
-				newMap['id'] = data.id
-			}
-			data.getProperties().each { key, val ->
-				if (!nonPersistent.contains(key)) {
-					if(grailsApplication.isDomainClass(val.getClass())){
-						newMap.put key, val.id
-					}else{
-						newMap.put key, val
-					}
-				}
-			}
-			return newMap
-		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: formatDomainObject] : Exception - full stack trace follows:"+e)
-		}
-	}
-	
-	
-	/*
-	 * TODO: Need to compare multiple authorities
-	 */
-	def apiRoles(List list) {
-		if(springSecurityService.principal.authorities*.authority.any { list.contains(it) }){
-			return true
-		}
-		return ['validation.customRuntimeMessage', 'ApiCommandObject does not validate. Check that your data validates or that requesting user has access to api method and all fields in api command object.']
-	}
-
 }

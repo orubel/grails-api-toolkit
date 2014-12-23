@@ -11,6 +11,7 @@ if (configFile.exists()) {
 		it.writeLine '\n// Added by the Api Toolkit plugin:'
 		it.writeLine "apitoolkit.apiName = 'api'"
 		it.writeLine "apitoolkit.apichain.limit=3"
+		it.writeLine "apitoolkit.rest.postcrement=false"
 		it.writeLine "apitoolkit.attempts = 5"
 		it.writeLine "apitoolkit.chaining.enabled=true"
 		it.writeLine "apitoolkit.batching.enabled=true"

@@ -15,6 +15,7 @@
  *****************************************************************************/
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map
 
@@ -38,7 +39,9 @@ class ApiToolkitFilters {
 	
 	ApiRequestService apiRequestService
 	ApiResponseService apiResponseService
-
+	
+	ApiDomainService apiDomainService
+	
 	GrailsApplication grailsApplication
 	ApiCacheService apiCacheService
 
@@ -59,9 +62,18 @@ class ApiToolkitFilters {
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
-				//println("##### FILTER (BEFORE)")
+				println("##### FILTER (BEFORE)")
+				
+				/*
+				 * FIRST DETERMINE
+				 *  - HOW ENDPOINT IS BEING CALLED, THEN...
+				 *  - WHAT RESOURCE IS BEING CALLED (CONTROLLER/SERVICE/DOMAIN/ETC)
+				 *  - FINALLY, RESOLVE ENDPOINT
+				 */
+				
 				def methods = ['get':'show','put':'update','post':'create','delete':'delete']
 				try{
+					
 					if(request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
 						def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 						if(cache){
@@ -76,15 +88,39 @@ class ApiToolkitFilters {
 									def tempUri = request.getRequestURI().split("/")
 									if(tempUri[2].contains('dispatch')){
 										if("${params.controller}.dispatch" == tempUri[2]){
-											forward(controller:params.controller,action:params.action,params:params)
-											return false
+											if(!cache[params.apiObject]['domainPackage']){
+												forward(controller:params.controller,action:params.action,params:params)
+												return false
+											}else{
+												// SET PARAMS AND TEST ENDPOINT ACCESS (PER APIOBJECT)
+												boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
+												if(result){
+													def model = apiDomainService.showInstance(cache,params)
+													println("model : ${model}")
+													def newModel = (model)?apiResponseService.convertModel(model):model
+													render(model: model)
+													//return result
+												}
+											}
 										}
 									}
 								}
 							}
-	
+							
 							boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
-							return result
+							//HANDLE DOMAIN RESOLUTION
+							if(cache[params.apiObject]['domainPackage']){
+								// SET PARAMS AND TEST ENDPOINT ACCESS (PER APIOBJECT)
+								if(result){
+									def model = apiDomainService.showInstance(cache,params)
+									println("model : ${model}")
+									def newModel = apiResponseService.formatDomainObject(model)
+									render(model: newModel)
+								}
+								//return result
+							}else{
+								return result
+							}
 						}
 					}
 					
@@ -97,10 +133,11 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				//println("##### FILTER (AFTER)")
+				println("##### FILTER (AFTER)")
 
 				try{
 					if(!model){
+						println("no model")
 						render(status:HttpServletResponse.SC_BAD_REQUEST)
 						return false
 					}
