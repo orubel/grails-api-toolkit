@@ -202,7 +202,6 @@ class ApiResponseService extends ApiLayerService{
 		}
 	}
 	
-
 	LinkedHashMap parseURIDefinitions(SecurityContextHolderAwareRequestWrapper request, LinkedHashMap model,LinkedHashMap responseDefinitions){
 		try{
 			ApiStatuses errors = new ApiStatuses()
@@ -213,9 +212,11 @@ class ApiResponseService extends ApiLayerService{
 			HashMap params = getMethodParams()
 			//GrailsParameterMap params = RCH.currentRequestAttributes().params
 			List paramsList = model.keySet() as List
+			println("paramslist : "+paramsList)
 			paramsList.removeAll(optionalParams)
 			if(!responseList.containsAll(paramsList)){
 				paramsList.removeAll(responseList)
+				println("paramslistAfter : "+paramsList)
 				paramsList.each(){ it ->
 					model.remove("${it}".toString())
 				}
@@ -430,17 +431,21 @@ class ApiResponseService extends ApiLayerService{
 	}
 
 	Map convertModel(Map map){
+		println("convertmodel")
+		println(map)
 		try{
 			Map newMap = [:]
 			String k = map?.entrySet()?.toList()?.first()?.key
 			if(map && (!map?.response && !map?.metaClass && !map?.params)){
 				if(grailsApplication.isDomainClass(map[k].getClass())){
+					println("isdomainpackage")
 					newMap = formatDomainObject(map[k])
 					return newMap
 				}else{
 					switch(map[k].getClass()){
 						case 'class java.util.LinkedList':
 						case 'class java.util.ArrayList':
+							println("map/arraylist")
 							map[k].eachWithIndex(){ val, key ->
 								if(val){
 									if(grailsApplication.isDomainClass(val.getClass())){
@@ -455,6 +460,7 @@ class ApiResponseService extends ApiLayerService{
 						case 'class java.util.Map':
 						case 'class java.util.LinkedHashMap':
 						default:
+							println("map/linkedhashmap")
 							map[k].each(){ key, val ->
 								if(val){
 									if(grailsApplication.isDomainClass(val.getClass())){
@@ -471,7 +477,66 @@ class ApiResponseService extends ApiLayerService{
 			}
 			return newMap
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
+			//throw new Exception("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
+			println("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
 		}
+	}
+	
+	Map parseResponseMethod(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, Map map, LinkedHashMap returns){
+		Map data = [:]
+		switch(request.method) {
+			case 'PURGE':
+				// cleans cache
+				break;
+			case 'TRACE':
+				break;
+			case 'HEAD':
+				break;
+			case 'OPTIONS':
+				LinkedHashMap doc = getApiDoc(params)
+				data = parseContentType(request,params, doc, returns)
+				break;
+			case 'GET':
+				if(map?.isEmpty()==false){
+					data = parseContentType(request,params, map, returns)
+				}
+				break;
+			case 'PUT':
+				if(!map.isEmpty()){
+					data = parseContentType(request,params, map, returns)
+				}
+				break;
+			case 'POST':
+				if(!map.isEmpty()){
+					data = parseContentType(request,params, map, returns)
+				}
+				break;
+			case 'DELETE':
+				if(!map.isEmpty()){
+					data = parseContentType(request,params, map, returns)
+				}
+				break;
+		}
+		return ['apiToolkitContent':data.content,'apiToolkitType':data.contentType,'apiToolkitEncoding':data.encoding]
+	}
+
+	Map parseContentType(SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, Map map, LinkedHashMap returns){
+		String content
+		String contentType = (params.contentType)?params.contentType:'application/json'
+		String encoding = (params.encoding)?params.encoding:"UTF-8"
+		switch(contentType){
+			case 'text/xml':
+			case 'application/xml':
+				LinkedHashMap result2 = parseURIDefinitions(request,map,returns)
+				content = result2 as XML
+				break
+			case 'text/json':
+			case 'application/json':
+			default:
+				LinkedHashMap result2 = parseURIDefinitions(request,map,returns)
+				content = result2 as JSON
+				break
+		}
+		return ['content':content,'type':contentType,'encoding':encoding]
 	}
 }

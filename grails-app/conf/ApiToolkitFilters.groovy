@@ -79,6 +79,7 @@ class ApiToolkitFilters {
 						if(cache){
 							params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']
 							if(!params.action){ 
+								println("#### no params.action")
 								if(!cache[params.apiObject][methodAction]){
 									params.action = cache[params.apiObject]['defaultAction'].split('/')[1] 
 								}else{
@@ -87,35 +88,45 @@ class ApiToolkitFilters {
 									// FORWARD FOR REST DEFAULTS WITH NO ACTION
 									def tempUri = request.getRequestURI().split("/")
 									if(tempUri[2].contains('dispatch')){
+										println("#### dispatch")
 										if("${params.controller}.dispatch" == tempUri[2]){
 											if(!cache[params.apiObject]['domainPackage']){
 												forward(controller:params.controller,action:params.action,params:params)
 												return false
-											}else{
-												// SET PARAMS AND TEST ENDPOINT ACCESS (PER APIOBJECT)
-												boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
-												if(result){
-													def model = apiDomainService.showInstance(cache,params)
-													println("model : ${model}")
-													def newModel = (model)?apiResponseService.convertModel(model):model
-													render(model: model)
-													//return result
-												}
 											}
 										}
 									}
 								}
 							}
 							
+							// SET PARAMS AND TEST ENDPOINT ACCESS (PER APIOBJECT)
 							boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
 							//HANDLE DOMAIN RESOLUTION
 							if(cache[params.apiObject]['domainPackage']){
 								// SET PARAMS AND TEST ENDPOINT ACCESS (PER APIOBJECT)
 								if(result){
 									def model = apiDomainService.showInstance(cache,params)
-									println("model : ${model}")
+									//println("model : ['${params.controller}':${model}]")
+									
+									if(!model){
+										render(status:HttpServletResponse.SC_BAD_REQUEST)
+										return false
+									}
+									
+									if(params?.apiCombine==true){
+										model = params.apiCombine
+									}
+									println("beforeFormatDomainObject : "+model)
 									def newModel = apiResponseService.formatDomainObject(model)
-									render(model: newModel)
+									println("afterFormatDomainObject : "+newModel)
+									//def newModel = apiResponseService.convertModel(["${params.controller}":tempModel])
+									//println("afterConvertModel : "+newModel)
+									LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
+									Map content = apiResponseService.parseResponseMethod(request, params, map, cache[params.apiObject][params.action]['returns'])
+									
+									println("result = "+content)
+									render(text:content.apiToolkitContent, contentType:"${content.apiToolkitType}", encoding:content.apiToolkitEncoding)
+									return false
 								}
 								//return result
 							}else{
@@ -134,14 +145,12 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 				println("##### FILTER (AFTER)")
-
 				try{
 					if(!model){
-						println("no model")
 						render(status:HttpServletResponse.SC_BAD_REQUEST)
 						return false
 					}
-					
+
 					if(params?.apiCombine==true){
 						model = params.apiCombine
 					}
@@ -172,147 +181,10 @@ class ApiToolkitFilters {
 					}
 						
 					if(map){
-						String apiEncoding = (params.contentType)?params.contentType:"UTF-8"
-						switch(request.method) {
-							case 'PURGE':
-								// cleans cache
-								break;
-							case 'TRACE':
-								break;
-							case 'HEAD':
-								break;
-							case 'OPTIONS':
-								LinkedHashMap doc = apiResponseService.getApiDoc(params)
-								switch(params.contentType){
-									case 'text/xml':
-									case 'application/xml':
-										render(text:doc as XML, contentType: 'application/xml')
-										return false
-										break
-									case 'text/json':
-									case 'application/json':
-									default:
-										render(text:doc as JSON, contentType: 'application/json')
-										return false
-										break
-								}
-								return false
-								break;
-							case 'GET':
-								if(map?.isEmpty()==false){
-									switch(params.contentType){
-										case 'text/xml':
-										case 'application/xml':
-											if(params.encoding){
-												render(text:map as XML, contentType: 'application/xml',encoding:params.encoding)
-												return false
-											}else{
-												render(text:map as XML, contentType: 'application/xml')
-												return false
-											}
-											break
-										case 'text/html':
-											break
-										case 'text/json':
-										case 'application/json':
-										default:
-											if(params.encoding){
-												render(text:map as JSON, contentType: 'application/json',encoding:params.encoding)
-												return false
-											}else{
-												render(text:map as JSON, contentType: 'application/json')
-												return false
-											}
-											break
-									}
-									return false
-								}
-								break
-							case 'POST':
-								if(!map.isEmpty()){
-									switch(params.contentType){
-										case 'text/xml':
-										case 'application/xml':
-											if(params.encoding){
-												render(text:map as XML, contentType: 'application/xml',encoding:params.encoding)
-												return false
-											}else{
-												render(text:map as XML, contentType: 'application/xml')
-												return false
-											}
-											break
-										case 'text/json':
-										case 'application/json':
-										default:
-											if(params.encoding){
-												render(text:map as JSON, contentType: 'application/json',encoding:params.encoding)
-												return false
-											}else{
-												render(text:map as JSON, contentType: 'application/json')
-												return false
-											}
-											break
-									}
-									return null
-								}
-								break
-							case 'PUT':
-								if(!map.isEmpty()){
-									switch(params.contentType){
-										case 'text/xml':
-										case 'application/xml':
-											if(params.encoding){
-												render(text:map as XML, contentType: 'application/xml',encoding:params.encoding)
-												return false
-											}else{
-												render(text:map as XML, contentType: 'application/xml')
-												return false
-											}
-											break
-										case 'text/json':
-										case 'application/json':
-										default:
-											if(params.encoding){
-												render(text:map as JSON, contentType: 'application/json',encoding:params.encoding)
-												return false
-											}else{
-												render(text:map as JSON, contentType: 'application/json')
-												return false
-											}
-											break
-									}
-									return false
-								}
-								break
-							case 'DELETE':
-								if(!map.isEmpty()){
-									switch(params.contentType){
-										case 'text/xml':
-										case 'application/xml':
-											if(params.encoding){
-												render(text:map as XML, contentType: 'application/xml',encoding:params.encoding)
-												return false
-											}else{
-												render(text:map as XML, contentType: 'application/xml')
-												return false
-											}
-											break
-										case 'text/json':
-										case 'application/json':
-										default:
-											if(params.encoding){
-												render(text:map as JSON, contentType: 'application/json',encoding:params.encoding)
-												return false
-											}else{
-												render(text:map as JSON, contentType: 'application/json')
-												return false
-											}
-											break
-									}
-									return false
-								}
-								break
-						}
+						map = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
+						Map content = apiResponseService.parseResponseMethod(request, params, map,cache[params.apiObject][params.action]['returns'])
+						
+						render(text:content.apiToolkitContent, contentType:"${content.apiToolkitType}", encoding:content.apiToolkitEncoding)
 						return false
 					}
 					return null

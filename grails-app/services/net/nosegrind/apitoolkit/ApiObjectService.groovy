@@ -145,7 +145,7 @@ class ApiObjectService{
 		json.VERSION.each() { vers ->
 			String defaultAction = (vers.value.DEFAULTACTION)?vers.value.DEFAULTACTION:'index'
 			List deprecated = (vers.value.DEPRECATED)?vers.value.DEPRECATED:[]
-			String domainPackage = (vers.value.DOMAINPACKAGE.size()>0)?vers.value.DOMAINPACKAGE:null
+			String domainPackage = (vers.value.DOMAINPACKAGE!=null || vers.value.DOMAINPACKAGE?.size()>0)?vers.value.DOMAINPACKAGE:null
 			vers.value.URI.each() { it ->
 
 				JSONObject apiVersion = json.VERSION[vers.key]
