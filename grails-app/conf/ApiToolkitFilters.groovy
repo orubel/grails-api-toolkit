@@ -79,7 +79,6 @@ class ApiToolkitFilters {
 						if(cache){
 							params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']
 							if(!params.action){ 
-								println("#### no params.action")
 								if(!cache[params.apiObject][methodAction]){
 									params.action = cache[params.apiObject]['defaultAction'].split('/')[1] 
 								}else{
@@ -88,7 +87,6 @@ class ApiToolkitFilters {
 									// FORWARD FOR REST DEFAULTS WITH NO ACTION
 									def tempUri = request.getRequestURI().split("/")
 									if(tempUri[2].contains('dispatch')){
-										println("#### dispatch")
 										if("${params.controller}.dispatch" == tempUri[2]){
 											if(!cache[params.apiObject]['domainPackage']){
 												forward(controller:params.controller,action:params.action,params:params)
@@ -106,8 +104,7 @@ class ApiToolkitFilters {
 								// SET PARAMS AND TEST ENDPOINT ACCESS (PER APIOBJECT)
 								if(result){
 									def model = apiDomainService.showInstance(cache,params)
-									//println("model : ['${params.controller}':${model}]")
-									
+
 									if(!model){
 										render(status:HttpServletResponse.SC_BAD_REQUEST)
 										return false
@@ -116,15 +113,10 @@ class ApiToolkitFilters {
 									if(params?.apiCombine==true){
 										model = params.apiCombine
 									}
-									println("beforeFormatDomainObject : "+model)
+
 									def newModel = apiResponseService.formatDomainObject(model)
-									println("afterFormatDomainObject : "+newModel)
-									//def newModel = apiResponseService.convertModel(["${params.controller}":tempModel])
-									//println("afterConvertModel : "+newModel)
-									LinkedHashMap map = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
-									Map content = apiResponseService.parseResponseMethod(request, params, map, cache[params.apiObject][params.action]['returns'])
-									
-									println("result = "+content)
+									LinkedHashMap content = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
+
 									render(text:content.apiToolkitContent, contentType:"${content.apiToolkitType}", encoding:content.apiToolkitEncoding)
 									return false
 								}
@@ -159,7 +151,7 @@ class ApiToolkitFilters {
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 
 					//println(response.response.getResponse().response)
-					LinkedHashMap map
+					LinkedHashMap content
 					
 					if(chain && params?.apiChain?.order){
 						//if(!['null','return'].contains(params?.apiChain?.order["${keys.last()}"].split(':'))){
@@ -177,13 +169,10 @@ class ApiToolkitFilters {
 						forward(controller:params.controller,action:params.action,params:params)
 						return false
 					}else{
-						map = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
+						content = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
 					}
 						
-					if(map){
-						map = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
-						Map content = apiResponseService.parseResponseMethod(request, params, map,cache[params.apiObject][params.action]['returns'])
-						
+					if(content){
 						render(text:content.apiToolkitContent, contentType:"${content.apiToolkitType}", encoding:content.apiToolkitEncoding)
 						return false
 					}

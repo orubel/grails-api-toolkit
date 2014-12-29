@@ -22,13 +22,10 @@ class ApiDomainService{
 	GrailsApplication grailsApplication
 	SpringSecurityService springSecurityService
 
-	
 	static transactional = false
 	
 	void getInstance(String domainPackage){
-		println("getInstance called")
 		try{
-			println("domainpackage : ${domainPakage}")
 			this.clazz = grailsApplication.getDomainClass(domainPackage).newInstance() 
 		}catch(Exception e){
 			log.error("[ApiDomainService :: getInstance] : Could not find domain package '${domainPackage}' - full stack trace follows:", e);
@@ -36,10 +33,6 @@ class ApiDomainService{
 	}
 	
 	def showInstance(LinkedHashMap cache, GrailsParameterMap params){
-		println("showInstance called")
-		//getInstance(cache[params.apiObject]['domainPackage'])
-		//GrailsDomainClass dc=(GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,persistentClass.getName());
-		
 		def domainInstance = grailsApplication.getDomainClass(cache[params.apiObject]['domainPackage']).newInstance()
 		return domainInstance.get(params.id.toLong())
 	}

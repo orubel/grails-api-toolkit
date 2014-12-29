@@ -138,7 +138,8 @@ class ApiResponseService extends ApiLayerService{
 								String currentPath = "${params.controller}/${params.action}"
 								params.apiCombine[currentPath] = result
 							}
-							return result
+							Map content = parseResponseMethod(request, params, result,cache[params.apiObject][params.action]['returns'])
+							return content
 					//}else{
 						//return true
 						//render(view:params.action,model:model)
@@ -212,11 +213,9 @@ class ApiResponseService extends ApiLayerService{
 			HashMap params = getMethodParams()
 			//GrailsParameterMap params = RCH.currentRequestAttributes().params
 			List paramsList = model.keySet() as List
-			println("paramslist : "+paramsList)
 			paramsList.removeAll(optionalParams)
 			if(!responseList.containsAll(paramsList)){
 				paramsList.removeAll(responseList)
-				println("paramslistAfter : "+paramsList)
 				paramsList.each(){ it ->
 					model.remove("${it}".toString())
 				}
@@ -431,21 +430,17 @@ class ApiResponseService extends ApiLayerService{
 	}
 
 	Map convertModel(Map map){
-		println("convertmodel")
-		println(map)
 		try{
 			Map newMap = [:]
 			String k = map?.entrySet()?.toList()?.first()?.key
 			if(map && (!map?.response && !map?.metaClass && !map?.params)){
 				if(grailsApplication.isDomainClass(map[k].getClass())){
-					println("isdomainpackage")
 					newMap = formatDomainObject(map[k])
 					return newMap
 				}else{
 					switch(map[k].getClass()){
 						case 'class java.util.LinkedList':
 						case 'class java.util.ArrayList':
-							println("map/arraylist")
 							map[k].eachWithIndex(){ val, key ->
 								if(val){
 									if(grailsApplication.isDomainClass(val.getClass())){
@@ -460,7 +455,6 @@ class ApiResponseService extends ApiLayerService{
 						case 'class java.util.Map':
 						case 'class java.util.LinkedHashMap':
 						default:
-							println("map/linkedhashmap")
 							map[k].each(){ key, val ->
 								if(val){
 									if(grailsApplication.isDomainClass(val.getClass())){
@@ -477,8 +471,7 @@ class ApiResponseService extends ApiLayerService{
 			}
 			return newMap
 		}catch(Exception e){
-			//throw new Exception("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
-			println("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
 		}
 	}
 	
