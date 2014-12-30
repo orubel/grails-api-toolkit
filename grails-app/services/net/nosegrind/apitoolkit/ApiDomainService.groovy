@@ -24,28 +24,63 @@ class ApiDomainService{
 
 	static transactional = false
 	
-	void getInstance(String domainPackage){
-		try{
-			this.clazz = grailsApplication.getDomainClass(domainPackage).newInstance() 
-		}catch(Exception e){
-			log.error("[ApiDomainService :: getInstance] : Could not find domain package '${domainPackage}' - full stack trace follows:", e);
-		}
-	}
-	
 	def showInstance(LinkedHashMap cache, GrailsParameterMap params){
-		def domainInstance = grailsApplication.getDomainClass(cache[params.apiObject]['domainPackage']).newInstance()
+		def domainInstance
+		try{
+			domainInstance = grailsApplication.getDomainClass(cache[params.apiObject]['domainPackage']).newInstance()
+		}catch(Exception e){
+			log.error("[ApiDomainService :: showInstance] : Could not find domain package '${domainPackage}' - full stack trace follows:", e);
+		}
+
 		return domainInstance.get(params.id.toLong())
 	}
 	
 	Long createInstance(LinkedHashMap cache, GrailsParameterMap params){
-	
+		Long id = params.id.toLong()
+		def domainInstance
+		try{
+			domainInstance = grailsApplication.getDomainClass(cache[params.apiObject]['domainPackage']).newInstance()
+		}catch(Exception e){
+			log.error("[ApiDomainService :: showInstance] : Could not find domain package '${domainPackage}' - full stack trace follows:", e);
+		}
+
+		if(domainInstance.save(flush:true)){
+			return id
+		}else{
+			return null
+		}
+		return null
 	}
 	
 	Boolean updateInstance(LinkedHashMap cache, GrailsParameterMap params){
-		
+		def domainInstance
+		try{
+			domainInstance = grailsApplication.getDomainClass(cache[params.apiObject]['domainPackage']).newInstance()
+		}catch(Exception e){
+			log.error("[ApiDomainService :: showInstance] : Could not find domain package '${domainPackage}' - full stack trace follows:", e);
+		}
+
+		if(domainInstance.save(flush:true)){
+			return true
+		}else{
+			return false
+		}
+		return false
 	}
 	
 	Boolean deleteInstance(LinkedHashMap cache, GrailsParameterMap params){
-		
+		def domainInstance
+		try{
+			domainInstance = grailsApplication.getDomainClass(cache[params.apiObject]['domainPackage']).newInstance()
+		}catch(Exception e){
+			log.error("[ApiDomainService :: showInstance] : Could not find domain package '${domainPackage}' - full stack trace follows:", e);
+		}
+
+		if(domainInstance.delete(params.id.toLong())){
+			return true
+		}else{
+			return false
+		}
+		return false
 	}
 }

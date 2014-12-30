@@ -62,7 +62,7 @@ class ApiToolkitFilters {
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
-				println("##### FILTER (BEFORE)")
+				//println("##### FILTER (BEFORE)")
 				
 				/*
 				 * FIRST DETERMINE
@@ -103,7 +103,22 @@ class ApiToolkitFilters {
 							if(cache[params.apiObject]['domainPackage']){
 								// SET PARAMS AND TEST ENDPOINT ACCESS (PER APIOBJECT)
 								if(result){
-									def model = apiDomainService.showInstance(cache,params)
+									def model
+									switch(methods[request.method.toLowerCase()]){
+										case 'show':
+											model = apiDomainService.showInstance(cache,params)
+											break
+										case 'update':
+											model = apiDomainService.updateInstance(cache,params)
+											break
+										case 'create':
+											model = apiDomainService.createInstance(cache,params)
+											break
+										case 'delete':
+											model = apiDomainService.deleteInstance(cache,params)
+											break
+									}
+
 
 									if(!model){
 										render(status:HttpServletResponse.SC_BAD_REQUEST)
@@ -115,7 +130,26 @@ class ApiToolkitFilters {
 									}
 
 									def newModel = apiResponseService.formatDomainObject(model)
-									LinkedHashMap content = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
+									
+									LinkedHashMap content
+									if(chain && params?.apiChain?.order){
+										//if(!['null','return'].contains(params?.apiChain?.order["${keys.last()}"].split(':'))){
+										boolean result2 = apiResponseService.handleApiChain(cache, request,response ,newModel,params)
+										List uriVars = apiResponseService.parseUri(request.forwardURI,entryPoint)
+										if(uriVars.size()>2){
+											params.apiObject = uriVars[0]
+											uriVars.drop(1)
+										}
+										
+										forward(controller:uriVars[0],action:uriVars[1],id:params.id)
+										return false
+										//}
+									}else if(batch && params?.apiBatch){
+										forward(controller:params.controller,action:params.action,params:params)
+										return false
+									}else{
+										content = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
+									}
 
 									render(text:content.apiToolkitContent, contentType:"${content.apiToolkitType}", encoding:content.apiToolkitEncoding)
 									return false
@@ -136,7 +170,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				println("##### FILTER (AFTER)")
+				//println("##### FILTER (AFTER)")
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)
