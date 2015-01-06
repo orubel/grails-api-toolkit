@@ -15,7 +15,6 @@ if (configFile.exists()) {
 		it.writeLine "apitoolkit.attempts = 5"
 		it.writeLine "apitoolkit.chaining.enabled=true"
 		it.writeLine "apitoolkit.batching.enabled=true"
-		it.writeLine "apitoolkit.localAuth.enabled=false"
 		it.writeLine "apitoolkit.user.roles = ['ROLE_USER']"
 		it.writeLine "apitoolkit.admin.roles = ['ROLE_ROOT','ROLE_ADMIN']"
 	}

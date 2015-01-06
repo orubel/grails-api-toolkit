@@ -38,12 +38,11 @@ class ApiRequestService extends ApiLayerService{
 			// CHECK IF URI HAS CACHE
 			if(cache[params.apiObject][params.action]){
 				// CHECK ACCESS TO METHOD
-				if(localauth==true){
-					List roles = cache[params.apiObject][params.action]['roles']?.toList()
-					if(!checkAuth(request,roles)){
-						return false
-					}
+				List roles = cache[params.apiObject][params.action]['roles']?.toList()
+				if(!checkAuth(request,roles)){
+					return false
 				}
+
 
 				// CHECK VERSION DEPRECATION DATE
 				if(cache[params.apiObject][params.action]['deprecated']?.get(0)){
@@ -90,14 +89,13 @@ class ApiRequestService extends ApiLayerService{
 						}
 					}
 					
-					if(localauth==true){
-						List batchRoles = cache[params.apiObject][params.action]['batchRoles']?.toList()
-						if(!checkAuth(request,batchRoles)){
-							return false
-						}else{
-							return true
-						}
+					List batchRoles = cache[params.apiObject][params.action]['batchRoles']?.toList()
+					if(!checkAuth(request,batchRoles)){
+						return false
+					}else{
+						return true
 					}
+
 					if(!checkURIDefinitions(request,cache[params.apiObject][params.action]['receives'])){
 						String msg = 'Expected request variables do not match sent variables'
 						error._400_BAD_REQUEST(msg)?.send()
