@@ -111,6 +111,7 @@ class ApiToolkitFilters {
 											model = apiDomainService.showInstance(cache,params)
 											break
 										case 'update':
+										println("### update")
 											model = apiDomainService.updateInstance(cache,params)
 											break
 										case 'create':
