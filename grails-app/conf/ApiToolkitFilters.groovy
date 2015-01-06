@@ -119,12 +119,14 @@ class ApiToolkitFilters {
 											model = apiDomainService.createInstance(cache,params)
 											break
 										case 'delete':
+										println("### delete")
 											model = apiDomainService.deleteInstance(cache,params)
+											model = [:]
 											break
 									}
 
 
-									if(!model){
+									if(!model && request.method.toLowerCase()!='delete'){
 										render(status:HttpServletResponse.SC_BAD_REQUEST)
 										return false
 									}
@@ -154,9 +156,14 @@ class ApiToolkitFilters {
 									}else{
 										content = apiResponseService.handleApiResponse(cache,request,response,newModel,params)
 									}
-
-									render(text:content.apiToolkitContent, contentType:"${content.apiToolkitType}", encoding:content.apiToolkitEncoding)
-									return false
+									
+									if(request.method.toLowerCase()=='delete' && content.apiToolkitContent==null){
+										render(status:HttpServletResponse.SC_OK)
+										return false
+									}else{
+										render(text:content.apiToolkitContent, contentType:"${content.apiToolkitType}", encoding:content.apiToolkitEncoding)
+										return false
+									}
 								}
 								//return result
 							}else{

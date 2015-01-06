@@ -103,19 +103,27 @@ class ApiDomainService{
 		return null
 	}
 	
-	Boolean deleteInstance(LinkedHashMap cache, GrailsParameterMap params){
+	String deleteInstance(LinkedHashMap cache, GrailsParameterMap params){
 		def domainInstance
 		try{
-			domainInstance = grailsApplication.getDomainClass(cache[params.apiObject]['domainPackage']).newInstance()
+			def request = apiLayerService.getRequest()
+			def apiParams = apiLayerService.getApiObjectParams(request,cache[params.apiObject][params.action]['receives'])
+			def pkeys = apiParams.collect(){ if(it.value == 'PKEY'){ it.key } }
+			try{
+				if(pkeys.contains('id')){
+					domainInstance = grailsApplication.getDomainClass(cache[params.apiObject]['domainPackage']).clazz.get(params.id.toLong())
+				}
+			}catch(Exception e){
+				log.error("[ApiDomainService :: deleteInstance] : Could not find domain package '${domainPackage}' - full stack trace follows:", e);
+			}
+	
+			if(!domainInstance.delete(flush:true)){
+				log.error("[ApiDomainService :: deleteInstance] : Could not find domain package '${domainPackage}' - full stack trace follows:", domainInstance.errors.allErrors);
+			}else{
+				return null
+			}
 		}catch(Exception e){
-			log.error("[ApiDomainService :: deleteInstance] : Could not find domain package '${domainPackage}' - full stack trace follows:", e);
+			log.error("[ApiDomainService :: deleteInstance] : Could not find domain - full stack trace follows:", e);
 		}
-
-		if(domainInstance.delete(params.id.toLong())){
-			return true
-		}else{
-			return false
-		}
-		return false
 	}
 }

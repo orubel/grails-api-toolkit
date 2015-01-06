@@ -30,6 +30,7 @@ class ApiRequestService extends ApiLayerService{
 	static transactional = false
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, String entryPoint){
+		println("#### handleApiRequest")
 		try{
 			setEnv()
 			
@@ -60,6 +61,7 @@ class ApiRequestService extends ApiLayerService{
 				
 				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
 				def method = cache[params.apiObject][params.action]['method']?.trim()
+				println("method = "+method)
 				
 				// DOES api.methods.contains(request.method)
 				if(!isRequestMatch(method,request.method.toString())){
@@ -80,6 +82,7 @@ class ApiRequestService extends ApiLayerService{
 						return true
 					}
 				}else{
+				println("request match")
 					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
 					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
 					if(batch && params.apiBatch){
