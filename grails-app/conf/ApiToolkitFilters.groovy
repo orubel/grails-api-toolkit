@@ -62,7 +62,7 @@ class ApiToolkitFilters {
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
-				//println("##### FILTER (BEFORE)")
+				println("##### FILTER (BEFORE)")
 				
 				/*
 				 * FIRST DETERMINE
@@ -79,6 +79,7 @@ class ApiToolkitFilters {
 						if(cache){
 							params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']
 							if(!params.action){ 
+								String methodAction = methods[request.method.toLowerCase()]
 								if(!cache[params.apiObject][methodAction]){
 									params.action = cache[params.apiObject]['defaultAction'].split('/')[1] 
 								}else{
@@ -101,6 +102,7 @@ class ApiToolkitFilters {
 							boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
 							//HANDLE DOMAIN RESOLUTION
 							if(cache[params.apiObject]['domainPackage']){
+								println("domain package")
 								// SET PARAMS AND TEST ENDPOINT ACCESS (PER APIOBJECT)
 								if(result){
 									def model
@@ -112,6 +114,7 @@ class ApiToolkitFilters {
 											model = apiDomainService.updateInstance(cache,params)
 											break
 										case 'create':
+										println("### create")
 											model = apiDomainService.createInstance(cache,params)
 											break
 										case 'delete':
@@ -128,7 +131,7 @@ class ApiToolkitFilters {
 									if(params?.apiCombine==true){
 										model = params.apiCombine
 									}
-
+									println("model = "+model)
 									def newModel = apiResponseService.formatDomainObject(model)
 									
 									LinkedHashMap content
@@ -170,7 +173,8 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				//println("##### FILTER (AFTER)")
+				println("##### FILTER (AFTER)")
+				println(model)
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)

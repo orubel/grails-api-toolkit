@@ -158,6 +158,24 @@ class ApiLayerService{
 		}
 	}
 	
+	LinkedHashMap getApiObjectParams(SecurityContextHolderAwareRequestWrapper request, LinkedHashMap definitions){
+		try{
+			LinkedHashMap apiList = [:]
+			definitions.each{ key,val ->
+				if(request.isUserInRole(key) || key=='permitAll'){
+					val.each{ it ->
+						if(it){
+							apiList[it.name] = it.paramType
+						}
+					}
+				}
+			}
+			return apiList
+		}catch(Exception e){
+			throw new Exception("[ApiLayerService :: getApiParams] : Exception - full stack trace follows:"+e)
+		}
+	}
+	
 	HashMap getMethodParams(){
 		try{
 			boolean isChain = false

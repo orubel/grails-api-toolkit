@@ -123,6 +123,7 @@ class ApiObjectService{
 			'receives':receives,
 			'returns':returns
 		)
+		
 		service['roles'] = apiRoles
 		service['batchRoles'] = batchRoles
 

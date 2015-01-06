@@ -33,8 +33,6 @@ class ApiCacheService{
 	//ApiToolkitService apiToolkitService
 	GrailsCacheManager grailsCacheManager
 	
-
-	
 	void flushAllApiCache(){
 		grailsApplication?.controllerClasses?.each { controllerClass ->
 			String controllername = controllerClass.logicalPropertyName

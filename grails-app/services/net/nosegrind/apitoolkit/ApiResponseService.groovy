@@ -399,22 +399,26 @@ class ApiResponseService extends ApiLayerService{
 		try{
 			def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
 			def newMap = [:]
-			
-			if(data?.id){
+			println("data : "+data)
+			if(data?.'id'){
+				println "has id"
 				newMap['id'] = data.id
 			}
 			data.getProperties().each { key, val ->
 				if (!nonPersistent.contains(key)) {
 					if(grailsApplication.isDomainClass(val.getClass())){
+						println("val.id = "+val)
 						newMap.put key, val.id
 					}else{
+						println("val = "+val)
 						newMap.put key, val
 					}
 				}
 			}
 			return newMap
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: formatDomainObject] : Exception - full stack trace follows:"+e)
+			//throw new Exception("[ApiResponseService :: formatDomainObject] : Exception - full stack trace follows:"+e)
+			println("[ApiResponseService :: formatDomainObject] : Exception - full stack trace follows:"+e)
 		}
 	}
 	
