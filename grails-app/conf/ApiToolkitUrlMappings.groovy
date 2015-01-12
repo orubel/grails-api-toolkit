@@ -109,5 +109,22 @@ class ApiToolkitUrlMappings {
 				}
 			}
 		}
+		
+		"403" {
+			controller = "errors"
+			parseRequest = true
+		}
+		"404" {
+			controller = "errors"
+			parseRequest = true
+		}
+		"405" {
+			controller = "errors"
+			parseRequest = true
+		}
+		"500" {
+			controller = "errors"
+			parseRequest = true
+		}
 	}
 }

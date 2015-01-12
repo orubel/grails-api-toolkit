@@ -37,6 +37,7 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.ui.ModelMap
 
 import org.springframework.ui.ModelMap
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
 
 import net.nosegrind.apitoolkit.*
 
@@ -399,10 +400,22 @@ class ApiResponseService extends ApiLayerService{
 		try{
 			def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
 			def newMap = [:]
+			
+// Use this for scaffolding apiObjects
+			//def persistentProperties = new DefaultGrailsDomainClass(data.class).persistentProperties
+			//println(persistentProperties)
+
+			//println(data.getIdentifier())
+
+			//println(data.getVersion())
 
 			if(data?.'id'){
 				newMap['id'] = data.id
 			}
+			if(data?.'version'!=null){
+				newMap['version'] = data.version
+			}
+			
 			data.getProperties().each { key, val ->
 				if (!nonPersistent.contains(key)) {
 					if(grailsApplication.isDomainClass(val.getClass())){
@@ -412,6 +425,7 @@ class ApiResponseService extends ApiLayerService{
 					}
 				}
 			}
+
 			return newMap
 		}catch(Exception e){
 			throw new Exception("[ApiResponseService :: formatDomainObject] : Exception - full stack trace follows:"+e)

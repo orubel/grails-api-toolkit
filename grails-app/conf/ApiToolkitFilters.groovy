@@ -57,8 +57,14 @@ class ApiToolkitFilters {
 		boolean batch = grailsApplication.config.apitoolkit.batching.enabled
 		apiRequestService.setBatch(batch)
 
-		//String apiRegex = "/${entryPoint}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
+		apierrors(controller:"errors"){
+			before = {
+				render(status: request.'javax.servlet.error.status_code')
+				return false
+			}
+		}
 		
+		//String apiRegex = "/${entryPoint}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
@@ -177,6 +183,7 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 				//println("##### FILTER (AFTER)")
+
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)
