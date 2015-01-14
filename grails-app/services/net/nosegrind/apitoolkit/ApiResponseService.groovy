@@ -314,6 +314,7 @@ class ApiResponseService extends ApiLayerService{
 		def json = [:]
 		returns.each{ p ->
 				p.value.each{ it ->
+
 					ParamsDescriptor paramDesc = it
 				
 					def j = [:]
@@ -350,50 +351,73 @@ class ApiResponseService extends ApiLayerService{
 	 */
 	LinkedHashMap getApiDoc(GrailsParameterMap params){
 		LinkedHashMap newDoc = [:]
-		def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
-		if(controller){
-			def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
-			if(cache){
-				if(cache[params.apiObject][params.action]){
-
-					def doc = cache[params.apiObject][params.action].doc
-					def path = doc?.path
-					def method = doc?.method
-					def description = doc?.description
-
-					def authority = springSecurityService.principal.authorities*.authority[0]
-					newDoc[params.action] = ['path':path,'method':method,'description':description]
-					if(doc.receives){
-						newDoc[params.action].receives = [:]
-						doc.receives.each{ it ->
-							if(authority==it.key || it.key=='permitAll'){
-								newDoc[params.action].receives[it.key] = it.value
+		List paramDescProps = ['paramType','idReferences','name','description']
+		try{
+			def controller = grailsApplication.getArtefactByLogicalPropertyName('Controller', params.controller)
+			if(controller){
+				def cache = (params.controller)?apiCacheService.getApiCache(params.controller):null
+				if(cache){
+					if(cache[params.apiObject][params.action]){
+	
+						def doc = cache[params.apiObject][params.action].doc
+						def path = doc?.path
+						def method = doc?.method
+						def description = doc?.description
+	
+						def authority = springSecurityService.principal.authorities*.authority[0]
+						newDoc[params.action] = ['path':path,'method':method,'description':description]
+						if(doc.receives){
+							newDoc[params.action].receives = [:]
+							doc.receives.each{ it ->
+								if(authority==it.key || it.key=='permitAll'){
+									it.value.each(){ it2 ->
+										it2.getProperties().each(){ it3 ->
+											if(paramDescProps.contains(it3.key)){
+												//println("receives > ${it3.key} : ${it3.value}")
+												newDoc[params.action].receives[it3.key] = it3.value
+											}
+										}
+									}
+									//newDoc[params.action].receives[it.key] = it.value
+								}
 							}
 						}
-					}
 
-					if(doc.returns){
-						newDoc[params.action].returns = [:]
-						doc.returns.each(){ v ->
-							if(authority==v.key || v.key=='permitAll'){
-								newDoc[params.action].returns[v.key] = v.value
+						if(doc.returns){
+							newDoc[params.action].returns = [:]
+							List jsonReturns = []
+							doc.returns.each(){ v ->
+								if(authority==v.key || v.key=='permitAll'){
+									jsonReturns.add(['${v.key}':v.value])
+									v.value.each(){ v2 ->
+										v2.getProperties().each(){ v3 ->
+											if(paramDescProps.contains(v3.key)){
+												//println("receives > ${v3.key} : ${v3.value}")
+												newDoc[params.action].returns[v3.key] = v3.value
+											}
+										}
+									}
+									//newDoc[params.action].returns[v.key] = v.value
+								}
+							}
+
+							//newDoc[params.action].json = processJson(newDoc[params.action].returns)
+							newDoc[params.action].json = processJson(jsonReturns)
+						}
+						
+						if(doc.errorcodes){
+							doc.errorcodes.each{ it ->
+								newDoc[params.action].errorcodes.add(it)
 							}
 						}
-
-						newDoc[params.action].json = processJson(newDoc[params.action].returns)
+						return newDoc
 					}
-
-					if(doc.errorcodes){
-						doc.errorcodes.each{ it ->
-							newDoc[params.action].errorcodes.add(it)
-						}
-					}
-					
-					return newDoc
 				}
 			}
+			return [:]
+		}catch(Exception e){
+			throw new Exception("[ApiResponseService :: getApiDoc] : Exception - full stack trace follows:"+e)
 		}
-		return [:]
 	}
 
 	Map formatDomainObject(Object data){
@@ -498,8 +522,10 @@ class ApiResponseService extends ApiLayerService{
 			case 'HEAD':
 				break;
 			case 'OPTIONS':
+				String contentType = (params.contentType)?params.contentType:'application/json'
+				String encoding = (params.encoding)?params.encoding:"UTF-8"
 				LinkedHashMap doc = getApiDoc(params)
-				data = parseContentType(request,params, doc, returns)
+				data = ['content':doc,'contentType':contentType,'encoding':encoding]
 				break;
 			case 'GET':
 				if(map?.isEmpty()==false){
