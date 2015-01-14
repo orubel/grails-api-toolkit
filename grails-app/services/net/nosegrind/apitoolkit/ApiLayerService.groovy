@@ -38,7 +38,7 @@ import org.springframework.security.web.servletapi.SecurityContextHolderAwareReq
 import org.springframework.web.context.request.RequestContextHolder as RCH
 //import org.springframework.ui.ModelMap
 
-
+import net.nosegrind.apitoolkit.Method
 import net.nosegrind.apitoolkit.*
 
 
@@ -228,7 +228,7 @@ class ApiLayerService{
 			
 			if(cache){
 				String path = "/${apiPrefix}-${apiversion}/${controllername}/${actionname}"
-				doc = ['path':"$path",'method':cache[apiversion][actionname]['method'],'description':cache[apiversion][actionname]['description']]
+				doc = ['path':path,'method':cache[apiversion][actionname]['method'],'description':cache[apiversion][actionname]['description']]
 				if(cache[apiversion][actionname]['receives']){
 	
 					doc['receives'] = [:]
@@ -392,10 +392,11 @@ class ApiLayerService{
 
 			String controller = uri[0]
 			String action = uri[1]
-			Long id = uri[2]
+			Long id = uri[2].toLong()
 			
+
 			// prematch check
-			String method = net.nosegrind.apitoolkit.Method["${request.method.toString()}"].toString()
+			String method = Method["${request.method.toString()}"].toString()
 			String methods = cache[params.apiObject][action]['method'].trim()
 
 			if(methods=='GET'){
@@ -407,7 +408,8 @@ class ApiLayerService{
 					preMatch = true
 				}
 			}
-	
+
+		
 			// postmatch check
 			if(pathSize>=1){
 				String last=path[keys[pathSize-1]]
@@ -429,6 +431,7 @@ class ApiLayerService{
 					postMatch = true
 				}
 			}
+
 			
 
 			// path check
@@ -452,7 +455,8 @@ class ApiLayerService{
 					}
 				}
 			}
-	
+
+			
 			if(pathMatch || (preMatch && postMatch)){
 				if(params?.apiChain?.type=='blankchain'){
 					return 0
@@ -474,8 +478,11 @@ class ApiLayerService{
 			}else{
 				return 3
 			}
+
+			
 		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: checkChainedMethodPosition] : Exception - full stack trace follows:"+e)
+			//throw new Exception("[ApiLayerService :: checkChainedMethodPosition] : Exception - full stack trace follows:"+e)
+			println("[ApiLayerService :: checkChainedMethodPosition] : Exception - full stack trace follows:"+e)
 		}
 	}
 	

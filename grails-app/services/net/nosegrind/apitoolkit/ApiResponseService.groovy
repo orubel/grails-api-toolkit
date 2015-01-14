@@ -46,7 +46,7 @@ class ApiResponseService extends ApiLayerService{
 
 	static transactional = false
 	
-	boolean handleApiChain(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsContentBufferingResponse response, Map model, GrailsParameterMap params){
+	boolean handleApiChain(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, HttpServletResponse response, Map model, GrailsParameterMap params){
 		try{
 			List uri = [params.controller,params.action,params.id]
 			ApiStatuses errors = new ApiStatuses()
@@ -402,12 +402,10 @@ class ApiResponseService extends ApiLayerService{
 			def newMap = [:]
 			
 // Use this for scaffolding apiObjects
-			//def persistentProperties = new DefaultGrailsDomainClass(data.class).persistentProperties
-			//println(persistentProperties)
-
-			//println(data.getIdentifier())
-
-			//println(data.getVersion())
+//def persistentProperties = new DefaultGrailsDomainClass(data.class).persistentProperties
+//println(persistentProperties)
+//println(data.getIdentifier())
+//println(data.getVersion())
 
 			if(data?.'id'){
 				newMap['id'] = data.id

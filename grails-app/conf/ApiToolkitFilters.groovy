@@ -32,6 +32,7 @@ import org.springframework.security.web.servletapi.SecurityContextHolderAwareReq
 import org.codehaus.groovy.grails.commons.GrailsApplication
 
 import javax.servlet.http.HttpServletResponse
+import org.codehaus.groovy.grails.web.util.WebUtils
 
 import net.nosegrind.apitoolkit.*
 
@@ -140,17 +141,9 @@ class ApiToolkitFilters {
 									
 									LinkedHashMap content
 									if(chain && params?.apiChain?.order){
-										//if(!['null','return'].contains(params?.apiChain?.order["${keys.last()}"].split(':'))){
 										boolean result2 = apiResponseService.handleApiChain(cache, request,response ,newModel,params)
-										List uriVars = apiResponseService.parseUri(request.forwardURI,entryPoint)
-										if(uriVars.size()>2){
-											params.apiObject = uriVars[0]
-											uriVars.drop(1)
-										}
-										
-										forward(controller:uriVars[0],action:uriVars[1],id:params.id)
+										forward(controller:params.controller,action:params.action,id:params.id)
 										return false
-										//}
 									}else if(batch && params?.apiBatch){
 										forward(controller:params.controller,action:params.action,params:params)
 										return false
@@ -183,7 +176,6 @@ class ApiToolkitFilters {
 			
 			after = { Map model ->
 				//println("##### FILTER (AFTER)")
-
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)
@@ -197,21 +189,12 @@ class ApiToolkitFilters {
 					def newModel = (model)?apiResponseService.convertModel(model):model
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 
-					//println(response.response.getResponse().response)
 					LinkedHashMap content
 					
 					if(chain && params?.apiChain?.order){
-						//if(!['null','return'].contains(params?.apiChain?.order["${keys.last()}"].split(':'))){
-						boolean result = apiResponseService.handleApiChain(cache, request,response ,newModel,params)
-						List uriVars = apiResponseService.parseUri(request.forwardURI,entryPoint)
-						if(uriVars.size()>2){
-							params.apiObject = uriVars[0]
-							uriVars.drop(1)
-						}
-						
-						forward(controller:uriVars[0],action:uriVars[1],id:params.id)
+						boolean result = apiResponseService.handleApiChain(cache, request,response,newModel,params)
+						forward(controller:params.controller,action:params.action,id:params.id)
 						return false
-						//}
 					}else if(batch && params?.apiBatch){
 						forward(controller:params.controller,action:params.action,params:params)
 						return false

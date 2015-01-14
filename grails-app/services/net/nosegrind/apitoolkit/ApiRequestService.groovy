@@ -107,7 +107,7 @@ class ApiRequestService extends ApiLayerService{
 
 			}
 		}catch(Exception e){
-			throw new Exception("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:"+ e);
+			throw new Exception("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:"+ e)
 		}
 	}
 	
