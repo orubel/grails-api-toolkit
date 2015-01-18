@@ -481,8 +481,7 @@ class ApiLayerService{
 
 			
 		}catch(Exception e){
-			//throw new Exception("[ApiLayerService :: checkChainedMethodPosition] : Exception - full stack trace follows:"+e)
-			println("[ApiLayerService :: checkChainedMethodPosition] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: checkChainedMethodPosition] : Exception - full stack trace follows:"+e)
 		}
 	}
 	
