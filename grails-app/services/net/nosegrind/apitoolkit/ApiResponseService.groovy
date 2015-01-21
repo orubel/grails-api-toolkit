@@ -119,7 +119,7 @@ class ApiResponseService extends ApiLayerService{
 
 			return false
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: handleApiChain] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiResponseService :: handleApiChain] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -151,7 +151,7 @@ class ApiResponseService extends ApiLayerService{
 				}
 			}
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: handleApiResponse] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiResponseService :: handleApiResponse] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -177,7 +177,7 @@ class ApiResponseService extends ApiLayerService{
 			}
 			return params
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: getParams] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiResponseService :: getParams] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -200,7 +200,7 @@ class ApiResponseService extends ApiLayerService{
 			}
 			return false
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: isChain] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiResponseService :: isChain] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -230,7 +230,7 @@ class ApiResponseService extends ApiLayerService{
 				return model
 			}
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: parseURIDefinitions] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiResponseService :: parseURIDefinitions] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -416,7 +416,7 @@ class ApiResponseService extends ApiLayerService{
 			}
 			return [:]
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: getApiDoc] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiResponseService :: getApiDoc] : Exception - full stack trace follows:",e)
 		}
 	}
 
@@ -450,7 +450,7 @@ class ApiResponseService extends ApiLayerService{
 
 			return newMap
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: formatDomainObject] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiResponseService :: formatDomainObject] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -507,7 +507,7 @@ class ApiResponseService extends ApiLayerService{
 			}
 			return newMap
 		}catch(Exception e){
-			throw new Exception("[ApiResponseService :: convertModel] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiResponseService :: convertModel] : Exception - full stack trace follows:",e)
 		}
 	}
 	

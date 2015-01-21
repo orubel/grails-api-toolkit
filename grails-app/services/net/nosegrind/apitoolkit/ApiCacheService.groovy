@@ -74,7 +74,7 @@ class ApiCacheService{
 			}
 			return cache
 		}catch(Exception e){
-			throw new Exception("[ApiCacheService :: setApiCache] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiCacheService :: setApiCache] : Exception - full stack trace follows:,e)
 		}
 	}
 
@@ -89,7 +89,7 @@ class ApiCacheService{
 			}
 			return cache
 		}catch(Exception e){
-			throw new Exception("[ApiCacheService :: setApiDocCache] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiCacheService :: setApiDocCache] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -102,7 +102,7 @@ class ApiCacheService{
 			}
 
 		}catch(Exception e){
-			throw new Exception("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:",e)
 		}
 
 	}

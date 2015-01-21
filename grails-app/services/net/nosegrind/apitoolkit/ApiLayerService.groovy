@@ -80,7 +80,7 @@ class ApiLayerService{
 			}
 			return hasAuth
 		}catch(Exception e) {
-			throw new Exception("[ApiLayerService :: checkAuth] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: checkAuth] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -93,7 +93,7 @@ class ApiLayerService{
 				return ['application/json']
 			}
 		}catch(Exception e) {
-			throw new Exception("[ApiLayerService :: getContentType] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: getContentType] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -136,7 +136,7 @@ class ApiLayerService{
 			}
 			return false
 		}catch(Exception e) {
-			throw new Exception("[ApiLayerService :: checkURIDefinitions] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: checkURIDefinitions] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -154,7 +154,7 @@ class ApiLayerService{
 			}
 			return apiList
 		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: getApiParams] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: getApiParams] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -172,7 +172,7 @@ class ApiLayerService{
 			}
 			return apiList
 		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: getApiParams] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: getApiParams] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -201,7 +201,7 @@ class ApiLayerService{
 			}
 			return ['get':paramsGet,'post':paramsPost]
 		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: getMethodParams] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: getMethodParams] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -254,7 +254,7 @@ class ApiLayerService{
 	
 			return doc
 		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: generateApiDoc] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: generateApiDoc] : Exception - full stack trace follows:",e)
 		}
 	}
 
@@ -268,7 +268,7 @@ class ApiLayerService{
 			}
 			return false
 		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: checkDeprecationDate] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: checkDeprecationDate] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -312,7 +312,7 @@ class ApiLayerService{
 			}
 			return json
 		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: processJson] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: processJson] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -327,7 +327,7 @@ class ApiLayerService{
 			}
 			return err
 		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: processDocErrorCodes] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: processDocErrorCodes] : Exception - full stack trace follows:",e)
 		}
 	}
 	*/
@@ -346,7 +346,7 @@ class ApiLayerService{
 			}
 			return uri==api
 		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: isApiCall] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: isApiCall] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -370,7 +370,7 @@ class ApiLayerService{
 					break
 			}
 		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: setParams] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: setParams] : Exception - full stack trace follows:",e)
 		}
 	}
 	
@@ -481,7 +481,7 @@ class ApiLayerService{
 
 			
 		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: checkChainedMethodPosition] : Exception - full stack trace follows:"+e)
+			throw new Exception("[ApiLayerService :: checkChainedMethodPosition] : Exception - full stack trace follows:",e)
 		}
 	}
 	
