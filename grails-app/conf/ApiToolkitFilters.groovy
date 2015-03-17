@@ -78,7 +78,7 @@ class ApiToolkitFilters {
 				 *  - FINALLY, RESOLVE ENDPOINT
 				 */
 				
-				def methods = ['get':'show','put':'update','post':'create','delete':'delete']
+				def methods = ['get':'show','put':'create','post':'update','delete':'delete']
 				try{
 					
 					if(request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){

@@ -27,11 +27,11 @@ class ApiCacheService{
 
 	static transactional = false
 	
-	GrailsApplication grailsApplication
-	SpringSecurityService springSecurityService
-	ApiLayerService apiLayerService
+	//GrailsApplication grailsApplication
+	//SpringSecurityService springSecurityService
+	//ApiLayerService apiLayerService
 	//ApiToolkitService apiToolkitService
-	GrailsCacheManager grailsCacheManager
+	//GrailsCacheManager grailsCacheManager
 	
 	void flushAllApiCache(){
 		grailsApplication?.controllerClasses?.each { controllerClass ->
@@ -74,7 +74,7 @@ class ApiCacheService{
 			}
 			return cache
 		}catch(Exception e){
-			throw new Exception("[ApiCacheService :: setApiCache] : Exception - full stack trace follows:,e)
+			throw new Exception("[ApiCacheService :: setApiCache] : Exception - full stack trace follows:",e)
 		}
 	}
 
