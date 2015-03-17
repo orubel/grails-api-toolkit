@@ -27,11 +27,11 @@ class ApiCacheService{
 
 	static transactional = false
 	
-	//GrailsApplication grailsApplication
+	GrailsApplication grailsApplication
 	//SpringSecurityService springSecurityService
-	//ApiLayerService apiLayerService
+	ApiLayerService apiLayerService
 	//ApiToolkitService apiToolkitService
-	//GrailsCacheManager grailsCacheManager
+	GrailsCacheManager grailsCacheManager
 	
 	void flushAllApiCache(){
 		grailsApplication?.controllerClasses?.each { controllerClass ->
