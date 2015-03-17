@@ -131,7 +131,7 @@ class ApiObjectService{
 	}
 	
 	void initApiCache(){
-		//apiCacheService.flushAllApiCache()
+		apiCacheService.flushAllApiCache()
 		String apiObjectSrc = grailsApplication.config.apitoolkit.apiobjectSrc
 		new File("$apiObjectSrc").eachFile() { file ->
 			String apiName = file.getName().split('\\.')[0].toLowerCase()
