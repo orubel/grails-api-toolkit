@@ -396,15 +396,15 @@ class ApiLayerService{
 			
 
 			// prematch check
-			String method = Method["${request.method.toString()}"].toString()
+			String currentMethod = Method["${request.method.toString()}"].toString()
 			String methods = cache[params.apiObject][action]['method'].trim()
-
-			if(methods=='GET'){
-				if(methods != method && params?.apiChain?.type=='prechain'){
+			
+			if(currentMethod!=methods && methods=='GET'){
+				if(['prechain','postchain'].contains(params?.apiChain?.type)){
 					preMatch = true
 				}
 			}else{
-				if(methods == method){
+				if(methods == currentMethod && params?.apiChain?.type=='blankchain'){
 					preMatch = true
 				}
 			}
@@ -419,11 +419,11 @@ class ApiLayerService{
 					methods = cache[params.apiObject][last2[1]]['method'].trim()
 
 					if(methods=='GET'){
-						if(methods != method && params?.apiChain?.type=='postchain'){
+						if(methods != currentMethod && params?.apiChain?.type=='postchain'){
 							postMatch = true
 						}
 					}else{
-						if(methods == method){
+						if(methods == currentMethod){
 							postMatch = true
 						}
 					}
@@ -431,8 +431,6 @@ class ApiLayerService{
 					postMatch = true
 				}
 			}
-
-			
 
 			// path check
 			int start = 1
@@ -444,11 +442,11 @@ class ApiLayerService{
 						cache = apiCacheService.getApiCache(temp2[0])
 						methods = cache[params.apiObject][temp2[1]]['method'].trim() as List
 						if(methods=='GET'){
-							if(methods != method && params?.apiChain?.type=='blankchain'){
+							if(methods != currentMethod && params?.apiChain?.type=='blankchain'){
 								pathMatch = true
 							}
 						}else{
-							if(methods == method){
+							if(methods == currentMethod){
 								pathMatch = true
 							}
 						}

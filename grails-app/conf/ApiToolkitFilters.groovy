@@ -19,7 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map
 
-import grails.util.Holders as HOLDER
+//import grails.util.Holders as HOLDER
 
 import javax.servlet.ServletContext
 
@@ -53,17 +53,20 @@ class ApiToolkitFilters {
 		String versionEntrypoint = "v${apiVersion}"
 		String entryPoint = (apiName)?apinameEntrypoint:versionEntrypoint
 		
-		boolean chain = grailsApplication.config.apitoolkit.chaining.enabled
-		apiRequestService.setChain(chain)
-		boolean batch = grailsApplication.config.apitoolkit.batching.enabled
-		apiRequestService.setBatch(batch)
+		//boolean chain = grailsApplication.config.apitoolkit.chaining.enabled
+		//apiRequestService.chain
+		//boolean batch = grailsApplication.config.apitoolkit.batching.enabled
+		//apiRequestService.batch)
+
 
 		apierrors(controller:"errors"){
 			before = {
+				//println("##### FILTER (ERRORS)")
 				render(status: request.'javax.servlet.error.status_code')
 				return false
 			}
 		}
+
 		
 		//String apiRegex = "/${entryPoint}-[0-9]?[0-9]?(\\.[0-9][0-9]?)?/**".toString()
 		//apitoolkit(regex:apiRegex){
@@ -78,7 +81,7 @@ class ApiToolkitFilters {
 				 *  - FINALLY, RESOLVE ENDPOINT
 				 */
 				
-				def methods = ['get':'show','put':'create','post':'update','delete':'delete']
+				def methods = ['get':'show','put':'update','post':'create','delete':'delete']
 				try{
 					
 					if(request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
@@ -107,6 +110,8 @@ class ApiToolkitFilters {
 							
 							// SET PARAMS AND TEST ENDPOINT ACCESS (PER APIOBJECT)
 							boolean result = apiRequestService.handleApiRequest(cache,request,params,entryPoint)
+							
+							
 							//HANDLE DOMAIN RESOLUTION
 							if(cache[params.apiObject]['domainPackage']){
 								// SET PARAMS AND TEST ENDPOINT ACCESS (PER APIOBJECT)
@@ -140,11 +145,11 @@ class ApiToolkitFilters {
 									def newModel = apiResponseService.formatDomainObject(model)
 									
 									LinkedHashMap content
-									if(chain && params?.apiChain?.order){
+									if(apiRequestService.chain && params?.apiChain?.order){
 										boolean result2 = apiResponseService.handleApiChain(cache, request,response ,newModel,params)
 										forward(controller:params.controller,action:params.action,id:params.id)
 										return false
-									}else if(batch && params?.apiBatch){
+									}else if(apiRequestService.batch && params?.apiBatch){
 										forward(controller:params.controller,action:params.action,params:params)
 										return false
 									}else{
@@ -161,6 +166,7 @@ class ApiToolkitFilters {
 								}
 								//return result
 							}else{
+							
 								return result
 							}
 						}
@@ -191,11 +197,11 @@ class ApiToolkitFilters {
 
 					LinkedHashMap content
 					
-					if(chain && params?.apiChain?.order){
+					if(apiResponseService.chain && params?.apiChain?.order){
 						boolean result = apiResponseService.handleApiChain(cache, request,response,newModel,params)
 						forward(controller:params.controller,action:params.action,id:params.id)
 						return false
-					}else if(batch && params?.apiBatch){
+					}else if(apiResponseService.batch && params?.apiBatch){
 						forward(controller:params.controller,action:params.action,params:params)
 						return false
 					}else{

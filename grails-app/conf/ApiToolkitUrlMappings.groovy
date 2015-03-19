@@ -22,8 +22,9 @@ class ApiToolkitUrlMappings {
 		String apiName = grails.util.Holders.getGrailsApplication().config.apitoolkit.apiName
 		String apiVersion = grails.util.Holders.getGrailsApplication().metadata['app.version']
 		
+		
 		if(apiName){
-			"/${apiName}_v${apiVersion}-$apiObjectVersion/$controller/$action?/$id**" {
+			"/${apiName}_v${apiVersion}-$apiObjectVersion/$controller/$action/$id**" {
 				controller = controller
 				action = action
 				parseRequest = true
@@ -32,7 +33,7 @@ class ApiToolkitUrlMappings {
 				}
 			}
 			
-			"/${apiName}_v${apiVersion}/$controller/$action?/$id**" {
+			"/${apiName}_v${apiVersion}/$controller/$action/$id**" {
 				controller = controller
 				action = action
 				parseRequest = true
@@ -40,7 +41,12 @@ class ApiToolkitUrlMappings {
 			
 			"/${apiName}_v${apiVersion}-$apiObjectVersion/$controller/$action" {
 				controller = controller
-				action = action
+				if(action?.toInteger()==action && action!=null){
+					id=action
+					action = null
+				}else{
+					action=action
+				}
 				parseRequest = true
 				constraints {
 					apiObjectVersion(matches:/^[0-9]?[0-9]?(\\.[0-9][0-9]?)?/)
@@ -49,24 +55,17 @@ class ApiToolkitUrlMappings {
 			
 			"/${apiName}_v${apiVersion}/$controller/$action" {
 				controller = controller
-				action = action
-				parseRequest = true
-			}
-			
-			"/${apiName}_v${apiVersion}-$apiObjectVersion/$controller?/$id" {
-				controller = controller
-				parseRequest = true
-				constraints {
-					apiObjectVersion(matches:/^[0-9]?[0-9]?(\\.[0-9][0-9]?)?/)
+				if(action?.toInteger()==action && action!=null){
+					id=action
+					action = null
+				}else{
+					action=action
 				}
-			}
-			
-			"/${apiName}_v${apiVersion}/$controller?/$id" {
-				controller = controller
 				parseRequest = true
 			}
+			
 		}else{
-			"/v$apiVersion-$apiObjectVersion/$controller/$action?/$id**" {
+			"/v$apiVersion-$apiObjectVersion/$controller/$action/$id**" {
 				controller = controller
 				action = action
 				parseRequest = true

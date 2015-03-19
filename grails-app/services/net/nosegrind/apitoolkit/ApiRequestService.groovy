@@ -31,6 +31,7 @@ class ApiRequestService extends ApiLayerService{
 	
 	boolean handleApiRequest(LinkedHashMap cache, SecurityContextHolderAwareRequestWrapper request, GrailsParameterMap params, String entryPoint){
 		try{
+
 			setEnv()
 			
 			ApiStatuses error = new ApiStatuses()
@@ -42,7 +43,6 @@ class ApiRequestService extends ApiLayerService{
 				if(!checkAuth(request,roles)){
 					return false
 				}
-
 
 				// CHECK VERSION DEPRECATION DATE
 				if(cache[params.apiObject][params.action]['deprecated']?.get(0)){
@@ -59,6 +59,7 @@ class ApiRequestService extends ApiLayerService{
 				
 				// CHECK METHOD FOR API CHAINING. DOES METHOD MATCH?
 				def method = cache[params.apiObject][params.action]['method']?.trim()
+
 				
 				// DOES api.methods.contains(request.method)
 				if(!isRequestMatch(method,request.method.toString())){
@@ -81,8 +82,8 @@ class ApiRequestService extends ApiLayerService{
 				}else{
 					// (NON-CHAIN) CHECK WHAT TO EXPECT; CLEAN REMAINING DATA
 					// RUN THIS CHECK AFTER MODELMAP FOR CHAINS
+
 					if(batch && params.apiBatch){
-						
 						def temp = params.apiBatch.remove(0)
 						temp.each{ k,v ->
 							params[k] = v
@@ -107,7 +108,7 @@ class ApiRequestService extends ApiLayerService{
 
 			}
 		}catch(Exception e){
-			throw new Exception("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:"+ e)
+			throw new Exception("[ApiRequestService :: handleApiRequest] : Exception - full stack trace follows:",e)
 		}
 	}
 	

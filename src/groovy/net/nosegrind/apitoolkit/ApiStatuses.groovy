@@ -8,7 +8,8 @@ import net.nosegrind.apitoolkit.ErrorCodeDescriptor;
 import org.springframework.web.context.request.RequestContextHolder as RCH
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
-import grails.compiler.GrailsCompileStatic
+import org.springframework.web.context.request.RequestAttributes
+import org.springframework.web.context.request.ServletRequestAttributes
 
 //@GrailsCompileStatic
 class ApiStatuses{
@@ -25,13 +26,19 @@ class ApiStatuses{
 	static getInstance(){ return INSTANCE }
 	
 	private ApiStatuses() {}
+	public static final String RESPONSE_NAME_AT_ATTRIBUTES = ServletRequestAttributes.class.getName() + ".ATTRIBUTE_NAME";
 	
 	SecurityContextHolderAwareRequestWrapper getRequest(){
 		return RCH.currentRequestAttributes()?.currentRequest
 	}
 	
-	GrailsContentBufferingResponse getResponse(){
-		return RCH.currentRequestAttributes()?.currentResponse
+	SecurityContextHolderAwareRequestWrapper getResponse(){
+      RequestAttributes requestAttributes = RCH.getRequestAttributes();
+      ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) requestAttributes;
+      SecurityContextHolderAwareRequestWrapper response = (SecurityContextHolderAwareRequestWrapper) servletRequestAttributes.getAttribute(RESPONSE_NAME_AT_ATTRIBUTES, RequestAttributes.SCOPE_REQUEST);
+      return response;
+		
+		//return RCH.currentRequestAttributes()?.currentResponse
 	}
 
 	String getContentType(){
@@ -48,7 +55,9 @@ class ApiStatuses{
 	def send(){
 		String type = getContentType()
 		def response = getResponse()
-		response.sendError(this.status.code.toInteger(),this.status.description)
+		if(response){
+			response.sendError(this.status.code.toInteger(),this.status.description)
+		}
 	}
 	
 	def toObject(){

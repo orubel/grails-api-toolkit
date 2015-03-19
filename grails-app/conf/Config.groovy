@@ -6,12 +6,14 @@ apiVersion = grailsApplication.metadata['app.version']
 apiEnv = Environment.current.name
 
 log4j = {
+	all 'org.codehaus.groovy.grails.web.mapping'
     error 'grails.app.controllers.net.nosegrind',
 			  'grails.app.domain.net.nosegrind',
 			  'grails.app.services.net.nosegrind.apitoolkit',
 			  'grails.app.taglib.net.nosegrind.apitoolkit',
 			  'grails.app.conf.your.package',
 			  'grails.app.filters.your.package'
+			  
 }
 
 
