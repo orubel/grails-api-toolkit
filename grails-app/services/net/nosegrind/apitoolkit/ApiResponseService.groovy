@@ -424,12 +424,6 @@ class ApiResponseService extends ApiLayerService{
 		try{
 			def nonPersistent = ["log", "class", "constraints", "properties", "errors", "mapping", "metaClass","maps"]
 			def newMap = [:]
-			
-// Use this for scaffolding apiObjects
-//def persistentProperties = new DefaultGrailsDomainClass(data.class).persistentProperties
-//println(persistentProperties)
-//println(data.getIdentifier())
-//println(data.getVersion())
 
 			if(data?.'id'){
 				newMap['id'] = data.id
