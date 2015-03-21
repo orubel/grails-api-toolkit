@@ -6,11 +6,11 @@ includeTargets << grailsScript("_GrailsInit")
 
 
 USAGE = """
-Usage: grails apitoolkit-build-docs
+Usage: grails scaffold-api-objects
 
 Creates ApiDocController and view for your environment
 
-Example: grails apitoolkit-build-docs
+Example: grails scaffold-api-objects
 """
 
 packageName = ''
@@ -18,7 +18,7 @@ userClassName = ''
 templateDir = "$apiToolkitPluginDir/src/templates"
 appDir = "$basedir/grails-app"
 
-target(apitoolkitBuildDocs: 'Creates artifacts for the Api Docs') {
+target(scaffoldApiObjects: 'Creates artifacts for the Api Objects') {
 	if (!configure()) {
 		return 1
 	}
@@ -28,9 +28,7 @@ target(apitoolkitBuildDocs: 'Creates artifacts for the Api Docs') {
 
 	printMessage """
 	*************************************************************
-	* SUCCESS! Created domain classes, controllers, and GSPs.   *
-	* Api Toolkit Plugin is now installed. Please see documentation *
-	* page on implementation details.                           *
+	* API Objects successfully Scaffolded.                      *
 	*************************************************************
 	"""
 }
@@ -90,4 +88,4 @@ private parseArgs() {
 	null
 }
 
-setDefaultTarget('apitoolkitBuildDocs')
+setDefaultTarget('scaffoldApiObjects')
