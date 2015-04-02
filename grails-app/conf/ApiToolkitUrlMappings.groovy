@@ -22,7 +22,16 @@ class ApiToolkitUrlMappings {
 		String apiName = grails.util.Holders.getGrailsApplication().config.apitoolkit.apiName
 		String apiVersion = grails.util.Holders.getGrailsApplication().metadata['app.version']
 		
-		
+		"/login/$action" {
+			controller = 'login'
+			action = action
+			parseRequest= true
+		}
+		"/logout?/$action" {
+			controller = 'logout'
+			action = action
+			parseRequest= true
+		}
 		if(apiName){
 			"/${apiName}_v${apiVersion}-$apiObjectVersion/$controller/$action/$id**" {
 				controller = controller

@@ -5,6 +5,7 @@ package net.nosegrind.apitoolkit
 
 import grails.converters.JSON
 import grails.converters.XML
+
 import java.lang.reflect.Method
 import java.util.HashSet;
 
@@ -16,10 +17,10 @@ import grails.plugin.cache.GrailsCacheManager
 import grails.plugin.springsecurity.SpringSecurityService
 
 import org.springframework.cache.Cache
-
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.routines.UrlValidator
 import org.springframework.web.context.request.RequestContextHolder as RCH
+
 import net.nosegrind.apitoolkit.*
 
 
@@ -33,6 +34,10 @@ class ApiCacheService{
 	//ApiToolkitService apiToolkitService
 	GrailsCacheManager grailsCacheManager
 	
+	/*
+	 * Only flush on RESTART.
+	 * DO NOT flush while LIVE!!!
+	 */
 	void flushAllApiCache(){
 		grailsApplication?.controllerClasses?.each { controllerClass ->
 			String controllername = controllerClass.logicalPropertyName
@@ -41,10 +46,15 @@ class ApiCacheService{
 			}
 		}
 	}
-	
+
+	/*
+	 * Only flush on RESTART.
+	 * DO NOT flush while LIVE!!!
+	 */
 	@CacheEvict(value="ApiCache",key="#controllername")
 	void flushApiCache(String controllername){} 
-	
+
+
 	@CacheEvict(value="ApiCache",key="#controllername")
 	Map resetApiCache(String controllername,String method,ApiDescriptor apidoc){
 		setApiCache(controllername,method,apidoc)

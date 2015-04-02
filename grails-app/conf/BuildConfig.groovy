@@ -12,10 +12,13 @@ grails.project.dependency.resolution = {
 		grailsHome()
 		mavenRepo "http://repo.spring.io/milestone/"
 		mavenRepo "http://repository.codehaus.org/"
+		mavenRepo 'http://repo.spring.io/libs-milestone/'
+
     }
 	
 	dependencies {
 		compile("net.sf.ehcache:ehcache-core:2.4.6")
+		compile("org.springframework.data:spring-data-couchbase:1.3.0.RELEASE")
 	}
 	
     plugins {

@@ -2,13 +2,13 @@ import grails.util.GrailsNameUtils
 import grails.util.Metadata
 
 includeTargets << grailsScript("_GrailsInit")
-
+includeTargets << grailsScript('_GrailsBootstrap')
 
 
 USAGE = """
 Usage: grails scaffold-api-docs
 
-Creates ApiDocController and view for your environment
+Scaffolds API Objects based on Controllers
 
 Example: grails scaffold-api-docs
 """
@@ -18,13 +18,12 @@ userClassName = ''
 templateDir = "$apiToolkitPluginDir/src/templates"
 appDir = "$basedir/grails-app"
 
-target(scaffoldApiDocs: 'Creates artifacts for the Api Docs') {
+target(scaffoldApiDocs: 'Scaffolds API Objects based on Controllers') {
 	if (!configure()) {
 		return 1
 	}
 
-	copyControllersAndViews()
-	updateConfig()
+
 
 	printMessage """
 	*************************************************************
@@ -38,6 +37,9 @@ private boolean configure() {
 	if (!argValues) {
 		return false
 	}
+	
+	createApiMethods()
+
 
 	if (argValues.size() == 3) {
 		(packageName, userClassName,roleClassName) = argValues
@@ -51,7 +53,12 @@ private boolean configure() {
 }
 
 
-private void copyControllersAndViews() {
+private void createApiMethods() {
+	def controllerArtefact = grailsApp?.getArtefactByLogicalPropertyName("Controller", "book")
+		controllerArtefact.clazz.methods.each { method ->
+			
+		}
+	}
 	ant.mkdir dir: "$appDir/views/hook"
 	// add default views for hooks administration
 	copyFile "$templateDir/hook/create.gsp.template", "$appDir/views/hook/create.gsp"
@@ -64,23 +71,11 @@ private void copyControllersAndViews() {
 	printMessage "Controller / Views created..."
 }
 
-private void updateConfig() {
-	def configFile = new File(appDir, 'conf/Config.groovy')
-	if (configFile.exists()) {
-		configFile.withWriterAppend {
-			it.writeLine '\n// Added by the Api Toolkit plugin:'
-			it.writeLine "apitoolkit.domain = '${packageName}.Hook'"
-			it.writeLine "apitoolkit.controller = '${packageName}.HookController'"
-			it.writeLine "apitoolkit.batch.limit = '10'"
-		}
-	}
-}
-
 private parseArgs() {
 	def args = argsMap.params
 
-	if (3 == args.size()) {
-		printMessage "Creating classes in package ${args[0]}..."
+	if (args.size()==1 && args.size()<=3) {
+		printMessage "Scaffolding API Objects..."
 		return args
 	}
 

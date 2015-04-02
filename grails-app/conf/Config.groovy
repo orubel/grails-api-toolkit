@@ -5,6 +5,18 @@ apiName = grailsApplication.config.apitoolkit.apiName
 apiVersion = grailsApplication.metadata['app.version']
 apiEnv = Environment.current.name
 
+/*
+def deps = [
+	"couchbase-java-client-2.1.1.jar"
+]
+
+grails.war.dependencies = {
+	fileset(dir: "lib") {
+		deps.each { pattern -> include(name: pattern) }
+	}
+}
+*/
+
 log4j = {
 	all 'org.codehaus.groovy.grails.web.mapping'
     error 'grails.app.controllers.net.nosegrind',
@@ -70,3 +82,29 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	"/hook/**" : ['permitAll'] ,
 	"/apidoc/**" : ['permitAll']
 ]
+
+grails.plugin.springsecurity.controllerAnnotations.staticRules = [
+	'/**':             ['IS_AUTHENTICATED_ANONYMOUSLY'],
+	'/hook/**':        ['IS_AUTHENTICATED_FULLY'],
+	'/':                              ['permitAll'],
+	'/index':                         ['permitAll'],
+	'/index.gsp':                     ['permitAll'],
+	'/**/js/**':                      ['permitAll'],
+	'/**/css/**':                     ['permitAll'],
+	'/**/images/**':                  ['permitAll'],
+	'/**/favicon.ico':                ['permitAll'],
+	'/login/**':					  ['permitAll'],
+	'/logout/**':          		      ['permitAll']
+]
+ 
+apitoolkit.apiName = 'api'
+apitoolkit.attempts = 5
+apitoolkit.apichain.limit=3
+apitoolkit.chaining.enabled=true
+apitoolkit.batching.enabled=true
+apitoolkit.localauth.enabled=true
+apitoolkit.user.roles = ['ROLE_USER']
+apitoolkit.admin.roles = ['ROLE_ROOT','ROLE_ADMIN']
+
+apitoolkit.hook.domain = 'net.nosegrind.apitoolkit.Hook'
+apitoolkit.hook.controller = 'net.nosegrind.apitoolkit.HookController'
