@@ -13,12 +13,18 @@ grails.project.dependency.resolution = {
 		mavenRepo "http://repo.spring.io/milestone/"
 		mavenRepo "http://repository.codehaus.org/"
 		mavenRepo 'http://repo.spring.io/libs-milestone/'
-
     }
+	
+	management {
+		dependency 'org.springframework:spring-beans:4.0.7.RELEASE'
+	}
 	
 	dependencies {
 		compile("net.sf.ehcache:ehcache-core:2.4.6")
-		compile("org.springframework.data:spring-data-couchbase:1.3.0.RELEASE")
+		//compile("org.springframework.data:spring-data-mongodb:1.3.0.RELEASE")
+		compile ('org.springframework.data:spring-data-mongodb:1.3.0.RELEASE') {
+			excludes('spring-core', 'spring-context', 'spring-expression')
+		}
 	}
 	
     plugins {

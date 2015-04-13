@@ -86,6 +86,7 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	'/**':             ['IS_AUTHENTICATED_ANONYMOUSLY'],
 	'/hook/**':        ['IS_AUTHENTICATED_FULLY'],
+	'/iostate/**':     ['IS_AUTHENTICATED_FULLY'],
 	'/':                              ['permitAll'],
 	'/index':                         ['permitAll'],
 	'/index.gsp':                     ['permitAll'],
@@ -105,6 +106,7 @@ apitoolkit.batching.enabled=true
 apitoolkit.localauth.enabled=true
 apitoolkit.user.roles = ['ROLE_USER']
 apitoolkit.admin.roles = ['ROLE_ROOT','ROLE_ADMIN']
+apitoolkit.architecture.roles = ['ROLE_ARCH']
 
 apitoolkit.hook.domain = 'net.nosegrind.apitoolkit.Hook'
 apitoolkit.hook.controller = 'net.nosegrind.apitoolkit.HookController'

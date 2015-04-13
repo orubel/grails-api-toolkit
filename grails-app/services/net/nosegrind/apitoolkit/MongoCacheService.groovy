@@ -11,8 +11,11 @@ import java.net.URI
 import java.util.ArrayList
 import java.util.List
 
-import com.couchbase.client.CouchbaseClient;
-import com.couchbase.client.CouchbaseConnectionFactory;
+import org.springframework.data.authentication.UserCredentials
+import com.mongodb.DB
+import com.mongodb.Mongo
+import com.mongodb.MongoClient
+import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 
 import org.springframework.cache.Cache;
 
@@ -27,22 +30,18 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 import net.nosegrind.apitoolkit.*
 
 
-class SharedCouchBaseCacheService{
+class MongoCacheService{
 
 	static transactional = false
 	
 	GrailsApplication grailsApplication
 	//SpringSecurityService springSecurityService
-	CouchbaseClient handler
+	def mongoDbFactory
+	DB db
 	
 	public initialize(){
 		try {
-			List<URI> baseURIs = new ArrayList<URI>()
-			URI base = new URI("http://${grailsApplication.config.apitoolkit.sharedCache.url}:${grailsApplication.config.apitoolkit.sharedCache.port}/pools", uri)
-			baseURIs.add(base)
-			
-			CouchbaseConnectionFactory cf = new CouchbaseConnectionFactory(baseURIs, grailsApplication.config.apitoolkit.sharedCache.bucket, grailsApplication.config.apitoolkit.sharedCache.user, grailsApplication.config.apitoolkit.sharedCache.password);
-			this.handler = new CouchbaseClient((CouchbaseConnectionFactory)cf);
+			DB db = mongoDbFactory.getDb()
 		} catch (IOException ex) {
 			Logger.info(ex.getMessage());
 		}

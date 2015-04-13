@@ -6,16 +6,18 @@ includeTargets << grailsScript("_GrailsInit")
 includeTargets << new File("$springSecurityCorePluginDir/scripts/_S2Common.groovy")
 
 USAGE = """
-Usage: grails init-api-master <domain-class-package> <user-class-name>
+Usage: grails init-api-master <user-domain-class-package> <user-class-name> <role-class-name> <nosql-db>
 
-Takes two arguments of package name and the spring-security user classname
-and creates webhook domain, controller and views.
+Takes 4 arguments of the spring-security USER package, USER classname, ROLE classname and NOSQL name [Mongo/Cassandra/Redis/Couchbase]
+and then it creates webhook domain, controller, views and supporting services
 
-Example: grails init-api-master com.yourapp User
+Example: grails init-api-master com.yourapp User Role Mongo
 """
 
 packageName = ''
 userClassName = ''
+roleClassName = ''
+nosqlName = ''
 templateDir = "$apiToolkitPluginDir/src/templates/webhook"
 appDir = "$basedir/grails-app"
 
@@ -43,8 +45,8 @@ private boolean configure() {
 		return false
 	}
 
-	if (argValues.size() == 3) {
-		(packageName, userClassName,roleClassName) = argValues
+	if (argValues.size() == 4) {
+		(packageName, userClassName,roleClassName,nosqlName) = argValues
 	}else {
 		return false
 	}
@@ -84,7 +86,7 @@ private void updateConfig() {
 			it.writeLine "apitoolkit.webhook.domain = '${packageName}.Hook'"
 			it.writeLine "apitoolkit.webhook.controller = '${packageName}.HookController'"
 			it.writeLine " "
-			it.writeLine "apitoolkit.sharedCache.type='Couchbase'"
+			it.writeLine "apitoolkit.sharedCache.type='${nosqlName}'"
 			it.writeLine "apitoolkit.sharedCache.url='127.0.0.1'"
 			it.writeLine "apitoolkit.sharedCache.port=11211"
 			it.writeLine "apitoolkit.sharedCache.bucket='iostate'"
@@ -96,8 +98,7 @@ private void updateConfig() {
 
 private parseArgs() {
 	def args = argsMap.params
-println(argsMap.params)
-	if (3 == args.size()) {
+	if (4 == args.size()) {
 		printMessage "Creating classes in package ${args[0]}..."
 		return args
 	}

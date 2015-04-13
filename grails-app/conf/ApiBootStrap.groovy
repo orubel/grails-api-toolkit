@@ -7,21 +7,17 @@ class ApiBootStrap {
 	def grailsApplication
 	def apiObjectService
 	def apiCacheService
-	def sharedCouchBaseService
+	def mongoCacheService
 	
 	def init = { servletContext ->
-
-		switch(grailsApplication.config.apitoolkit.sharedCache.type){
-			case 'CouchBase':
-			case 'couchbase':
-			case 'couchBase':
-				sharedCouchBaseService.initialize()
-				break;
-			case 'MongoDB':
-			case 'mongodb':
-			case 'mongoDB':
-				break;
-			
+		if(grailsApplication.config.apitoolkit.sharedCache.type){
+			switch(grailsApplication.config.apitoolkit.sharedCache.type){
+				case 'MongoDB':
+				case 'mongodb':
+				case 'mongoDB':
+					mongoCacheService.initialize()
+					break;
+			}
 		}
 
 		apiObjectService.initApiCache()
