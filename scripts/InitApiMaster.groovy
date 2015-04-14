@@ -6,18 +6,19 @@ includeTargets << grailsScript("_GrailsInit")
 includeTargets << new File("$springSecurityCorePluginDir/scripts/_S2Common.groovy")
 
 USAGE = """
-Usage: grails init-api-master <user-domain-class-package> <user-class-name> <role-class-name> <nosql-db>
+Usage: grails init-api-master <user-domain-class-package> <user-class-name> <role-class-name>
 
-Takes 4 arguments of the spring-security USER package, USER classname, ROLE classname and NOSQL name [Mongo/Cassandra/Redis/Couchbase]
+Takes 3 arguments of the spring-security USER package, USER classname, ROLE classname 
 and then it creates webhook domain, controller, views and supporting services
 
-Example: grails init-api-master com.yourapp User Role Mongo
+Example: grails init-api-master com.yourapp User Role
 """
 
 packageName = ''
 userClassName = ''
 roleClassName = ''
 nosqlName = ''
+
 templateDir = "$apiToolkitPluginDir/src/templates/webhook"
 appDir = "$basedir/grails-app"
 
@@ -45,8 +46,8 @@ private boolean configure() {
 		return false
 	}
 
-	if (argValues.size() == 4) {
-		(packageName, userClassName,roleClassName,nosqlName) = argValues
+	if (argValues.size() == 3) {
+		(packageName, userClassName,roleClassName) = argValues
 	}else {
 		return false
 	}
@@ -56,7 +57,7 @@ private boolean configure() {
 	true
 }
 
-private void createDomains() {
+target(createDomains:"Create API WebHook Domains") {
 	String dir = packageToDir(packageName)
 	printMessage "$templateDir"
 	generateFile "$templateDir/Hook.groovy.template", "$appDir/domain/${dir}Hook.groovy"
@@ -64,7 +65,7 @@ private void createDomains() {
 	printMessage "Domains created..."
 }
 
-private void copyControllersAndViews() {
+target(copyControllersAndViews:"Create API Controllers and Views for webhooks") {
 	ant.mkdir dir: "$appDir/views/hook"
 	// add default views for webhooks administration
 	copyFile "$templateDir/create.gsp.template", "$appDir/views/hook/create.gsp"
@@ -77,7 +78,8 @@ private void copyControllersAndViews() {
 	printMessage "Controller / Views created..."
 }
 
-private void updateConfig() {
+target(updateConfig:"Update Config for API Master Setup") {
+	ant.mkdir dir: "${userHome}/.iostate"
 	def configFile = new File(appDir, 'conf/Config.groovy')
 	if (configFile.exists()) {
 		configFile.withWriterAppend {
@@ -86,10 +88,10 @@ private void updateConfig() {
 			it.writeLine "apitoolkit.webhook.domain = '${packageName}.Hook'"
 			it.writeLine "apitoolkit.webhook.controller = '${packageName}.HookController'"
 			it.writeLine " "
-			it.writeLine "apitoolkit.sharedCache.type='${nosqlName}'"
+			it.writeLine "apitoolkit.iostate.preloadDir=[\"file:${userHome}/.iostate\"]"
+			it.writeLine "apitoolkit.sharedCache.type='mongo'"
 			it.writeLine "apitoolkit.sharedCache.url='127.0.0.1'"
-			it.writeLine "apitoolkit.sharedCache.port=11211"
-			it.writeLine "apitoolkit.sharedCache.bucket='iostate'"
+			it.writeLine "apitoolkit.sharedCache.port=27017"
 			it.writeLine "apitoolkit.sharedCache.user='changeUsername'"
 			it.writeLine "apitoolkit.sharedCache.password='changePassword'"
 		}
@@ -98,7 +100,7 @@ private void updateConfig() {
 
 private parseArgs() {
 	def args = argsMap.params
-	if (4 == args.size()) {
+	if (3 == args.size()) {
 		printMessage "Creating classes in package ${args[0]}..."
 		return args
 	}
