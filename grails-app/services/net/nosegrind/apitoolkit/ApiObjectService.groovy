@@ -192,7 +192,8 @@ class ApiObjectService{
 
 			}
 			if(methods){
-				apiLayerService.setApiCache(apiName,methods)
+				apiCacheService.setApiCache(apiName,methods)
+				//apiLayerService.setApiCache(apiName,methods)
 			}
 		}
 	}

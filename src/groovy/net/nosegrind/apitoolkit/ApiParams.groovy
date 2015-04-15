@@ -4,7 +4,11 @@
 package net.nosegrind.apitoolkit
 
 import net.nosegrind.apitoolkit.ParamsDescriptor
-import grails.compiler.GrailsCompileStatic
+import org.apache.commons.beanutils.BeanMap;
+import java.beans.BeanInfo
+import java.beans.PropertyDescriptor
+import java.beans.Introspector
+import java.lang.reflect.InvocationTargetException
 
 //@GrailsCompileStatic
 class ApiParams{
@@ -22,8 +26,28 @@ class ApiParams{
 	
 	private ApiParams() {}
 
+	
 	def toObject(){
-		return this.param
+		Map<String, Object> result = new HashMap<String, Object>()
+		BeanInfo info = Introspector.getBeanInfo(param.getClass())
+		for (PropertyDescriptor descriptor : info.getPropertyDescriptors()) {
+			try{
+	            Object propertyValue = descriptor.getReadMethod().invoke(param)
+	            if (propertyValue != null) {
+					if(!['metaClass','class','errors','values'].contains(descriptor.getName())){
+						result.put(descriptor.getName(),propertyValue)
+					}
+	            }
+			}catch (final IllegalArgumentException e){
+				throw new Exception("[ApiParams :: toObject] : IllegalArgumentException - full stack trace follows:",e)
+			}catch (final IllegalAccessException e){
+				throw new Exception("[ApiParams :: toObject] : IllegalAccessException - full stack trace follows:",e)
+			}catch (final InvocationTargetException e){
+				throw new Exception("[ApiParams :: toObject] : InvocationTargetException - full stack trace follows:",e)
+			}
+		}
+		
+		return result
 	}
 	
 	def hasMockData(String data){

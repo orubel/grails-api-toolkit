@@ -205,6 +205,7 @@ class ApiLayerService{
 		}
 	}
 	
+	/*
 	void setApiCache(String controllername,LinkedHashMap apidoc){
 		apiCacheService.setApiCache(controllername,apidoc)
 		apidoc.each(){ k1,v1 ->
@@ -219,44 +220,8 @@ class ApiLayerService{
 		}
 		def cache = apiCacheService.getApiCache(controllername)
 	}
-	
-	Map generateApiDoc(String controllername, String actionname, String apiversion){
-		try{
-			Map doc = [:]
-			def cache = apiCacheService.getApiCache(controllername)
-			String apiPrefix = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String
-			
-			if(cache){
-				String path = "/${apiPrefix}-${apiversion}/${controllername}/${actionname}"
-				doc = ['path':path,'method':cache[apiversion][actionname]['method'],'description':cache[apiversion][actionname]['description']]
-				if(cache[apiversion][actionname]['receives']){
-	
-					doc['receives'] = [:]
-					for(receiveVal in cache[apiversion][actionname]['receives']){
-						doc['receives']["$receiveVal.key"] = receiveVal.value
-					}
-				}
-				
-				if(cache[apiversion][actionname]['returns']){
-					doc['returns'] = [:]
-					for(returnVal in cache[apiversion][actionname]['returns']){
-						doc['returns']["$returnVal.key"] = returnVal.value
-					}
-					doc['json'] = [:]
-					doc['json'] = processJson(doc["returns"])
-				}
-				
-				//if(cont["${actionname}"]["${apiversion}"]["errorcodes"]){
-				//	doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())][("${apiversion}".toString())]["errorcodes"] as HashSet)
-				//}
-	
-			}
-	
-			return doc
-		}catch(Exception e){
-			throw new Exception("[ApiLayerService :: generateApiDoc] : Exception - full stack trace follows:",e)
-		}
-	}
+	*/
+
 
 	boolean checkDeprecationDate(String deprecationDate){
 		try{

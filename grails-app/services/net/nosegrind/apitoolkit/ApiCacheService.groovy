@@ -8,6 +8,7 @@ import grails.converters.XML
 
 import java.lang.reflect.Method
 import java.util.HashSet;
+import java.util.Map;
 
 import grails.plugin.cache.CacheEvict
 import grails.plugin.cache.Cacheable
@@ -78,7 +79,7 @@ class ApiCacheService{
 				cache[apiversion][methodname]['receives'] = apidoc.receives
 				cache[apiversion][methodname]['returns'] = apidoc.returns
 				cache[apiversion][methodname]['errorcodes'] = apidoc.errorcodes
-				cache[apiversion][methodname]['doc'] = apiLayerService.generateApiDoc(controllername, methodname,apiversion)
+				cache[apiversion][methodname]['doc'] = generateApiDoc(controllername, methodname,apiversion)
 			}else{
 				throw new Exception("[ApiCacheService :: setApiCache] : sts for controller/action pair of ${controllername}/${methodname}")
 			}
@@ -93,13 +94,51 @@ class ApiCacheService{
 		try{
 			def cache = getApiCache(controllername)
 			if(cache[apiversion][methodname]){
-				cache[apiversion][methodname]['doc'] = apiLayerService.generateApiDoc(controllername, methodname, apiversion)
+				cache[apiversion][methodname]['doc'] = generateApiDoc(controllername, methodname, apiversion)
 			}else{
 				throw new Exception("[ApiCacheService :: setApiCache] : No Cache exists for controller/action pair of ${controllername}/${methodname}")
 			}
 			return cache
 		}catch(Exception e){
 			throw new Exception("[ApiCacheService :: setApiDocCache] : Exception - full stack trace follows:",e)
+		}
+	}
+	
+	Map generateApiDoc(String controllername, String actionname, String apiversion){
+		try{
+			Map doc = [:]
+			def cache = apiCacheService.getApiCache(controllername)
+			String apiPrefix = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String
+			
+			if(cache){
+				String path = "/${apiPrefix}-${apiversion}/${controllername}/${actionname}"
+				doc = ['path':path,'method':cache[apiversion][actionname]['method'],'description':cache[apiversion][actionname]['description']]
+				if(cache[apiversion][actionname]['receives']){
+	
+					doc['receives'] = [:]
+					for(receiveVal in cache[apiversion][actionname]['receives']){
+						doc['receives']["$receiveVal.key"] = receiveVal.value
+					}
+				}
+				
+				if(cache[apiversion][actionname]['returns']){
+					doc['returns'] = [:]
+					for(returnVal in cache[apiversion][actionname]['returns']){
+						doc['returns']["$returnVal.key"] = returnVal.value
+					}
+					doc['json'] = [:]
+					doc['json'] = processJson(doc["returns"])
+				}
+				
+				//if(cont["${actionname}"]["${apiversion}"]["errorcodes"]){
+				//	doc["errorcodes"] = processDocErrorCodes(cont[("${actionname}".toString())][("${apiversion}".toString())]["errorcodes"] as HashSet)
+				//}
+	
+			}
+	
+			return doc
+		}catch(Exception e){
+			throw new Exception("[ApiCacheService :: generateApiDoc] : Exception - full stack trace follows:",e)
 		}
 	}
 	

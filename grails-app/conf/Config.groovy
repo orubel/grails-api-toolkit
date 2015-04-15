@@ -5,9 +5,9 @@ apiName = grailsApplication.config.apitoolkit.apiName
 apiVersion = grailsApplication.metadata['app.version']
 apiEnv = Environment.current.name
 
-/*
+
 def deps = [
-	"couchbase-java-client-2.1.1.jar"
+	"org.json-20120521.jar"
 ]
 
 grails.war.dependencies = {
@@ -15,7 +15,7 @@ grails.war.dependencies = {
 		deps.each { pattern -> include(name: pattern) }
 	}
 }
-*/
+
 
 log4j = {
 	all 'org.codehaus.groovy.grails.web.mapping'
