@@ -41,7 +41,9 @@ class MongoCacheService{
 				String apiObjectName = file.getName().split('\\.')[0]
 				JSONObject json = JSON.parse(file.text)
 				if(!db.collectionExists(json.NAME.toString())){
-					parseJson(json.NAME.toString(),json);
+					Map methods = [:]
+					methods = parseJson(json.NAME.toString(),json);
+					createIoState(json.NAME.toString(),methods)
 				}
 			}
 		} catch (Exception e) {
@@ -75,15 +77,23 @@ class MongoCacheService{
 		db.getCollection(apiObjectName).insert(dbObject)
 	}
 	
+	/*
+	 * overwrite original FILE and update cache
+	 */
 	public updateIoState(String name){
 		def collection = db.getCollectionFromString(name)
 	}
 	
+	/*
+	 * delete original FILE and update cache
+	 * rather than delete, change to unsupported ROLE
+	 * until functionality is removed
 	public deleteIoState(String name){
 		def collection = db.getCollectionFromString(name)
 	}
+	*/
 	
-	Boolean parseJson(String apiName,JSONObject json){
+	public Map parseJson(String apiName,JSONObject json){
 		Map methods = [:]
 		json.VERSION.each() { vers ->
 			String defaultAction = (vers.value.DEFAULTACTION)?vers.value.DEFAULTACTION:'index'
@@ -134,7 +144,7 @@ class MongoCacheService{
 
 			}
 			if(methods){
-				createIoState(apiName,methods)
+				return methods
 				//apiLayerService.setApiCache(apiName,methods)
 			}
 		}
