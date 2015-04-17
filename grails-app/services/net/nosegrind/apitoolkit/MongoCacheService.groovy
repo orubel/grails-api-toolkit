@@ -3,6 +3,7 @@
  *****************************************************************************/
 package net.nosegrind.apitoolkit
 
+import grails.util.Holders
 import grails.converters.JSON
 import grails.converters.XML
 import groovy.json.JsonOutput
@@ -22,7 +23,7 @@ import com.mongodb.Mongo
 import com.mongodb.MongoClient
 
 import net.nosegrind.apitoolkit.*
-
+import grails.util.Environment
 
 class MongoCacheService{
 
@@ -36,21 +37,45 @@ class MongoCacheService{
 	public initialize(){
 		try {
 			db = mongoDbFactory.getDb()
-			String apiObjectSrc = grailsApplication.config.apitoolkit.iostate.preloadDir.toString()
-			new File(apiObjectSrc).eachFile() { file ->
-				String apiObjectName = file.getName().split('\\.')[0]
-				JSONObject json = JSON.parse(file.text)
-				if(!db.collectionExists(json.NAME.toString())){
-					Map methods = [:]
-					methods = parseJson(json.NAME.toString(),json);
-					createIoState(json.NAME.toString(),methods)
+			String ioPath
+
+			if(grailsApplication.isWarDeployed()){
+				ioPath = Holders.servletContext.getRealPath('/')
+				if(Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST){
+					ioPath += 'WEB-INF/classes/iostate'
+				}else{
+					// test in Environment.PRODUCTION
+					ioPath += 'WEB-INF/classes/iostate'
+				}
+			}else{
+				ioPath = grails.util.BuildSettingsHolder.settings?.resourcesDir?.path
+				if(Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST){
+					ioPath += '/iostate'
+				}else{
+					// test in Environment.PRODUCTION
+					ioPath += '/iostate'
 				}
 			}
+			parseFiles(ioPath)
+			
+			String apiObjectSrc = grailsApplication.config.apitoolkit.iostate.preloadDir.toString()
+			parseFiles(apiObjectSrc)
 		} catch (Exception e) {
 			throw new Exception("[MongoCacheService :: initialize] : Exception - full stack trace follows:",e)
 		}
 	}
 
+	private parseFiles(String path){
+		new File(path).eachFile() { file ->
+			JSONObject json = JSON.parse(file.text)
+			if(!db.collectionExists(json.NAME.toString())){
+				Map methods = [:]
+				methods = parseJson(json.NAME.toString(),json);
+				createIoState(json.NAME.toString(),methods)
+			}
+		}
+	}
+	
 	/*
 	 * Placeholder Function for Proxy; not used in API Application
 	 */
@@ -85,7 +110,6 @@ class MongoCacheService{
 	}
 	
 	/*
-	 * delete original FILE and update cache
 	 * rather than delete, change to unsupported ROLE
 	 * until functionality is removed
 	public deleteIoState(String name){
@@ -95,6 +119,7 @@ class MongoCacheService{
 	
 	public Map parseJson(String apiName,JSONObject json){
 		Map methods = [:]
+
 		json.VERSION.each() { vers ->
 			String defaultAction = (vers.value.DEFAULTACTION)?vers.value.DEFAULTACTION:'index'
 			List deprecated = (vers.value.DEPRECATED)?vers.value.DEPRECATED:[]
