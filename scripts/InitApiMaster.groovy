@@ -75,6 +75,7 @@ target(copyControllersAndViews:"Create API Controllers and Views for webhooks") 
 
 	String dir2 = packageToDir(packageName)
 	generateFile "$templateDir/HookController.groovy.template", "$appDir/controllers/${dir2}HookController.groovy"
+	generateFile "$templateDir/IostateController.groovy.template", "$appDir/controllers/${dir2}IostateController.groovy"
 	printMessage "Controller / Views created..."
 }
 

@@ -16,14 +16,8 @@ if (configFile.exists()) {
 		it.writeLine "apitoolkit.chaining.enabled=true"
 		it.writeLine "apitoolkit.batching.enabled=true"
 		it.writeLine "apitoolkit.user.roles = ['ROLE_USER']"
-		it.writeLine "apitoolkit.admin.roles = ['ROLE_ROOT','ROLE_ADMIN']"
+		it.writeLine "apitoolkit.admin.roles = ['ROLE_ROOT','ROLE_ADMIN','ROLE_ARCH']"
 		it.writeLine(" ")
-		it.writeLine("apitoolkit.sharedCache{")
-		it.writeLine("  type='Couchbase/Redis/Mongo'")
-		it.writeLine("	url='ip/url'")
-		it.writeLine("	port=port")
-		it.writeLine("	bucket='bucketname'")
-		it.writeLine("}")
 		
 	}
 	
