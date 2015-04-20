@@ -72,7 +72,7 @@ class ApiToolkitFilters {
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
-				//println("##### FILTER (BEFORE)")
+				println("##### FILTER (BEFORE)")
 				
 				/*
 				 * FIRST DETERMINE
@@ -85,10 +85,15 @@ class ApiToolkitFilters {
 				try{
 					
 					if(request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
+						println('has request')
 						def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
+println(params.controller)
+println(cache)
 						if(cache){
+println('has cache')
 							params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']
 							if(!params.action){ 
+println('NO action')
 								String methodAction = methods[request.method.toLowerCase()]
 								if(!cache[params.apiObject][methodAction]){
 									params.action = cache[params.apiObject]['defaultAction'].split('/')[1] 
@@ -166,7 +171,7 @@ class ApiToolkitFilters {
 								}
 								//return result
 							}else{
-							
+								println('returning result')
 								return result
 							}
 						}
@@ -175,13 +180,14 @@ class ApiToolkitFilters {
 					return false
 
 				}catch(Exception e){
-					log.error("[ApiToolkitFilters :: preHandler] : Exception - full stack trace follows:", e);
+					//log.error("[ApiToolkitFilters :: preHandler] : Exception - full stack trace follows:", e);
+					println("[ApiToolkitFilters :: preHandler] : Exception - full stack trace follows:"+e);
 					return false
 				}
 			}
 			
 			after = { Map model ->
-				//println("##### FILTER (AFTER)")
+				println("##### FILTER (AFTER)")
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)

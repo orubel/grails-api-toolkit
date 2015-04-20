@@ -1,0 +1,42 @@
+package net.nosegrind.apitoolkit
+
+import net.nosegrind.apitoolkit.*
+
+
+class ApiobjectController {
+
+	def springSecurityService
+	def mongoCacheService
+
+	/*
+	* list name of collections of iostate
+	*/
+	def list() {
+		if(isSuperuser()){
+	
+		}
+	}
+
+	def show() {
+		if(isSuperuser()){
+	
+		}
+	}
+
+	def create(){
+		if(isSuperuser()){
+		
+		}
+	}
+	
+	def update() {
+		if(isSuperuser()){
+
+		}
+	}
+
+
+	protected boolean isSuperuser() {
+		springSecurityService.principal.authorities*.authority.any { grailsApplication.config.apitoolkit.admin.roles.contains(it) }
+	}
+}

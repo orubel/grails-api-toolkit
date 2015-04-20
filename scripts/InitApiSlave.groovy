@@ -6,12 +6,12 @@ includeTargets << grailsScript("_GrailsInit")
 includeTargets << new File("$springSecurityCorePluginDir/scripts/_S2Common.groovy")
 
 USAGE = """
-Usage: grails init-api-master <user-domain-class-package> <user-class-name> <role-class-name>
+Usage: grails init-api-slave <user-domain-class-package> <user-class-name> <role-class-name>
 
 Takes 3 arguments of the spring-security USER package, USER classname, ROLE classname 
 and then it creates webhook domain, controller, views and supporting services
 
-Example: grails init-api-master com.yourapp User Role
+Example: grails init-api-slave com.yourapp User Role
 """
 
 packageName = ''
@@ -19,15 +19,14 @@ userClassName = ''
 roleClassName = ''
 nosqlName = ''
 
-templateDir = "$apiToolkitPluginDir/src/templates/"
+templateDir = "$apiToolkitPluginDir/src/templates/apiobject"
 appDir = "$basedir/grails-app"
 
-target(initApiMaster: 'Creates artifacts for API Master Server') {
+target(initApiSlave: 'Creates artifacts for Api Slave Server') {
 	if (!configure()) {
 		return 1
 	}
 
-	createDomains()
 	copyControllersAndViews()
 	updateConfig()
 
@@ -57,28 +56,13 @@ private boolean configure() {
 	true
 }
 
-target(createDomains:"Create API WebHook Domains") {
-	String dir = packageToDir(packageName)
-	generateFile "$templateDir/webhook/Hook.groovy.template", "$appDir/domain/${dir}Hook.groovy"
-	generateFile "$templateDir/webhook/HookRole.groovy.template", "$appDir/domain/${dir}HookRole.groovy"
-	printMessage "Domains created..."
-}
-
-target(copyControllersAndViews:"Create API Controllers and Views for webhooks") {
-	ant.mkdir dir: "$appDir/views/hook"
-	// add default views for webhooks administration
-	copyFile "$templateDir/webhook/create.gsp.template", "$appDir/views/hook/create.gsp"
-	copyFile "$templateDir/webhook/edit.gsp.template", "$appDir/views/hook/edit.gsp"
-	copyFile "$templateDir/webhook/list.gsp.template", "$appDir/views/hook/list.gsp"
-	copyFile "$templateDir/webhook/show.gsp.template", "$appDir/views/hook/show.gsp"
-
+target(copyControllersAndViews:"Create API Controllers and Views for apiobject") {
 	String dir2 = packageToDir(packageName)
-	generateFile "$templateDir/webhook/HookController.groovy.template", "$appDir/controllers/${dir2}HookController.groovy"
-	generateFile "$templateDir/iostate/IostateController.groovy.template", "$appDir/controllers/${dir2}IostateController.groovy"
+	generateFile "$templateDir/IostateController.groovy.template", "$appDir/controllers/${dir2}IostateController.groovy"
 	printMessage "Controller / Views created..."
 }
 
-target(updateConfig:"Update Config for API Master Setup") {
+target(updateConfig:"Update Config for API Slave Setup") {
 	ant.mkdir dir: "${userHome}/.iostate"
 	def configFile = new File(appDir, 'conf/Config.groovy')
 	if (configFile.exists()) {
@@ -109,4 +93,4 @@ private parseArgs() {
 	null
 }
 
-setDefaultTarget('initApiMaster')
+setDefaultTarget('initApiSlave')

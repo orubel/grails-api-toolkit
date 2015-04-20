@@ -11,10 +11,6 @@ class ApiBootStrap {
 	def mongoCacheService
 	
 	def init = { servletContext ->
-        GrailsPluginManager pluginManager = grailsApplication.mainContext.pluginManager
-        pluginManager.allPlugins.each { plugin ->
-			println "${plugin.name} - ${plugin.version}"
-		}
 		if(grailsApplication.config.apitoolkit.sharedCache.type){
 			switch(grailsApplication.config.apitoolkit.sharedCache.type){
 				case 'MongoDB':

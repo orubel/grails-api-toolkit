@@ -1,0 +1,59 @@
+package ${packageName}
+
+import net.nosegrind.apitoolkit.*
+
+class IostateController {
+
+	def springSecurityService
+	def mongoCacheService
+
+	/*
+	* list name of collections of iostate
+	*/
+	def list() {
+		if(isSuperuser()){
+	
+		}
+	}
+
+	def show() {
+		if(isSuperuser()){
+	
+		}
+	}
+
+	def update() {
+		if(isSuperuser()){
+		    def file = request.getFile('iostate')
+		    if (file.empty) {
+		        render(status:HttpServletResponse.SC_BAD_REQUEST)
+		        return null
+		    }
+
+			if(!mongoCacheService.update(file)){
+				render(status:HttpServletResponse.SC_BAD_REQUEST)
+				return null
+			}
+
+		}
+	}
+
+	def show() {
+		if(isSuperuser()){
+	
+			def webhookInstance = isSuperuser() ? Hook.get(params.id) : Hook.findBy${userClassName}AndId(user,params.id.toLong())
+	
+			if (webhookInstance) {
+				render(view:"show",model:[webhookInstance: webhookInstance])
+				return
+			}
+	
+			flash.message = message(code: 'default.not.found.message', args: [message(code: 'webhook.label', default: 'Hook'), params.id])
+			redirect(action: "list")
+		}
+	}
+
+	protected boolean isSuperuser() {
+		springSecurityService.principal.authorities*.authority.any { grailsApplication.config.apitoolkit.admin.roles.contains(it) }
+	}
+}

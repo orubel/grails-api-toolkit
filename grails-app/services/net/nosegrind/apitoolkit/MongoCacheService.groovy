@@ -65,13 +65,22 @@ class MongoCacheService{
 		}
 	}
 
+	private Map parseFile(String file){
+		JSONObject json = JSON.parse(file.text)
+		return json
+	}
+	
 	private parseFiles(String path){
 		new File(path).eachFile() { file ->
-			JSONObject json = JSON.parse(file.text)
-			if(!db.collectionExists(json.NAME.toString())){
-				Map methods = [:]
-				methods = parseJson(json.NAME.toString(),json);
-				createIoState(json.NAME.toString(),methods)
+			try{
+				JSONObject json = JSON.parse(file.text)
+				if(!db.collectionExists(json.NAME.toString())){
+					Map methods = [:]
+					methods = parseJson(json.NAME.toString(),json);
+					createIoState(json.NAME.toString(),methods)
+				}
+			}catch(Exception e){
+				throw new Exception("[MongoCacheService :: initialize] : Unacceptable file '${file.name}' - full stack trace follows:",e)
 			}
 		}
 	}
@@ -100,13 +109,25 @@ class MongoCacheService{
 
 		db.createCollection(apiObjectName,dbObject)
 		db.getCollection(apiObjectName).insert(dbObject)
+		
 	}
 	
 	/*
 	 * overwrite original FILE and update cache
 	 */
-	public updateIoState(String name){
-		def collection = db.getCollectionFromString(name)
+	public updateIoState(String file){
+		JSONObject json1 = parseFile(file)
+		String apiObjectName = json1.NAME.toString()
+		
+		Map methods = parseJson(json1.NAME.toString(),json1)
+		def json2 = JsonOutput.toJson(methods)
+
+		try{
+		DBObject dbObject = (DBObject) com.mongodb.util.JSON.parse(json2)
+		db.getCollection(apiObjectName).update( '{ _id : { $exists : true } }', dbObject, upsert, true);
+		}catch(Exception e){
+			log.error("[ApiDomainService :: updateInstance] : Could not find domain package '${domainPackage}' - full stack trace follows:", e);
+		}
 	}
 	
 	/*
