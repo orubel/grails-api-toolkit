@@ -28,13 +28,11 @@ target(initApiSlave: 'Creates artifacts for Api Slave Server') {
 	}
 
 	copyControllersAndViews()
-	updateConfig()
 
 	printMessage """
 	*************************************************************
-	* SUCCESS! Created domain classes, controllers, and GSPs.   *
-	* Webhooks are now installed. Please see documentation *
-	* page on implementation details.                           *
+	* SUCCESS! API Slave is now installed. Please see           *
+	* documentation page on implementation details.             *
 	*************************************************************
 	"""
 }
@@ -58,28 +56,8 @@ private boolean configure() {
 
 target(copyControllersAndViews:"Create API Controllers and Views for apiobject") {
 	String dir2 = packageToDir(packageName)
-	generateFile "$templateDir/IostateController.groovy.template", "$appDir/controllers/${dir2}IostateController.groovy"
-	printMessage "Controller / Views created..."
-}
-
-target(updateConfig:"Update Config for API Slave Setup") {
-	ant.mkdir dir: "${userHome}/.iostate"
-	def configFile = new File(appDir, 'conf/Config.groovy')
-	if (configFile.exists()) {
-		configFile.withWriterAppend {
-			it.writeLine '\n// Added by the Api Toolkit plugin:'
-			it.writeLine ' '
-			it.writeLine "apitoolkit.webhook.domain = '${packageName}.Hook'"
-			it.writeLine "apitoolkit.webhook.controller = '${packageName}.HookController'"
-			it.writeLine " "
-			it.writeLine "apitoolkit.iostate.preloadDir=[\"file:${userHome}/.iostate\"]"
-			it.writeLine "apitoolkit.sharedCache.type='mongo'"
-			it.writeLine "apitoolkit.sharedCache.url='127.0.0.1'"
-			it.writeLine "apitoolkit.sharedCache.port=27017"
-			it.writeLine "apitoolkit.sharedCache.user='changeUsername'"
-			it.writeLine "apitoolkit.sharedCache.password='changePassword'"
-		}
-	}
+	generateFile "$templateDir/ApiobjectController.groovy.template", "$appDir/controllers/${dir2}ApiobjectController.groovy"
+	printMessage "Controller created..."
 }
 
 private parseArgs() {
