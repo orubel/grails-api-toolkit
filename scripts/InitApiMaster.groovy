@@ -33,9 +33,8 @@ target(initApiMaster: 'Creates artifacts for API Master Server') {
 
 	printMessage """
 	*************************************************************
-	* SUCCESS! Created domain classes, controllers, and GSPs.   *
-	* Webhooks are now installed. Please see documentation *
-	* page on implementation details.                           *
+	* SUCCESS! API Master is now installed. Please see          *
+	* documentation page on implementation details.             *
 	*************************************************************
 	"""
 }
@@ -88,6 +87,7 @@ target(updateConfig:"Update Config for API Master Setup") {
 			it.writeLine "apitoolkit.webhook.domain = '${packageName}.Hook'"
 			it.writeLine "apitoolkit.webhook.controller = '${packageName}.HookController'"
 			it.writeLine " "
+			it.writeLine "apitoolkit.master=true"
 			it.writeLine "apitoolkit.iostate.preloadDir=[\"file:${userHome}/.iostate\"]"
 			it.writeLine "apitoolkit.sharedCache.type='mongo'"
 			it.writeLine "apitoolkit.sharedCache.url='127.0.0.1'"

@@ -11,7 +11,7 @@ class ApiBootStrap {
 	def mongoCacheService
 	
 	def init = { servletContext ->
-		if(grailsApplication.config.apitoolkit.sharedCache.type){
+		if(grailsApplication.config.apitoolkit.sharedCache.type && grailsApplication.config.apitoolkit.master==true){
 			switch(grailsApplication.config.apitoolkit.sharedCache.type){
 				case 'MongoDB':
 				case 'mongodb':
@@ -20,8 +20,10 @@ class ApiBootStrap {
 					break;
 			}
 		}
+		if(grailsApplication.config.apitoolkit.slave==true || grailsApplication.config.apitoolkit.master==false){
+			apiObjectService.initApiCache()
+		}
 
-		apiObjectService.initApiCache()
 	}
 
     def destroy = {}

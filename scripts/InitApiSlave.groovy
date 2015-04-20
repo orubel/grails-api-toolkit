@@ -28,7 +28,8 @@ target(initApiSlave: 'Creates artifacts for Api Slave Server') {
 	}
 
 	copyControllersAndViews()
-
+	updateConfig()
+	
 	printMessage """
 	*************************************************************
 	* SUCCESS! API Slave is now installed. Please see           *
@@ -58,6 +59,18 @@ target(copyControllersAndViews:"Create API Controllers and Views for apiobject")
 	String dir2 = packageToDir(packageName)
 	generateFile "$templateDir/ApiobjectController.groovy.template", "$appDir/controllers/${dir2}ApiobjectController.groovy"
 	printMessage "Controller created..."
+}
+
+target(updateConfig:"Update Config for API Master Setup") {
+	ant.mkdir dir: "${userHome}/.iostate"
+	def configFile = new File(appDir, 'conf/Config.groovy')
+	if (configFile.exists()) {
+		configFile.withWriterAppend {
+			it.writeLine '\n// Added by the Api Toolkit plugin:'
+			it.writeLine ' '
+			it.writeLine "apitoolkit.slave=true"
+		}
+	}
 }
 
 private parseArgs() {
