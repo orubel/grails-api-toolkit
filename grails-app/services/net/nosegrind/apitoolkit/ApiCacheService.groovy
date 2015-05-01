@@ -35,6 +35,7 @@ class ApiCacheService{
 	//ApiToolkitService apiToolkitService
 	GrailsCacheManager grailsCacheManager
 	
+	
 	/*
 	 * Only flush on RESTART.
 	 * DO NOT flush while LIVE!!!
@@ -153,6 +154,11 @@ class ApiCacheService{
 		}catch(Exception e){
 			throw new Exception("[ApiCacheService :: getApiCache] : Exception - full stack trace follows:",e)
 		}
-
+	}
+	
+	List getCacheNames(){
+		List temp = grailsCacheManager.getCache('ApiCache').getAllKeys() as List
+		List cacheNames = temp.collect{ it.capitalize() }
+		return cacheNames
 	}
 }

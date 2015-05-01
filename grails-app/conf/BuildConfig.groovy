@@ -21,10 +21,9 @@ grails.project.dependency.resolution = {
 	
 	dependencies {
 		compile("net.sf.ehcache:ehcache-core:2.4.6")
-		//compile("org.springframework.data:spring-data-mongodb:1.3.0.RELEASE")
-		compile ('org.springframework.data:spring-data-mongodb:1.3.0.RELEASE') {
-			excludes('spring-core', 'spring-context', 'spring-expression')
-		}
+		//compile ('org.springframework.data:spring-data-mongodb:1.3.0.RELEASE') {
+		//	excludes('spring-core', 'spring-context', 'spring-expression')
+		//}
 	}
 	
     plugins {

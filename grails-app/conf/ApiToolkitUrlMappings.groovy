@@ -21,7 +21,12 @@ class ApiToolkitUrlMappings {
 	static mappings = {
 		String apiName = grails.util.Holders.getGrailsApplication().config.apitoolkit.apiName
 		String apiVersion = grails.util.Holders.getGrailsApplication().metadata['app.version']
-		
+		"/apidoc/show" (controller:'apidoc',action:'show', parseRequest: true)
+		"/hook/$action" {
+			controller = 'hook'
+			action = action
+			parseRequest= true
+		}
 		"/login/$action" {
 			controller = 'login'
 			action = action

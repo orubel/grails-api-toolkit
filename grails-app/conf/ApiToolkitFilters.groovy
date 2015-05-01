@@ -25,8 +25,6 @@ import javax.servlet.ServletContext
 
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
-import grails.converters.JSON
-import grails.converters.XML
 
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper
 import org.codehaus.groovy.grails.commons.GrailsApplication

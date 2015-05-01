@@ -19,6 +19,7 @@ import grails.util.Environment
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import grails.plugin.cache.GrailsCacheManager
 import grails.plugin.springsecurity.SpringSecurityService
@@ -42,6 +43,59 @@ class ApiObjectService{
 	
 	static transactional = false
 	
+	public initialize(){
+		try {
+
+			String ioPath
+
+			if(grailsApplication.isWarDeployed()){
+				ioPath = Holders.servletContext.getRealPath('/')
+				if(Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST){
+					ioPath += 'WEB-INF/classes/iostate'
+				}else{
+					// test in Environment.PRODUCTION
+					ioPath += 'WEB-INF/classes/iostate'
+				}
+			}else{
+				ioPath = grails.util.BuildSettingsHolder.settings?.resourcesDir?.path
+				if(Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST){
+					ioPath += '/iostate'
+				}else{
+					// test in Environment.PRODUCTION
+					ioPath += '/iostate'
+				}
+			}
+			
+			parseFiles(ioPath)
+			
+			String apiObjectSrc = grailsApplication.config.apitoolkit.iostate.preloadDir.toString()
+			parseFiles(apiObjectSrc)
+		} catch (Exception e) {
+			throw new Exception("[ApiObjectService :: initialize] : Exception - full stack trace follows:",e)
+		}
+	}
+	
+	public updateIoState(String file){
+
+	}
+	
+	private Map parseFile(String file){
+		JSONObject json1 = parseFile(file)
+		String apiObjectName = json1.NAME.toString()
+		parseJson(json1.NAME.toString(),json1)
+	}
+	
+	private parseFiles(String path){
+		new File(path).eachFile() { file ->
+			try{
+				JSONObject json = JSON.parse(file.text)
+				parseJson(json.NAME.toString(),json)
+				//def cache = apiCacheService.getApiCache(apiName)
+			}catch(Exception e){
+				throw new Exception("[ApiObjectService :: initialize] : Unacceptable file '${file.name}' - full stack trace follows:",e)
+			}
+		}
+	}
 	
 	String getKeyType(String reference, String type){
 		String keyType = (reference.toLowerCase()=='self')?((type.toLowerCase()=='long')?'PKEY':'INDEX'):((type.toLowerCase()=='long')?'FKEY':'INDEX')
@@ -53,11 +107,8 @@ class ApiObjectService{
 
 		io.each{ k, v ->
 			// init
-			if(!ioSet[k]){
-				ioSet[k] = []
-			}
+			if(!ioSet[k]){ ioSet[k] = [] }
 			
-
 			def roleVars=v.toList()
 			roleVars.each{ val ->
 				if(v.contains(val)){
@@ -66,7 +117,6 @@ class ApiObjectService{
 					}
 				}
 			}
-
 		}
 		
 		// add permitAll vars to other roles after processing
@@ -128,17 +178,6 @@ class ApiObjectService{
 		service['batchRoles'] = batchRoles
 
 		return service
-	}
-	
-	void initApiCache(){
-		apiCacheService.flushAllApiCache()
-		String apiObjectSrc = grailsApplication.config.apitoolkit.apiobjectSrc
-		new File("$apiObjectSrc").eachFile() { file ->
-			String apiName = file.getName().split('\\.')[0].toLowerCase()
-			JSONObject json = JSON.parse(file.text)
-			parseJson(apiName,json)
-			//def cache = apiCacheService.getApiCache(apiName)
-		}
 	}
 	
 	Boolean parseJson(String apiName,JSONObject json){

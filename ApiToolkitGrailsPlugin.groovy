@@ -10,6 +10,7 @@ class ApiToolkitGrailsPlugin {
     def issueManagement = [system: 'GitHub', url: 'https://github.com/orubel/grails-api-toolkit-docs/issues']
     def scm = [url: 'https://github.com/orubel/grails-api-toolkit']
 	
+	/*
 	def doWithSpring = {
 		String host = application.config.apitoolkit.sharedCache.url
 		String port = application.config.apitoolkit.sharedCache.port
@@ -20,6 +21,6 @@ class ApiToolkitGrailsPlugin {
 		def mongo = new com.mongodb.Mongo(host, port instanceof Integer ? post : 27017)
 		def credentials = new org.springframework.data.authentication.UserCredentials(user instanceof String ? user : '', password instanceof String ? password : '')
 		mongoDbFactory(org.springframework.data.mongodb.core.SimpleMongoDbFactory, mongo, bucket, credentials)
-
 	}
+	*/
 }
