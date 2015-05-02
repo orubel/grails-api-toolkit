@@ -4,7 +4,6 @@ import java.util.Date
 
 class Hook {
 	${userClassName} user
-	String contactEmail
 	String name
 	String url
 	String format = 'JSON'
@@ -16,7 +15,6 @@ class Hook {
 
 	static constraints = {
 		user(nullable:false)
-		contactEmail(nullable:false,email:true,maxSize:100)
 		name(nullable:false,maxSize:200)
 		url(nullable:false)
 		format(nullable:false)

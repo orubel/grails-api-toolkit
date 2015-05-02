@@ -72,7 +72,9 @@ target(updateSlaveConfig:"Update Config for API Slave Setup") {
 		configFile.withWriterAppend {
 			it.writeLine '\n// Added by the Api Toolkit plugin:'
 			it.writeLine ' '
-			it.writeLine "apitoolkit.slave=true"
+			it.writeLine "apitoolkit.serverType='slave'"
+			it.writeLine "apitoolkit.master='127.0.0.1:8080/hook'"
+			it.writeLine "apitoolkit.master.hooks=[]"
 		}
 	}
 }
@@ -87,7 +89,7 @@ target(updateMasterConfig:"Update Config for API Master Setup") {
 			it.writeLine "apitoolkit.webhook.domain = '${packageName}.Hook'"
 			it.writeLine "apitoolkit.webhook.controller = '${packageName}.HookController'"
 			it.writeLine " "
-			it.writeLine "apitoolkit.master=true"
+			it.writeLine "apitoolkit.serverType='master'"
 			it.writeLine "apitoolkit.iostate.preloadDir=[\"file:${userHome}/.iostate\"]"
 			it.writeLine "apitoolkit.sharedCache.type='mongo'"
 			it.writeLine "apitoolkit.sharedCache.url='127.0.0.1'"

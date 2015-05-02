@@ -11,7 +11,7 @@
 /* 'permitAll' needs to always come first so other roles can make use of it
 * as they come afterward
 
-net.nosegrind.Post
+net.nosegrind.IOState
 */
 
 	
@@ -41,17 +41,15 @@ net.nosegrind.Post
 	                }
 	            },
 	            "update": {
-	            	"METHOD":"PUT",
+	            	"METHOD":"POST",
 	            	"DESCRIPTION":"Update IOState",
 	            	"ROLES":["ROLE_ADMIN","ROLE_ARCH"],
 	            	"BATCH":["ROLE_ADMIN","ROLE_ARCH"],
 	                "REQUEST": {
-	                    "ROLE_ADMIN":[],
-			    "ROLE_ARCH":[]
+	                    "permitAll":[]
 	                },
 	                "RESPONSE": {
-	                    "ROLE_ADMIN":[],
-			    "ROLE_ARCH":[]
+	                    "permitAll":[]
 	                }
 	            }
 	        }

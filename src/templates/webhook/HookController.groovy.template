@@ -8,47 +8,7 @@ class HookController {
 	def springSecurityService
 	def hookService
 
-	def api(){
-		switch(request.method){
-			case "POST":
-				def json = request.JSON
-				save()
-				break
-			case "GET":
-				def json = request.JSON
-				if(params.id>0 && params.id){
-			        show()
-				}else{
-					response.status = 400 //Bad Request
-					render "SHOW request must include the id"
-				}
-				break
-			case "PUT":
-				def json = request.JSON
-				update()
-				break
-			case "DELETE":
-				def json = request.JSON
-				if(params.id){
-					def hook = Hook.get(params.id)
-					if(hook){
-					  hook.delete()
-					  response.status = 200
-					  render "Successfully Deleted."
-					}else{
-					  response.status = 404 //Not Found
-					  render "Id not found."
-					}
-				}else{
-					response.status = 400 //Bad Request
-					render "DELETE request must include the id"
-				}
-				break
-		  }
-	}
-
 	static defaultAction = 'list'
-
 
 	def list() {
 		def user = loggedInUser()
@@ -62,16 +22,25 @@ class HookController {
 		[webhookInstanceList: webhookList, webhookInstanceTotal: webhookList.size(),params:params]
 	}
 
-	def create() {
-		if(!springSecurityService.isLoggedIn()){
+	def show() {
+		def user = loggedInUser()
+		if(!user){
 			redirect(uri: "/")
 			return
 		}
-		def formats = ['JSON','XML']
-		[webhookInstance: new Hook(params),service:grailsApplication.config.apitoolkit.services,format:formats]
-	}
 
-	def save() {
+		def webhookInstance = isSuperuser() ? Hook.get(params.id) : Hook.findBy${userClassName}AndId(user,params.id.toLong())
+
+		if (webhookInstance) {
+			render(view:"show",model:[webhookInstance: webhookInstance])
+			return
+		}
+
+		flash.message = message(code: 'default.not.found.message', args: [message(code: 'webhook.label', default: 'Hook'), params.id])
+		redirect(action: "list")
+	}
+	
+	def create() {
 		def user = loggedInUser()
 		if(!user){
 			redirect(uri: "/")
@@ -104,15 +73,6 @@ class HookController {
 		render(view:"create",model:[params:params,service:grailsApplication.config.apitoolkit.services,format:formats])
 	}
 
-	def edit() {
-		if(!springSecurityService.isLoggedIn()){
-			redirect(uri: "/")
-			return
-		}
-		def formats = ['JSON','XML']
-		[webhookInstance: Hook.get(params.id),service:grailsApplication.config.apitoolkit.services,format:formats]
-	}
-
 	def update() {
 		def user = loggedInUser()
 		if(!user){
@@ -142,23 +102,7 @@ class HookController {
 		render(view:"create",model:[params:params])
 	}
 
-	def show() {
-		def user = loggedInUser()
-		if(!user){
-			redirect(uri: "/")
-			return
-		}
 
-		def webhookInstance = isSuperuser() ? Hook.get(params.id) : Hook.findBy${userClassName}AndId(user,params.id.toLong())
-
-		if (webhookInstance) {
-			render(view:"show",model:[webhookInstance: webhookInstance])
-			return
-		}
-
-		flash.message = message(code: 'default.not.found.message', args: [message(code: 'webhook.label', default: 'Hook'), params.id])
-		redirect(action: "list")
-	}
 
 	def delete() {
 		def user = loggedInUser()

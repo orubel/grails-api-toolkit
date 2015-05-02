@@ -111,6 +111,5 @@ apitoolkit.architecture.roles = ['ROLE_ARCH']
 apitoolkit.hook.domain = 'net.nosegrind.apitoolkit.Hook'
 apitoolkit.hook.controller = 'net.nosegrind.apitoolkit.HookController'
 
-apitoolkit.master=false
-apitoolkit.slave=true
+apitoolkit.serverType='slave'
 
