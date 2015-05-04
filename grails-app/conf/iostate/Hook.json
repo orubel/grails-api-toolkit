@@ -112,6 +112,18 @@ net.nosegrind.Hook
 	                    "permitAll":["id"]
 	                }
 	            }
+	            "reset":{
+	            	"METHOD":"GET",
+	            	"DESCRIPTION":"Reset Hook attempts",
+	            	"ROLES":["ROLE_ADMIN"],
+	            	"BATCH":["ROLE_ADMIN"],
+	                "REQUEST": {
+	                    "permitAll":["id"]
+	                },
+	                "RESPONSE": {
+	                    "permitAll":["id"]
+	                }
+	            }
 	        }
 		}
 	}
