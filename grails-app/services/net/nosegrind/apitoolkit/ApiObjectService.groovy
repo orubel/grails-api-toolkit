@@ -81,10 +81,9 @@ class ApiObjectService{
 
 	}
 	
-	private Map parseFile(String file){
-		JSONObject json1 = parseFile(file)
-		String apiObjectName = json1.NAME.toString()
-		parseJson(json1.NAME.toString(),json1)
+	private Map parseFile(JSONObject json){
+		String apiObjectName = json.NAME.toString()
+		parseJson(json.NAME.toString(),json)
 	}
 	
 	private parseFiles(String path){
