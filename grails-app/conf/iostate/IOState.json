@@ -21,6 +21,38 @@ net.nosegrind.IOState
         "name": {
             "type": "String",
             "description":"IO State name"
+        },
+        "version": {
+            "type": "Long",
+            "description":"Version for Updating IO State"
+        },
+        "cacheversion": {
+            "type": "Long",
+            "description":"Version in cache"
+        },
+		"method":{
+            "type": "String",
+            "description":"Request Method"
+        }
+		"description":{
+            "type": "String",
+            "description":"API Description"
+        },
+		"roles":{
+            "type": "List",
+            "description":"Authorization"
+        },
+		"batchRoles":{
+            "type": "List",
+            "description":"Batch Authorization"
+        },
+		"receives":{
+            "type": "List",
+            "description":"List of variable sent on request"
+        },
+		"returns":{
+            "type": "List",
+            "description":"list of variables sent on response"
         }
     },
 	"CURRENTSTABLE": "1",
@@ -37,7 +69,7 @@ net.nosegrind.IOState
 	                    "permitAll":["name"]
 	                },
 	                "RESPONSE": {
-	                	"permitAll":["id","title","sectionId","statId","version"]
+	                	"permitAll":["name","cacheversion"]
 	                }
 	            },
 	            "update": {
@@ -46,10 +78,10 @@ net.nosegrind.IOState
 	            	"ROLES":["ROLE_ADMIN","ROLE_ARCH"],
 	            	"BATCH":["ROLE_ADMIN","ROLE_ARCH"],
 	                "REQUEST": {
-	                    "permitAll":[]
+	                    "permitAll":["name"]
 	                },
 	                "RESPONSE": {
-	                    "permitAll":[]
+	                    "permitAll":["name","cacheversion"]
 	                }
 	            }
 	        }

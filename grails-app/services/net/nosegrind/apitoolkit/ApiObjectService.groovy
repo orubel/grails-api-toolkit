@@ -189,7 +189,9 @@ class ApiObjectService{
 			List deprecated = (vers.value.DEPRECATED)?vers.value.DEPRECATED:[]
 			String domainPackage = (vers.value.DOMAINPACKAGE!=null || vers.value.DOMAINPACKAGE?.size()>0)?vers.value.DOMAINPACKAGE:null
 			vers.value.URI.each() { it ->
-
+				def cache = apiCacheService.getApiCache(apiName)
+				methods['cacheversion'] = (!cache['cacheversion'])? 1 : cache['cacheversion']+1
+				
 				JSONObject apiVersion = json.VERSION[vers.key]
 				
 				//List temp = it.key.split('/')

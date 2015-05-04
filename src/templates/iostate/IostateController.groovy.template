@@ -1,18 +1,16 @@
 package ${packageName}
 
-import net.nosegrind.apitoolkit.*
-
 class IostateController {
 
 	def springSecurityService
-	def mongoCacheService
-
+	def apiObjectService
+	
 	/*
 	* list name of collections of iostate
 	*/
 	def list() {
 		if(isSuperuser()){
-	
+
 		}
 	}
 
@@ -30,28 +28,15 @@ class IostateController {
 		        return null
 		    }
 
-			if(!mongoCacheService.update(file)){
+			if(!apiObjectService.parseFile(file)){
 				render(status:HttpServletResponse.SC_BAD_REQUEST)
 				return null
 			}
-
+			webhookService.postData('Iostate', bookInstance,'update')
+			return true
 		}
 	}
 
-	def show() {
-		if(isSuperuser()){
-	
-			def webhookInstance = isSuperuser() ? Hook.get(params.id) : Hook.findBy${userClassName}AndId(user,params.id.toLong())
-	
-			if (webhookInstance) {
-				render(view:"show",model:[webhookInstance: webhookInstance])
-				return
-			}
-	
-			flash.message = message(code: 'default.not.found.message', args: [message(code: 'webhook.label', default: 'Hook'), params.id])
-			redirect(action: "list")
-		}
-	}
 
 	protected boolean isSuperuser() {
 		springSecurityService.principal.authorities*.authority.any { grailsApplication.config.apitoolkit.admin.roles.contains(it) }
