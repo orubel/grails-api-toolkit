@@ -47,30 +47,27 @@ class ApiObjectService{
 		try {
 			// if serverType = master, parse iostate, hook
 			
-			String ioPath
-
-			if(grailsApplication.isWarDeployed()){
-				ioPath = Holders.servletContext.getRealPath('/')
-				if(grailsApplication.config.apitoolkit.serverType=='master'){
+			if(grailsApplication.config.apitoolkit.serverType=='master'){
+				String ioPath
+				if(grailsApplication.isWarDeployed()){
+					ioPath = Holders.servletContext.getRealPath('/')
 					if(Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST){
 						ioPath += 'WEB-INF/classes/iostate'
 					}else{
 						// test in Environment.PRODUCTION
 						ioPath += 'WEB-INF/classes/iostate'
 					}
-					parseFiles(ioPath)
-				}
-			}else{
-				ioPath = grails.util.BuildSettingsHolder.settings?.resourcesDir?.path
-				if(grailsApplication.config.apitoolkit.serverType=='master'){
+				}else{
+					ioPath = grails.util.BuildSettingsHolder.settings?.resourcesDir?.path
 					if(Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST){
 						ioPath += '/iostate'
 					}else{
 						// test in Environment.PRODUCTION
 						ioPath += '/iostate'
 					}
-					parseFiles(ioPath)
+					
 				}
+				parseFiles(ioPath)
 			}
 			
 			String apiObjectSrc = grailsApplication.config.apitoolkit.iostate.preloadDir.toString()
