@@ -9,11 +9,11 @@ Some of the features in the apitoolkit include:
 
 - <a href='http://youtu.be/ceg0Y3bDh8k'>full API Abstraction</a>
 - <a href='http://youtu.be/O4qNQUhxcRg'>API Chaining</a>
-- reusable API objects
+- rshared IO state in architecture
+- api automation
 - header generation
 - api/apidoc role checking and handling
 - apidoc generation
-- webhooks/real time notifications
 - improved perfomance
 - integrated spring security for setting roles on your APIs, docs and hooks
 - simplified api generation and usage
