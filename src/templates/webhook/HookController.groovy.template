@@ -111,7 +111,7 @@ class HookController {
 				render(status:HttpServletResponse.SC_BAD_REQUEST, text: 'No webhook with that ID belonging to current User found. Check your data and try again')
 			}else{
 				if(!webhookInstance.delete(flush: true)){
-					render(status:HttpServletResponse.SC_BAD_REQUEST, text: 'INVALID DATA. Could not delete webhook do to dependencies. Please consult with database administrator.')
+					render(status:HttpServletResponse.SC_BAD_REQUEST, text: 'INVALID DATA. Could not delete webhook due to dependencies. Please consult with database administrator.')
 				}else{
 					LinkedHashMap model = [id:params.id]
 					respond model as Object
@@ -129,17 +129,16 @@ class HookController {
 
 			Hook webhookInstance = Hook.findByIdAndUser(params.id, user)
 			if(!webhookInstance){
-				flash.message = "WEBHOOK NOT FOUND: NO WEBHOOK WITH THAT ID FOUND BELONGING TO CURRENT USER."
-				render(view:"list",model:[params:params])
-				return
+				render(status:HttpServletResponse.SC_BAD_REQUEST, text: 'No webhook with that ID belonging to current User found. Check your data and try again')
 			}
 	
 			webhookInstance.attempts = 0
 	
-			if (webhookInstance.save(flush: true)) {
-				flash.message = message(code: 'default.reset.message', args: [message(code: 'webhook.label', default: 'Hook'), webhookInstance.id])
-				redirect(action:"list")
-				return
+			if (!webhookInstance.save(flush: true)) {
+				render(status:HttpServletResponse.SC_BAD_REQUEST, text: 'INVALID DATA. Could not reset webhook. Please consult with database administrator.')
+			}else{
+				LinkedHashMap model = [id:params.id]
+				respond model as Object
 			}
 		}else{
 			render(status:HttpServletResponse.SC_BAD_REQUEST, text: 'User not logged in. Cannot complete request')
