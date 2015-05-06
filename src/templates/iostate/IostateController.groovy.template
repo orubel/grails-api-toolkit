@@ -1,25 +1,23 @@
 package ${packageName}
 
 import org.codehaus.groovy.grails.web.json.JSONObject
+import grails.plugin.cache.GrailsCacheManager
 
 class IostateController {
 
+	GrailsCacheManager grailsCacheManager
 	def springSecurityService
 	def apiObjectService
 	def apiCacheService
 	
 	/*
-	* list name of collections of iostate
+	* get names of IO state caches
 	*/
 	def list() {
 		if(isSuperuser()){
-
-		}
-	}
-
-	def show() {
-		if(isSuperuser()){
-	
+			List cacheNames = apiCacheService.getCacheNames()
+			LinkedHashMap model = [name:cacheNames]
+			respond model as Object
 		}
 	}
 

@@ -60,16 +60,16 @@ net.nosegrind.IOState
 		"1": {
 			"DEFAULTACTION":"show",
 	        "URI": {
-	            "show": {
+	            "list": {
 	             	"METHOD":"GET",
 	            	"DESCRIPTION":"Show IOState",
 	            	"ROLES":["ROLE_ADMIN","ROLE_ARCH"],
 	            	"BATCH":["ROLE_ADMIN","ROLE_ARCH"],
 	                "REQUEST": {
-	                    "permitAll":["name"]
+	                    "permitAll":[]
 	                },
 	                "RESPONSE": {
-	                	"permitAll":["name","cacheversion"]
+	                	"permitAll":["name"]
 	                }
 	            },
 	            "update": {
