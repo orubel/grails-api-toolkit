@@ -87,13 +87,18 @@ class ApiObjectService{
 	}
 	
 	private parseFiles(String path){
+		println("### Importing iostate : "+path)
 		new File(path).eachFile() { file ->
-			try{
-				JSONObject json = JSON.parse(file.text)
-				parseJson(json.NAME.toString(),json)
-				//def cache = apiCacheService.getApiCache(apiName)
-			}catch(Exception e){
-				throw new Exception("[ApiObjectService :: initialize] : Unacceptable file '${file.name}' - full stack trace follows:",e)
+			def tmp = file.name.toString().split('\\.')
+			if(tmp[1]=='json'){
+				println("... parsing iostate for file : "+file.name)
+				try{
+					JSONObject json = JSON.parse(file.text)
+					parseJson(json.NAME.toString(),json)
+					//def cache = apiCacheService.getApiCache(apiName)
+				}catch(Exception e){
+					throw new Exception("[ApiObjectService :: initialize] : Unacceptable file '${file.name}' - full stack trace follows:",e)
+				}
 			}
 		}
 	}
@@ -189,7 +194,7 @@ class ApiObjectService{
 			String domainPackage = (vers.value.DOMAINPACKAGE!=null || vers.value.DOMAINPACKAGE?.size()>0)?vers.value.DOMAINPACKAGE:null
 			vers.value.URI.each() { it ->
 				def cache = apiCacheService.getApiCache(apiName)
-				methods['cacheversion'] = (!cache['cacheversion'])? 1 : cache['cacheversion']+1
+				methods['cacheversion'] = (!cache?.cacheversion)? 1 : cache['cacheversion']+1
 				
 				JSONObject apiVersion = json.VERSION[vers.key]
 				
