@@ -91,11 +91,6 @@ target(updateMasterConfig:"Update Config for API Master Setup") {
 			it.writeLine " "
 			it.writeLine "apitoolkit.serverType='master'"
 			it.writeLine "apitoolkit.iostate.preloadDir=[\"file:${userHome}/.iostate\"]"
-			it.writeLine "apitoolkit.sharedCache.type='mongo'"
-			it.writeLine "apitoolkit.sharedCache.url='127.0.0.1'"
-			it.writeLine "apitoolkit.sharedCache.port=27017"
-			it.writeLine "apitoolkit.sharedCache.user='changeUsername'"
-			it.writeLine "apitoolkit.sharedCache.password='changePassword'"
 		}
 	}
 }

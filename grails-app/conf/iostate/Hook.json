@@ -111,7 +111,7 @@ net.nosegrind.Hook
 	                "RESPONSE": {
 	                    "permitAll":["id"]
 	                }
-	            }
+	            },
 	            "reset":{
 	            	"METHOD":"GET",
 	            	"DESCRIPTION":"Reset Hook attempts",

@@ -40,13 +40,14 @@ class ApiObjectService{
 	//ApiToolkitService apiToolkitService
 	GrailsCacheManager grailsCacheManager
 	ApiCacheService apiCacheService
+	def grailsResourceLocator
+	
 	
 	static transactional = false
 	
 	public initialize(){
+		println('Configuring API Toolkit ...')
 		try {
-			// if serverType = master, parse iostate, hook
-			
 			if(grailsApplication.config.apitoolkit.serverType=='master'){
 				String ioPath
 				if(grailsApplication.isWarDeployed()){
@@ -70,15 +71,14 @@ class ApiObjectService{
 				parseFiles(ioPath)
 			}
 			
-			String apiObjectSrc = grailsApplication.config.apitoolkit.iostate.preloadDir.toString()
+			String apiObjectSrc = grailsApplication.config.apitoolkit.iostate.preloadDir
 			parseFiles(apiObjectSrc)
+			
+			
 		} catch (Exception e) {
 			throw new Exception("[ApiObjectService :: initialize] : Exception - full stack trace follows:",e)
 		}
-	}
-	
-	public updateIoState(String file){
-
+		println('... finished configuring API Toolkit')
 	}
 	
 	private Map parseFile(JSONObject json){
@@ -87,7 +87,6 @@ class ApiObjectService{
 	}
 	
 	private parseFiles(String path){
-		println("### Importing iostate : "+path)
 		new File(path).eachFile() { file ->
 			def tmp = file.name.toString().split('\\.')
 			if(tmp[1]=='json'){
@@ -238,7 +237,9 @@ class ApiObjectService{
 				methods[vers.key][actionname] = apiDescriptor
 
 			}
+			
 			if(methods){
+				println("parseJson : "+apiName)
 				apiCacheService.setApiCache(apiName,methods)
 				//apiLayerService.setApiCache(apiName,methods)
 			}

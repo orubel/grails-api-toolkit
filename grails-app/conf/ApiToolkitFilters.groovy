@@ -87,6 +87,7 @@ class ApiToolkitFilters {
 						def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
 println(params.controller)
 println(cache)
+println(apiCacheService.getCacheNames())
 						if(cache){
 println('has cache')
 							params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']

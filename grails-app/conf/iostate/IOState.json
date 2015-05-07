@@ -33,7 +33,7 @@ net.nosegrind.IOState
 		"method":{
             "type": "String",
             "description":"Request Method"
-        }
+        },
 		"description":{
             "type": "String",
             "description":"API Description"
