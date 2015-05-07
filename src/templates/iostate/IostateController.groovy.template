@@ -15,9 +15,9 @@ class IostateController {
 	*/
 	def list() {
 		if(isSuperuser()){
-			List cacheNames = apiCacheService.getCacheNames()
-			LinkedHashMap model = [name:cacheNames]
+			LinkedHashMap model = [name:apiCacheService.getCacheNames()]
 			respond model as Object
+			return null
 		}
 	}
 

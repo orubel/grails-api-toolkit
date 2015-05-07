@@ -83,16 +83,10 @@ class ApiToolkitFilters {
 				try{
 					
 					if(request.class.toString().contains('SecurityContextHolderAwareRequestWrapper')){
-						println('has request')
 						def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-println(params.controller)
-println(cache)
-println(apiCacheService.getCacheNames())
 						if(cache){
-println('has cache')
 							params.apiObject = (params.apiObjectVersion)?params.apiObjectVersion:cache['currentStable']['value']
 							if(!params.action){ 
-println('NO action')
 								String methodAction = methods[request.method.toLowerCase()]
 								if(!cache[params.apiObject][methodAction]){
 									params.action = cache[params.apiObject]['defaultAction'].split('/')[1] 
@@ -170,7 +164,6 @@ println('NO action')
 								}
 								//return result
 							}else{
-								println('returning result')
 								return result
 							}
 						}
@@ -199,7 +192,6 @@ println('NO action')
 					
 					def newModel = (model)?apiResponseService.convertModel(model):model
 					def cache = (params.controller)?apiCacheService.getApiCache(params.controller):[:]
-
 					LinkedHashMap content
 					
 					if(apiResponseService.chain && params?.apiChain?.order){
