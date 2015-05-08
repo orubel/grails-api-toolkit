@@ -15,7 +15,14 @@ class IostateController {
 	*/
 	def list() {
 		if(isSuperuser()){
-			LinkedHashMap model = [name:apiCacheService.getCacheNames()]
+			List temp = apiCacheService.getCacheNames()
+			List cacheNames = []
+			temp.each(){
+				if(!['hook','iostate'].contains(it)){
+					 cacheNames.add(it)
+				}
+			}
+			LinkedHashMap model = [name:cacheNames]
 			respond model as Object
 			return null
 		}
