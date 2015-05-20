@@ -70,7 +70,7 @@ class ApiToolkitFilters {
 		//apitoolkit(regex:apiRegex){
 		apitoolkit(uri:"/${entryPoint}*/**"){
 			before = {
-				println("##### FILTER (BEFORE)")
+				//println("##### FILTER (BEFORE)")
 				
 				/*
 				 * FIRST DETERMINE
@@ -179,7 +179,7 @@ class ApiToolkitFilters {
 			}
 			
 			after = { Map model ->
-				println("##### FILTER (AFTER)")
+				//println("##### FILTER (AFTER)")
 				try{
 					if(!model){
 						render(status:HttpServletResponse.SC_BAD_REQUEST)

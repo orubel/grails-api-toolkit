@@ -10,9 +10,7 @@ class ApidocController {
 	def apiCacheService
 	def springSecurityService
 	
-	def index(){
-		redirect(action:'show')
-	}
+	def defaultAction = 'show'
 	
 	@Secured('permitAll')
 	def show(){
