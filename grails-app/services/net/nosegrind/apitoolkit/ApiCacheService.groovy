@@ -157,9 +157,7 @@ class ApiCacheService{
 	}
 	
 	List getCacheNames(){
-		println("### getCacheNames")
 		List cacheNames = grailsCacheManager.getCache('ApiCache').getAllKeys() as List
-		println("cacheNames : "+cacheNames)
 		// List cacheNames = temp.collect{ if(!['hook','iostate'].contains(it)){ it }}
 		return cacheNames
 	}

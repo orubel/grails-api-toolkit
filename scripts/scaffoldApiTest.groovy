@@ -33,16 +33,29 @@ target(default: 'Scaffolds API Objects based on Controllers') {
 		def grailsApplication = HOLDER.getGrailsApplication()
 		def appCtx = HOLDER.applicationContext
 		def cacheNames = appCtx.getBean('apiCacheService').getCacheNames()
+		def adminRoles = grailsApplication.config.apitoolkit.admin.roles
 		
 		for(controller in grailsApplication.controllerClasses) {
 			def cName = controller.logicalPropertyName
 			def cacheName = cName.replaceAll('Controller','').toLowerCase()
 			println("cacheName : "+cacheName)
 			if(cacheNames.contains(cacheName)){
-				// needed to determine i/o values and methods for template tests
-				def adminRoles = grailsApplication.config.apitoolkit.admin.roles
-				def input = [:]
-				def output = [:]
+				def cache = appCtx.getBean('apiCacheService').getApiCache(cacheName)
+				def version = cache.currentStable.value
+				def methods = cache[version]
+				methods.remove('deprecated')
+				methods.remove('defaultAction')
+				methods.remove('domainPackage')
+				methods.each(){ key,val ->
+					// determine ids used for testing
+					def lastCall = [:]
+					// needed to determine i/o values and methods for template tests
+					def input = [:]
+					def output = [:]
+				}
+				
+				
+
 				//templateAttributes = [className: cName]
 				println "*** ... Functional test generated for '"+cacheName+"'"
 			}
