@@ -6,10 +6,12 @@ class ApiBootStrap {
 	
 	def grailsApplication
 	def apiObjectService
+	def apiCacheService
 
 	
 	def init = { servletContext ->
 		apiObjectService.initialize()
+		def test = apiCacheService.getCacheNames()
 	}
 
     def destroy = {}

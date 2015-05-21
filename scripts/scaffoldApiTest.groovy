@@ -1,5 +1,6 @@
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
+import grails.util.Holders as HOLDER
 
 /*
  * Get apicache names and create scaffolded tests for controllers
@@ -29,7 +30,32 @@ target(default: 'Scaffolds API Objects based on Controllers') {
 	}
 	else {
 		runApp()
-		scaffoldIoState()
+		def grailsApplication = HOLDER.getGrailsApplication()
+		for(controller in grailsApplication.controllerClasses) {
+			println("controller:"+controller)
+			def cName = controller.logicalPropertyName
+			def cacheName = cName.replaceAll('Controller','').toLowerCase()
+			
+			//def serviceClass = grailsApp.getClassForName('net.nosegrind.apitoolkit.ApiCacheService')
+			//def serviceClassMethod = serviceClass.metaClass.getMetaMethod('getCacheNames')
+	
+			//def apiCacheService = appCtx.getBean('apiCacheService')
+			//def cacheNames = serviceClassMethod.invoke(apiCacheService,[] as Object[])
+			def appCtx = ctx = HOLDER.applicationContext
+			def cacheNames = appCtx.getBean('apiCacheService').getCacheNames()
+	
+			//def cache = serviceClassMethod.invoke(apiCacheService, [cacheName] as Object)
+			
+			//println(cache)
+			// needed to determine i/o values and methods for template tests
+			def adminRoles = grailsApp.config.apitoolkit.admin.roles
+			def input = [:]
+			def output = [:]
+			
+	
+			
+			//templateAttributes = [className: cName]
+		}
 		//startPluginScanner()
 		//watchContext()
 	}
@@ -43,8 +69,10 @@ target(default: 'Scaffolds API Objects based on Controllers') {
 
 target(scaffoldIoState:'Scaffolds Basic REST Test Templates based on Available IO States'){
 	println("### scaffoldIoState")
-	loadApp()
-	configureApp()
+	//loadApp()
+	//configureApp()
+	
+	def grailsApplication = HOLDER.getGrailsApplication()
 	for(controller in grailsApp.controllerClasses) {
 		println("controller:"+controller)
 		def cName = controller.logicalPropertyName
@@ -55,6 +83,7 @@ target(scaffoldIoState:'Scaffolds Basic REST Test Templates based on Available I
 
 		//def apiCacheService = appCtx.getBean('apiCacheService')
 		//def cacheNames = serviceClassMethod.invoke(apiCacheService,[] as Object[])
+		def appCtx = ctx = HOLDER.applicationContext
 		def cacheNames = appCtx.getBean('apiCacheService').getCacheNames()
 
 		//def cache = serviceClassMethod.invoke(apiCacheService, [cacheName] as Object)
