@@ -31,30 +31,25 @@ target(default: 'Scaffolds API Objects based on Controllers') {
 	else {
 		runApp()
 		def grailsApplication = HOLDER.getGrailsApplication()
+		def appCtx = HOLDER.applicationContext
+		def cacheNames = appCtx.getBean('apiCacheService').getCacheNames()
+		
 		for(controller in grailsApplication.controllerClasses) {
-			println("controller:"+controller)
 			def cName = controller.logicalPropertyName
 			def cacheName = cName.replaceAll('Controller','').toLowerCase()
+			println("cacheName : "+cacheName)
+			if(cacheNames.contains(cacheName)){
+				// needed to determine i/o values and methods for template tests
+				def adminRoles = grailsApplication.config.apitoolkit.admin.roles
+				def input = [:]
+				def output = [:]
+				//templateAttributes = [className: cName]
+				println "*** ... Functional test generated for '"+cacheName+"'"
+			}
+
+
+
 			
-			//def serviceClass = grailsApp.getClassForName('net.nosegrind.apitoolkit.ApiCacheService')
-			//def serviceClassMethod = serviceClass.metaClass.getMetaMethod('getCacheNames')
-	
-			//def apiCacheService = appCtx.getBean('apiCacheService')
-			//def cacheNames = serviceClassMethod.invoke(apiCacheService,[] as Object[])
-			def appCtx = ctx = HOLDER.applicationContext
-			def cacheNames = appCtx.getBean('apiCacheService').getCacheNames()
-	
-			//def cache = serviceClassMethod.invoke(apiCacheService, [cacheName] as Object)
-			
-			//println(cache)
-			// needed to determine i/o values and methods for template tests
-			def adminRoles = grailsApp.config.apitoolkit.admin.roles
-			def input = [:]
-			def output = [:]
-			
-	
-			
-			//templateAttributes = [className: cName]
 		}
 		//startPluginScanner()
 		//watchContext()
