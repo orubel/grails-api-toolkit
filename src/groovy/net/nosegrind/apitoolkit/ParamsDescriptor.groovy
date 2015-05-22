@@ -22,7 +22,7 @@ class ParamsDescriptor {
 	ParamsDescriptor[] values = []
 
 	static constraints = { 
-		paramType(nullable:false,maxSize:100,inList: ["PKEY","FKEY","INDEX","STRING","DATE","LONG","BOOLEAN","FLOAT","BIGDECIMAL","EMAIL","URL"])
+		paramType(nullable:false,maxSize:100,inList: ["PKEY","FKEY","INDEX","STRING","DATE","LONG","BOOLEAN","FLOAT","BIGDECIMAL","EMAIL","URL","ARRAY","COMPOSITE"])
 		name(nullable:false,maxSize:100)
 		idReferences(maxSize:100, validator: { val, obj ->
 			if (paramType!="PKEY" && paramType!="FKEY") {

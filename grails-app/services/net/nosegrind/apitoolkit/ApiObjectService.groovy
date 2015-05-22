@@ -139,13 +139,24 @@ class ApiObjectService{
 	private ApiDescriptor createApiDescriptor(String apiname,String apiMethod, String apiDescription, List apiRoles, List batchRoles, String uri, JSONObject values, JSONObject json){
 		LinkedHashMap<String,ParamsDescriptor> apiObject = [:]
 		ApiParams param = new ApiParams()
-		
+		LinkedHashMap mocks = [
+			"STRING":'Mock String',
+			"DATE":'Mock Date',
+			"LONG":999,
+			"BOOLEAN":true,
+			"FLOAT":0.01,
+			"BIGDECIMAL":123456789,
+			"EMAIL":'test@mockdata.com',
+			"URL":'www.mockdata.com',
+			"ARRAY":['this','is','mock','data']
+		]
 		values.each{ k,v ->
-			String references = ""
-			String hasDescription = ""
-			String hasMockData = ""
-			
 			v.type = (v.references)?getKeyType(v.references, v.type):v.type
+			String references = ''
+			String hasDescription = ''
+			String hasMockData = mocks[v.type]?mocks[v.type]:''
+			
+			
 
 			param.setParam(v.type,k)
 			
