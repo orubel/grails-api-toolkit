@@ -150,13 +150,12 @@ class ApiObjectService{
 			"URL":'www.mockdata.com',
 			"ARRAY":['this','is','mock','data']
 		]
+		
 		values.each{ k,v ->
 			v.type = (v.references)?getKeyType(v.references, v.type):v.type
 			String references = ''
 			String hasDescription = ''
 			String hasMockData = mocks[v.type]?mocks[v.type]:''
-			
-			
 
 			param.setParam(v.type,k)
 			
