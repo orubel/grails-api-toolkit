@@ -1,0 +1,25 @@
+
+	// SCAFFOLD name
+	def 'POST Request'() {
+		Object json
+		LinkedHashMap errOutput = [:]
+		// SCAFFOLD
+		def input = ["title": "test post","teaser": "This is just a test post to see if this works. Testing the api post system.","content":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. In vel consequat nisl, quis commodo neque. Integer ultrices vitae nulla lacinia rutrum. Duis ut porta arcu, sed gravida tortor. Donec pulvinar elit turpis, ultricies tristique mi auctor ac. Ut elementum ullamcorper risus ac sollicitudin. Morbi semper ultrices enim vel euismod. Proin eleifend orci ac elit mollis tempor. Nulla egestas odio eu volutpat eleifend. Nunc nec massa eget nisl sodales posuere. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc accumsan pretium sapien a tincidunt. Sed at fringilla mi.","section":this.fkeys.sectionId,"author":this.user] as JSON
+		input = input.toString().replaceAll("\"","\'")
+		// SCAFFOLD
+		def output = ['id','version']
+		
+		when:
+			def ant = new AntBuilder()
+			ant.exec(outputProperty:"cmdOut",errorProperty:"cmdErr",resultProperty:"cmdExit",failonerror:"false",executable:"curl"){
+				arg(line:"""--verbose --request POST --header "Content-Type: application/json" --data "${input}" "http://localhost:8080/api_v0.1/post/create" --cookie cookies.txt""")
+		 }
+		 errOutput = parseOutput(ant.project.properties.cmdErr)
+		 json = new JsonSlurper().parseText(ant.project.properties.cmdOut)
+		 id = json.id
+		 version = json.version
+		then:
+			assert true
+			//assert errOutput.response.code.code == '200'
+			//assert json.collect(){it.key} == output
+  }

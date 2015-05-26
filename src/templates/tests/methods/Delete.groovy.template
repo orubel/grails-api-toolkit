@@ -1,0 +1,16 @@
+
+  // SCAFFOLD name
+  def 'DELETE Request'() {
+	  Object json
+	  LinkedHashMap errOutput = [:]
+	  
+	  when:
+		  def ant = new AntBuilder()
+		  ant.exec(outputProperty:"cmdOut",errorProperty:"cmdErr",resultProperty:"cmdExit",failonerror:"false",executable:"curl"){
+			  arg(line:"""--verbose --request DELETE --header "Content-Type: application/json" "http://localhost:8080/api_v0.1/post/delete/${id}" --cookie cookies.txt""")
+		  }
+		  errOutput = parseOutput(ant.project.properties.cmdErr)
+		then:
+			assert errOutput.response.code.code == '200'
+  }
+ 

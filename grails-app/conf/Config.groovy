@@ -49,17 +49,35 @@ apitoolkit.chaining.enabled=true
 apitoolkit.batching.enabled=true
 
 apitoolkit.apiobject.type = [
-	"PKEY":["type":"Long","references":"self","description":"Primary Key"],
-	"FKEY":["type":"Long","description":""],
-	"INDEX":["type":"String","references":"self","description":"Foreign Key"],
-	"String":["type":"String","description":"String"],
-	"Date":["type":"String","description":"String"],
-	"Long":["type":"Long","description":"Long"],
-	"Boolean":["type":"Boolean","description":"Boolean"],
-	"Float":["type":"Float","description":"Floating Point"],
-	"BigDecimal":["type":"BigDecimal","description":"Big Decimal"],
-	"URL":["type":"URL","description":"URL"],
-	"Email":["type":"Email","description":"Email"]
+	"PKEY":["type":"Long","references":"self","description":"Primary Key","mockData":""],
+	"FKEY":["type":"Long","description":"","mockData":""],
+	"INDEX":["type":"String","references":"self","description":"Foreign Key","mockData":""],
+	"String":["type":"String","description":"String","mockData":""],
+	"Date":["type":"String","description":"String","mockData":""],
+	"Long":["type":"Long","description":"Long","mockData":""],
+	"Boolean":["type":"Boolean","description":"Boolean","mockData":""],
+	"Float":["type":"Float","description":"Floating Point","mockData":""],
+	"BigDecimal":["type":"BigDecimal","description":"Big Decimal","mockData":""],
+	"URL":["type":"URL","description":"URL","mockData":""],
+	"Email":["type":"Email","description":"Email","mockData":""],
+	"Array":["type":"Array","description":"Array","mockData":""],
+	"Composite":["type":"Composite","description":"Composite","mockData":""]
+]
+
+apitoolkit.apiobject.mockData = [
+	"PKEY":"1",
+	"FKEY":"1",
+	"INDEX":'index',
+	"String":'mockString',
+	"Date":"1970-01-01 00:00:01",
+	"Long":"1",
+	"Boolean":"true",
+	"Float":"0.01",
+	"BigDecimal":"1234567890000",
+	"URL":"www.mockdata.com",
+	"Email":"test@mockdata.com",
+	"Array":["type":"Array","description":"this is mockdata"],
+	"Composite":["type":"Composite","description":"this is a composite","List":[1,2,3,4,5]]
 ]
 
 grails.plugin.springsecurity.auth.loginFormUrl = "/${apiName}_v${apiVersion}/login/auth"
@@ -97,7 +115,7 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	'/login/**':					  ['permitAll'],
 	'/logout/**':          		      ['permitAll']
 ]
- 
+
 apitoolkit.apiName = 'api'
 apitoolkit.attempts = 5
 apitoolkit.apichain.limit=3
@@ -111,5 +129,5 @@ apitoolkit.architecture.roles = ['ROLE_ARCH']
 apitoolkit.hook.domain = 'net.nosegrind.apitoolkit.Hook'
 apitoolkit.hook.controller = 'net.nosegrind.apitoolkit.HookController'
 
-apitoolkit.serverType='slave'
+apitoolkit.serverType='master'
 

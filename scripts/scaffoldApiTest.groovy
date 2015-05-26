@@ -9,6 +9,7 @@ import grails.util.Holders as HOLDER
 
 includeTargets << grailsScript("_GrailsRun")
 includeTargets << grailsScript("_GrailsBootstrap")
+includeTargets << new File("$springSecurityCorePluginDir/scripts/_S2Common.groovy")
 
 USAGE = """
 Usage: grails scaffold-api-test
@@ -18,8 +19,10 @@ Scaffolds API Tests based on I/O State
 Example: grails scaffold-api-test
 """
 
+// scaffolded variables
 packageName = 'net.nosegrind.apitoolkit'
-className = ''
+testName = ''
+methods = ['GET':'','POST':'','PUT':'','DELETE':'']
 templateDir = "$apiToolkitPluginDir/src/templates/tests"
 appDir = "$basedir/grails-app/test/functional"
 
@@ -40,6 +43,7 @@ target(default: 'Scaffolds API Objects based on Controllers') {
 			def cacheName = cName.replaceAll('Controller','').toLowerCase()
 			println("cacheName : "+cacheName)
 			if(cacheNames.contains(cacheName)){
+				
 				def cache = appCtx.getBean('apiCacheService').getApiCache(cacheName)
 				def version = cache.currentStable.value
 				def methods = cache[version]
@@ -53,8 +57,6 @@ target(default: 'Scaffolds API Objects based on Controllers') {
 					def input = [:]
 					def output = [:]
 				}
-				
-				
 
 				//templateAttributes = [className: cName]
 				println "*** ... Functional test generated for '"+cacheName+"'"
@@ -120,6 +122,21 @@ target(scaffoldIoState:'Scaffolds Basic REST Test Templates based on Available I
 	*/
 }
 
+def scaffoldGet(String methodName, List output){
+	
+}
+
+def String generateTemplate(String templatePath){
+	File templateFile = new File(templatePath)
+	if (!templateFile.exists()) {
+		println("\nERROR: $templatePath doesn't exist")
+		return null
+	}else{
+		String output
+		output << templateEngine.createTemplate(templateFile.text).make(templateAttributes)
+		return output
+	}
+}
 
 
 //setDefaultTarget('scaffoldApiTest')
