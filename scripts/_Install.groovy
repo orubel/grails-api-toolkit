@@ -4,6 +4,7 @@ import grails.util.Metadata
 // add default views for apitoolkit apidocs
 
 ant.mkdir(dir: "${basedir}/src/apiObject")
+ant.mkdir(dir: "${System.properties.'user.home'}/.iostate")
 
 def configFile = new File("${basedir}/grails-app", 'conf/Config.groovy')
 if (configFile.exists()) {

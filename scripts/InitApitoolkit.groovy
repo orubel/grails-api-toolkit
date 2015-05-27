@@ -3,7 +3,7 @@ import grails.util.Metadata
 
 includeTargets << grailsScript("_GrailsInit")
 
-includeTargets << new File("$springSecurityCorePluginDir/scripts/_S2Common.groovy")
+includeTargets << new File(apiToolkitPluginDir, 'scripts/_S2Common.groovy')
 
 USAGE = """
 Usage: grails init-apitoolkit <master/slave> <user-domain-class-package> <user-class-name> <role-class-name>
