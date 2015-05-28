@@ -21,9 +21,6 @@ Example: grails scaffold-api-test
 """
 
 // scaffolded variables
-packageName = 'net.nosegrind.apitoolkit'
-testName = ''
-methods = ['GET':'Get','POST':'Post','PUT':'Put','DELETE':'Delete']
 templateDir = "$apiToolkitPluginDir/src/templates/tests"
 appDir = "$basedir/grails-app/test/functional"
 //ant.mkdir(dir: "${System.properties.'user.home'}/.apitoolkit")
@@ -40,45 +37,38 @@ target('scaffoldApiTest': 'Scaffolds API Objects based on Controllers') {
 		def appCtx = HOLDER.applicationContext
 		def cacheNames = appCtx.getBean('apiCacheService').getCacheNames()
 		def adminRoles = grailsApplication.config.apitoolkit.admin.roles
+		String role = getLoginRole()
 		
 		for(controller in grailsApplication.controllerClasses) {
-			String templateMethods = ""
-			String cName = controller.logicalPropertyName
-			String cacheName = cName.replaceAll('Controller','').toLowerCase()
-			
-			println("cacheName : "+cacheName)
-			if(cacheNames.contains(cacheName)){
+			String cacheName = controller.logicalPropertyName
+			if(!['iostate','hook'].contains(cacheName)){
+				LinkedHashMap templateMethods = [:]
 				
-				def cache = appCtx.getBean('apiCacheService').getApiCache(cacheName)
-				def version = cache.currentStable.value
-				def methods = cache[version]
-				methods.remove('deprecated')
-				methods.remove('defaultAction')
-				methods.remove('domainPackage')
-				
-				// sort methods back into proper order to walk through methods, keys, values
-				def methodGrps = sortMethods(methods)
-				methodGrps['POST'].each{
-					templateMethods['POST'].add(generatePostMethod(key,cacheName))
+				println("cacheName : "+cacheName)
+				if(cacheNames.contains(cacheName)){
+					
+					def cache = appCtx.getBean('apiCacheService').getApiCache(cacheName)
+					def version = cache.currentStable.value
+	
+					def methods = cache[version]
+					methods.remove('deprecated')
+					methods.remove('defaultAction')
+					methods.remove('domainPackage')
+					
+					// sort methods back into proper order to walk through methods, keys, values
+					templateMethods = createMethods(methods,cacheName,role)
+					if(templateMethods){
+						fkeys = methods.fkeys
+						
+						//println("templateMethods : "+templateMethods)
+						templateAttributes = [className: cacheName.capitalize(),templateMethods: templateMethods,fkeys:fkeys]
+						// generateFile "$templateDir/FunctionalSpec.groovy.template", "$appDir/${cacheName.capitalize()}FunctionalSpec.groovy"
+						
+						println "*** ... Functional test generated for '"+cacheName+"'"
+						
+					}
 				}
-				methodGrps['GET'].each{
-					templateMethods['GET'].add(generateGetMethod(key,cacheName))
-				}
-				methodGrps['PUT'].each{
-					templateMethods['PUT'].add(generatePutMethod(key,cacheName))
-				}
-				methodGrps['DELETE'].each{
-					templateMethods['POST'].delete(generateDeleteMethod(key,cacheName))
-				}
-
-				//println("templateMethods : "+templateMethods)
-				//templateAttributes = [className: cName,templateMethods: templateMethods]
-				println "*** ... Functional test generated for '"+cacheName+"'"
 			}
-
-
-
-			
 		}
 		//startPluginScanner()
 		//watchContext()
@@ -91,74 +81,73 @@ target('scaffoldApiTest': 'Scaffolds API Objects based on Controllers') {
 	"""
 }
 
-LinkedHashMap sortMethods(LinkedHashMap methods){
+List getLoginRole(){
+	def personClass = HOLDER.getGrailsApplication().getDomainClass(HOLDER.config.grails.plugin.springsecurity.userLookup.userDomainClassName).clazz
+	def principal = personClass.findByUsername(login)
+	Long user = principal.id.toLong()
+	
+	String userClass = (HOLDER.config.grails.plugin.springsecurity.userLookup.userDomainClassName).split('.').last()
+	grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'net.nosegrind.apitoolkit.PersonRole'
+	def personRoleClass = HOLDER.getGrailsApplication().getDomainClass(HOLDER.config.grails.plugin.springsecurity.userLookup.authorityJoinClassName).clazz
+	List role = personRoleClass.findAuthorityBy${userClass}(user)
+
+	return role
+}
+
+LinkedHashMap createInput(Map receives,String role){
+	LinkedHashMap input = [:]
+	
+	return input
+}
+
+List createOutput(Map returns,String Role){
+	List output = []
+	
+	return output
+}
+
+LinkedHashMap createMethods(LinkedHashMap methods,String cacheName,String role){
 	LinkedHashMap methodGrps = ['GET':[],'POST':[],'PUT':[],'DELETE':[]]
+	List fkeys = []
+	List tempKeys = []
 	methods.each(){ key,val ->
-		String method = val.method.toUpperCase()
-		methodGrps[method].add(key)
+		
+		def input = createInput(val.receives,role)
+		def output = createOutput(val.returns,role)
+		
+		switch(val.method.toUpperCase()){
+			case 'POST':
+				methodGrps['POST'].add(generatePostMethod(key,cacheName))
+				break;
+			case 'GET':
+				methodGrps['GET'].add(generateGetMethod(key,cacheName))
+				break;
+			case 'PUT':
+				methodGrps['PUT'].add(generatePutMethod(key,cacheName))
+				break;
+			case 'DELETE':
+				methodGrps['DELETE'].add(generateDeleteMethod(key,cacheName))
+				break;
+		}
+
 	}
 	return methodGrps
 }
 
-target('scaffoldIoState':'Scaffolds Basic REST Test Templates based on Available IO States'){
-	println("### scaffoldIoState")
-	//loadApp()
-	//configureApp()
-	
-	def grailsApplication = HOLDER.getGrailsApplication()
-	for(controller in grailsApp.controllerClasses) {
-		println("controller:"+controller)
-		def cName = controller.logicalPropertyName
-		def cacheName = cName.replaceAll('Controller','').toLowerCase()
-		
-		//def serviceClass = grailsApp.getClassForName('net.nosegrind.apitoolkit.ApiCacheService')
-		//def serviceClassMethod = serviceClass.metaClass.getMetaMethod('getCacheNames')
-
-		//def apiCacheService = appCtx.getBean('apiCacheService')
-		//def cacheNames = serviceClassMethod.invoke(apiCacheService,[] as Object[])
-		def appCtx = ctx = HOLDER.applicationContext
-		def cacheNames = appCtx.getBean('apiCacheService').getCacheNames()
-
-		//def cache = serviceClassMethod.invoke(apiCacheService, [cacheName] as Object)
-		
-		//println(cache)
-		// needed to determine i/o values and methods for template tests
-		def adminRoles = grailsApp.config.apitoolkit.admin.roles
-		def input = [:]
-		def output = [:]
-		
-
-		
-		//templateAttributes = [className: cName]
-	}
-	/*
-	ant.mkdir dir: "$appDir/views/hook"
-	// add default views for hooks administration
-	copyFile "$templateDir/hook/create.gsp.template", "$appDir/views/hook/create.gsp"
-	copyFile "$templateDir/hook/edit.gsp.template", "$appDir/views/hook/edit.gsp"
-	copyFile "$templateDir/hook/list.gsp.template", "$appDir/views/hook/list.gsp"
-	copyFile "$templateDir/hook/show.gsp.template", "$appDir/views/hook/show.gsp"
-
-	String dir2 = packageToDir(packageName)
-	generateFile "$templateDir/hook/HookController.groovy.template", "$appDir/controllers/${dir2}HookController.groovy"
-	printMessage "Controller / Views created..."
-	*/
-}
-
 String generatePostMethod(String methodName, String className){
-/*
-templatePath = templateDir = "$apiToolkitPluginDir/src/templates/tests/methods/Post.groovy.template"
-File templateFile = new File(templatePath)
-if (!templateFile.exists()) {
-	println("\nERROR: $templatePath doesn't exist")
-	return null
-}else{
-	String output
-	output << templateEngine.createTemplate(templateFile.text).make(templateAttributes)
-	println("generateTemplate:"+output)
-	return output
-}
-*/
+	templatePath = templateDir = "$apiToolkitPluginDir/src/templates/tests/methods/Post.groovy.template"
+	File templateFile = new File(templatePath)
+	if (!templateFile.exists()) {
+		println("\nERROR: $templatePath doesn't exist")
+		return null
+	}else{
+		String output = ""
+		// inputMap,outputList
+		def templateAttributes = [className: className,methodName:methodName]
+		println("POST")
+		output = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
+		return output
+	}
 }
 
 def String generateGetMethod(String methodName, String className){
@@ -169,42 +158,42 @@ def String generateGetMethod(String methodName, String className){
 		return null
 	}else{
 		String output = ""
-		templateAttributes = [className: className,methodName:methodName]
+		def templateAttributes = [className: className,methodName:methodName]
+		println("GET")
 		output = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
 		return output
 	}
 }
 
 String generatePutMethod(String methodName, String className){
-	/*
 	templatePath = templateDir = "$apiToolkitPluginDir/src/templates/tests/methods/Put.groovy.template"
 	File templateFile = new File(templatePath)
 	if (!templateFile.exists()) {
 		println("\nERROR: $templatePath doesn't exist")
 		return null
 	}else{
-		String output
-		output << templateEngine.createTemplate(templateFile.text).make(templateAttributes)
-		println("generateTemplate:"+output)
+		String output = ""
+		// inputMap,outputList
+		def templateAttributes = [className: className,methodName:methodName]
+		println("PUT")
+		output = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
 		return output
 	}
-	*/
 }
 
 String generateDeleteMethod(String methodName, String className){
-	/*
 	templatePath = templateDir = "$apiToolkitPluginDir/src/templates/tests/methods/Delete.groovy.template"
 	File templateFile = new File(templatePath)
 	if (!templateFile.exists()) {
 		println("\nERROR: $templatePath doesn't exist")
 		return null
 	}else{
-		String output
-		output << templateEngine.createTemplate(templateFile.text).make(templateAttributes)
-		println("generateTemplate:"+output)
+		String output = ""
+		def templateAttributes = [className: className,methodName:methodName]
+		println("DELETE")
+		output = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
 		return output
 	}
-	*/
 }
 
 setDefaultTarget('scaffoldApiTest')

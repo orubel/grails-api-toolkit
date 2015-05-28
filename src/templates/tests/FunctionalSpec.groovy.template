@@ -8,7 +8,7 @@ import grails.util.Holders as HOLDER
 import net.nosegrind.apitoolkit.Person
 
 // SCAFFOLD name
-class FunctionalSpec extends Specification {
+class ${cName}FunctionalSpec extends Specification {
 
 	static Long primerId = 1
 	
@@ -37,7 +37,7 @@ class FunctionalSpec extends Specification {
 				arg(line:"""--verbose --request POST --data "j_username=${login}&j_password=${password}&_spring_security_remember_me=checked" http://localhost:8080/api_v0.1/j_spring_security_check --cookie-jar cookies.txt""")
 			}
 			output = parseOutput(ant.project.properties.cmdErr)
-			def personClass = HOLDER.getGrailsApplication().getDomainClass('net.nosegrind.apitoolkit.Person').clazz
+			def personClass = HOLDER.getGrailsApplication().getDomainClass(HOLDER.config.grails.plugin.springsecurity.userLookup.userDomainClassName).clazz
 			def principal = personClass.findByUsername(login)
 			this.user = principal.id
 
@@ -69,13 +69,13 @@ class FunctionalSpec extends Specification {
 			assert json.collect(){it.key} == output
 	}
 	
-	${templateMethods['POST']}
+	${templateMethods['POST'].each(){ it+"/r/n" }}
 
-	${templateMethods['GET']}
+	${templateMethods['GET'].each(){ it+"/r/n" }}
 
-	${templateMethods['PUT']}
+	${templateMethods['PUT'].each(){ it+"/r/n" }}
   
-	${templateMethods['DELETE']}
+	${templateMethods['DELETE'].each(){ it+"/r/n" }}
   
   LinkedHashMap parseOutput(String output){
 	  LinkedHashMap req = [:]

@@ -151,8 +151,13 @@ class ApiObjectService{
 			"ARRAY":['this','is','mock','data']
 		]
 		
+		List fkeys = []
 		values.each{ k,v ->
 			v.type = (v.references)?getKeyType(v.references, v.type):v.type
+			if(v.type=='FKEY'){
+				fkeys.add(k)	
+			}
+			
 			String references = ''
 			String hasDescription = ''
 			String hasMockData = mocks[v.type]?mocks[v.type]:''
@@ -178,9 +183,10 @@ class ApiObjectService{
 		
 		LinkedHashMap receives = getIOSet(json.URI[uri]?.REQUEST,apiObject)
 		LinkedHashMap returns = getIOSet(json.URI[uri]?.RESPONSE,apiObject)
-		
+
 		ApiDescriptor service = new ApiDescriptor(
 			'method':"$apiMethod",
+			'fkeys':fkeys,
 			'description':"$apiDescription",
 			'roles':[],
 			'batchRoles':[],

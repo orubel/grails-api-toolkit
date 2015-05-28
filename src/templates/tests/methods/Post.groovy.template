@@ -12,7 +12,7 @@
 		when:
 			def ant = new AntBuilder()
 			ant.exec(outputProperty:"cmdOut",errorProperty:"cmdErr",resultProperty:"cmdExit",failonerror:"false",executable:"curl"){
-				arg(line:"""--verbose --request POST --header "Content-Type: application/json" --data "${input}" "http://localhost:8080/api_v0.1/post/create" --cookie cookies.txt""")
+				arg(line:"""--verbose --request POST --header "Content-Type: application/json" --data "\${input}" "http://localhost:8080/api_v0.1/post/create" --cookie cookies.txt""")
 		 }
 		 errOutput = parseOutput(ant.project.properties.cmdErr)
 		 json = new JsonSlurper().parseText(ant.project.properties.cmdOut)

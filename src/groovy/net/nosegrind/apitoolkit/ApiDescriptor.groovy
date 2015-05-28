@@ -19,6 +19,7 @@ class ApiDescriptor {
 	String defaultAction
 	List deprecated
 	String method
+	List fkeys
 	List roles
 	List batchRoles
 	String name
@@ -30,6 +31,7 @@ class ApiDescriptor {
 
 	static constraints = { 
 		method(nullable:false,inList: ["GET","POST","PUT","DELETE"])
+		fkeys(nullable:true)
 		roles(nullable:true)
 		batchRoles(nullable:true, validator: { val, obj ->
 			if (batchRoles){
