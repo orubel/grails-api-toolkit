@@ -1,6 +1,11 @@
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import grails.util.Holders as HOLDER
+import groovy.sql.Sql
+import org.codehaus.groovy.control.customizers.ImportCustomizer
+import org.codehaus.groovy.control.CompilerConfiguration
+import groovy.lang.GroovyShell
+//import org.grails.plugins.console.Evaluation
 
 /*
  * Get apicache names and create scaffolded tests for controllers
@@ -9,7 +14,6 @@ import grails.util.Holders as HOLDER
 //includeTargets << grailsScript("_GrailsInit")
 includeTargets << grailsScript("_GrailsRun")
 includeTargets << grailsScript("_GrailsBootstrap")
-//includeTargets << new File("scripts/_S2Common.groovy")
 includeTargets << new File(apiToolkitPluginDir, 'scripts/_S2Common.groovy')
 
 USAGE = """
@@ -28,6 +32,8 @@ appDir = "$basedir/grails-app/test/functional"
 target('scaffoldApiTest': 'Scaffolds API Objects based on Controllers') {
 	depends(checkVersion, configureProxy, packageApp, parseArguments)
 	if (argsMap.https) {
+
+		
 		runAppHttps()
 	}
 	else {
@@ -35,6 +41,7 @@ target('scaffoldApiTest': 'Scaffolds API Objects based on Controllers') {
 		
 		def grailsApplication = HOLDER.getGrailsApplication()
 		def appCtx = HOLDER.applicationContext
+		
 		def cacheNames = appCtx.getBean('apiCacheService').getCacheNames()
 		def adminRoles = grailsApplication.config.apitoolkit.admin.roles
 		String role = getLoginRole()
@@ -82,21 +89,41 @@ target('scaffoldApiTest': 'Scaffolds API Objects based on Controllers') {
 }
 
 List getLoginRole(){
+	// set these variables in your config or external properties file (preferable)
+	String login = HOLDER.config.root.login
+	String password = HOLDER.config.root.password
+	
 	def personClass = HOLDER.getGrailsApplication().getDomainClass(HOLDER.config.grails.plugin.springsecurity.userLookup.userDomainClassName).clazz
 	def principal = personClass.findByUsername(login)
-	Long user = principal.id.toLong()
-	
-	String userClass = (HOLDER.config.grails.plugin.springsecurity.userLookup.userDomainClassName).split('.').last()
-	grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'net.nosegrind.apitoolkit.PersonRole'
-	def personRoleClass = HOLDER.getGrailsApplication().getDomainClass(HOLDER.config.grails.plugin.springsecurity.userLookup.authorityJoinClassName).clazz
-	List role = personRoleClass.findAuthorityBy${userClass}(user)
+	Long userId = principal.id.toLong()
+	def user = personClass.get(userId)
 
-	return role
+	String userClass = (HOLDER.config.grails.plugin.springsecurity.userLookup.userDomainClassName).split('\\.').last()
+	String roleClass = (HOLDER.config.grails.plugin.springsecurity.authority.className).split('\\.').last()
+
+	def roleClazz = HOLDER.getGrailsApplication().getDomainClass(HOLDER.config.grails.plugin.springsecurity.authority.className).clazz
+	def personRoleClazz = HOLDER.getGrailsApplication().getDomainClass(HOLDER.config.grails.plugin.springsecurity.userLookup.authorityJoinClassName).clazz
+	println(roleClass)
+	
+	def query1 = """
+			SELECT
+			R.authority
+			FROM personRoleClass as PR LEFT JOIN PR.role as R ON PR.role.id = R.id
+			WHERE PR.${userClass}.id = ${userId}
+		"""
+
+	def roles = personRoleClazz.executeQuery("select R.authority from PersonRole as PR LEFT JOIN PR.role as R where PR.person.id=${userId}")
+	//def roles = personRoleClass."find${roleClass}By${userClass}"(user)
+	//def roles = personRoleClass."findAllBy${userClass}"(user)
+
+	println roles
+	
+	return roles
 }
 
 LinkedHashMap createInput(Map receives,String role){
 	LinkedHashMap input = [:]
-	
+
 	return input
 }
 
@@ -111,9 +138,9 @@ LinkedHashMap createMethods(LinkedHashMap methods,String cacheName,String role){
 	List fkeys = []
 	List tempKeys = []
 	methods.each(){ key,val ->
-		
-		def input = createInput(val.receives,role)
-		def output = createOutput(val.returns,role)
+
+		def input = createInput(val.doc.receives,role)
+		def output = createOutput(val.doc.returns,role)
 		
 		switch(val.method.toUpperCase()){
 			case 'POST':

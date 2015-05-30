@@ -56,11 +56,12 @@ class ApiCacheService{
 	@CacheEvict(value="ApiCache",key="#controllername")
 	void flushApiCache(String controllername){} 
 
-
+	/*
 	@CacheEvict(value="ApiCache",key="#controllername")
 	Map resetApiCache(String controllername,String method,ApiDescriptor apidoc){
 		setApiCache(controllername,method,apidoc)
 	}
+	*/
 	
 	@CachePut(value="ApiCache",key="#controllername")
 	Map setApiCache(String controllername,Map apidesc){
@@ -68,7 +69,7 @@ class ApiCacheService{
 	}
 	
 	@CachePut(value="ApiCache",key="#controllername")
-	LinkedHashMap setApiCache(String controllername,String methodname,ApiDescriptor apidoc, String apiversion){
+	LinkedHashMap setApiCache(String controllername,String methodname, ApiDescriptor apidoc, String apiversion){
 		try{
 			def cache = getApiCache(controllername)
 			if(!cache[apiversion][methodname]){
@@ -90,6 +91,7 @@ class ApiCacheService{
 		}
 	}
 
+	/*
 	@CachePut(value="ApiCache",key="#controllername")
 	LinkedHashMap setApiDocCache(String controllername,String methodname, String apiversion, Map apidoc){
 		try{
@@ -104,11 +106,12 @@ class ApiCacheService{
 			throw new Exception("[ApiCacheService :: setApiDocCache] : Exception - full stack trace follows:",e)
 		}
 	}
+	*/
 	
 	Map generateApiDoc(String controllername, String actionname, String apiversion){
 		try{
 			Map doc = [:]
-			def cache = apiCacheService.getApiCache(controllername)
+			def cache = getApiCache(controllername)
 			String apiPrefix = (grailsApplication.config.apitoolkit.apiName)?"${grailsApplication.config.apitoolkit.apiName}_v${grailsApplication.metadata['app.version']}" as String:"v${grailsApplication.metadata['app.version']}" as String
 			
 			if(cache){
@@ -128,7 +131,7 @@ class ApiCacheService{
 						doc['returns']["$returnVal.key"] = returnVal.value
 					}
 					doc['json'] = [:]
-					doc['json'] = processJson(doc["returns"])
+					doc['json'] = apiLayerService.processJson(doc["returns"])
 				}
 				
 				//if(cont["${actionname}"]["${apiversion}"]["errorcodes"]){
@@ -136,7 +139,6 @@ class ApiCacheService{
 				//}
 	
 			}
-	
 			return doc
 		}catch(Exception e){
 			throw new Exception("[ApiCacheService :: generateApiDoc] : Exception - full stack trace follows:",e)

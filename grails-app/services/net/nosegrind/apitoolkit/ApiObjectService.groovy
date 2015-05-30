@@ -87,6 +87,7 @@ class ApiObjectService{
 	}
 	
 	private parseFiles(String path){
+		println(path)
 		new File(path).eachFile() { file ->
 			def tmp = file.name.toString().split('\\.')
 			if(tmp[1]=='json'){
@@ -255,9 +256,18 @@ class ApiObjectService{
 			}
 			
 			if(methods){
-				println("parseJson : "+apiName)
 				apiCacheService.setApiCache(apiName,methods)
-				//apiLayerService.setApiCache(apiName,methods)
+
+				def cache = apiCacheService.getApiCache(apiName)
+
+				cache[vers.key].each(){ key1,val1 ->
+					if(!['deprecated','defaultAction','domainPackage'].contains(key1)){
+						apiCacheService.setApiCache(apiName,key1, val1, vers.key)
+						//val.doc = apiCacheService.generateApiDoc(apiName, key, vers.key)
+						//apiCacheService.resetApiCache(apiName,key,val)
+					}
+				}
+
 			}
 		}
 	}
