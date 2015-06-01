@@ -55,10 +55,10 @@ private boolean configure() {
 
 private void createApiMethods() {
 	def controllerArtefact = grailsApp?.getArtefactByLogicalPropertyName("Controller", "book")
-		controllerArtefact.clazz.methods.each { method ->
-			
-		}
+	controllerArtefact.clazz.methods.each { method ->
+		
 	}
+
 	ant.mkdir dir: "$appDir/views/hook"
 	// add default views for hooks administration
 	copyFile "$templateDir/hook/create.gsp.template", "$appDir/views/hook/create.gsp"

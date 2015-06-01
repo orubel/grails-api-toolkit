@@ -60,6 +60,7 @@ class ApiObjectService{
 					}
 				}else{
 					ioPath = grails.util.BuildSettingsHolder.settings?.resourcesDir?.path
+					println("63:"+ioPath)
 					if(Environment.current == Environment.DEVELOPMENT || Environment.current == Environment.TEST){
 						ioPath += '/iostate'
 					}else{
@@ -68,6 +69,7 @@ class ApiObjectService{
 					}
 					
 				}
+				println("72:"+ioPath)
 				parseFiles(ioPath)
 			}
 			

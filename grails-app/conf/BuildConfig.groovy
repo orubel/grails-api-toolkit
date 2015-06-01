@@ -1,5 +1,10 @@
 grails.project.work.dir = 'target'
-grails.project.dependency.resolver = "maven" // or ivy
+grails.project.dependency.resolver = "ivy" // or ivy
+grails.project.class.dir = "target/classes"
+grails.project.test.class.dir = "target/test-classes"
+grails.project.test.reports.dir = "target/test-reports"
+grails.project.work.dir = "target/work"
+
 grails.project.dependency.resolution = {
 
 	inherits("global")
@@ -21,6 +26,9 @@ grails.project.dependency.resolution = {
 	
 	dependencies {
 		compile("net.sf.ehcache:ehcache-core:2.4.6")
+		test ("org.spockframework:spock-grails-support:0.7-groovy-2.0"){
+			exclude 'groovy-all'
+		}
 		//compile ('org.springframework.data:spring-data-mongodb:1.3.0.RELEASE') {
 		//	excludes('spring-core', 'spring-context', 'spring-expression')
 		//}
@@ -32,6 +40,10 @@ grails.project.dependency.resolution = {
 		}
 		compile(":cache:latest.release")
 		compile(":spring-security-core:2.0-RC3")
+		//test ":funky-spock:0.2.2"
+		compile(":functional-spock:0.7"){
+			exclude "spock-grails-support"
+		}
 		compile(":rest:0.8"){
 			export=false
 		}

@@ -2,18 +2,28 @@ import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import grails.util.Holders as HOLDER
 import groovy.sql.Sql
-import org.codehaus.groovy.control.customizers.ImportCustomizer
-import org.codehaus.groovy.control.CompilerConfiguration
-import groovy.lang.GroovyShell
-//import org.grails.plugins.console.Evaluation
+import org.codehaus.groovy.grails.commons.GrailsApplication
+
 
 /*
  * Get apicache names and create scaffolded tests for controllers
  * based on cache names and I/O data
  */
-//includeTargets << grailsScript("_GrailsInit")
-includeTargets << grailsScript("_GrailsRun")
+
+includeTargets << grailsScript("_GrailsClean")
+includeTargets << grailsScript("RefreshDependencies")
+includeTargets << grailsScript("_GrailsInit")
+includeTargets << grailsScript("Compile")
+includeTargets << grailsScript("_GrailsClasspath")
 includeTargets << grailsScript("_GrailsBootstrap")
+includeTargets << grailsScript("_PluginDependencies")
+includeTargets << grailsScript("_GrailsCreateArtifacts")
+includeTargets << grailsScript("_GrailsRun")
+includeTargets << grailsScript("_GrailsPackage")
+
+includeTargets << grailsScript('_GrailsClean')
+includeTargets << grailsScript('_GrailsTest')
+
 includeTargets << new File(apiToolkitPluginDir, 'scripts/_S2Common.groovy')
 
 USAGE = """
@@ -24,37 +34,37 @@ Scaffolds API Tests based on I/O State
 Example: grails scaffold-api-test
 """
 
-// scaffolded variables
-templateDir = "$apiToolkitPluginDir/src/templates/tests"
-appDir = "$basedir/grails-app/test/functional"
-//ant.mkdir(dir: "${System.properties.'user.home'}/.apitoolkit")
+
+def templateDir = "$apiToolkitPluginDir/src/templates/tests"
+def testDir = "$basedir/grails-app/test/functional"
+
+def grailsApplication
+def ctx
 
 target('scaffoldApiTest': 'Scaffolds API Objects based on Controllers') {
-	depends(checkVersion, configureProxy, packageApp, parseArguments)
-	if (argsMap.https) {
+	depends(cleanAll,checkVersion, configureProxy, packageApp, classpath, parseArguments)
+	runApp()
 
+		//startPluginScanner()
+
+		grailsApplication = HOLDER.getGrailsApplication()
+		ctx = HOLDER.applicationContext
+		//ctx = grailsApplication.mainContext
+
+		ant.mkdir(dir: "${appDir}")
 		
-		runAppHttps()
-	}
-	else {
-		runApp()
-		
-		def grailsApplication = HOLDER.getGrailsApplication()
-		def appCtx = HOLDER.applicationContext
-		
-		def cacheNames = appCtx.getBean('apiCacheService').getCacheNames()
+		def cacheNames = ctx.getBean('apiCacheService').getCacheNames()
 		def adminRoles = grailsApplication.config.apitoolkit.admin.roles
-		String role = getLoginRole()
+		List role = getLoginRole()
 		
 		for(controller in grailsApplication.controllerClasses) {
 			String cacheName = controller.logicalPropertyName
 			if(!['iostate','hook'].contains(cacheName)){
 				LinkedHashMap templateMethods = [:]
-				
-				println("cacheName : "+cacheName)
+
 				if(cacheNames.contains(cacheName)){
 					
-					def cache = appCtx.getBean('apiCacheService').getApiCache(cacheName)
+					def cache = ctx.getBean('apiCacheService').getApiCache(cacheName)
 					def version = cache.currentStable.value
 	
 					def methods = cache[version]
@@ -68,72 +78,79 @@ target('scaffoldApiTest': 'Scaffolds API Objects based on Controllers') {
 						fkeys = methods.fkeys
 						
 						//println("templateMethods : "+templateMethods)
-						templateAttributes = [className: cacheName.capitalize(),templateMethods: templateMethods,fkeys:fkeys]
-						// generateFile "$templateDir/FunctionalSpec.groovy.template", "$appDir/${cacheName.capitalize()}FunctionalSpec.groovy"
+						String resource = cacheName.capitalize()
+						templateAttributes = [className: resource,templateMethods: templateMethods,fkeys:fkeys]
+						//generateFile "$templateDir/FunctionalSpec.groovy.template", "$testDir/${resource}FunctionalSpec.groovy"
 						
-						println "*** ... Functional test generated for '"+cacheName+"'"
+						println "*** ... Functional test generated for '"+resource+"'"
 						
 					}
 				}
 			}
 		}
-		//startPluginScanner()
+
 		//watchContext()
-	}
+	//}
+
 
 	println """
 	*************************************************************
 	* API Tests successfully scaffolded.                        *
 	*************************************************************
 	"""
+	stopServer()
 }
 
-List getLoginRole(){
+target('getLoginRole': 'Get Role for Default Login') {
+	println("### getLoginRole")
 	// set these variables in your config or external properties file (preferable)
-	String login = HOLDER.config.root.login
-	String password = HOLDER.config.root.password
+	String login = grailsApplication.config.root.login
+	String password = grailsApplication.config.root.password
 	
-	def personClass = HOLDER.getGrailsApplication().getDomainClass(HOLDER.config.grails.plugin.springsecurity.userLookup.userDomainClassName).clazz
+	def personClass = grailsApplication.getDomainClass(grailsApplication.config.grails.plugin.springsecurity.userLookup.userDomainClassName).clazz
 	def principal = personClass.findByUsername(login)
 	Long userId = principal.id.toLong()
-	def user = personClass.get(userId)
 
-	String userClass = (HOLDER.config.grails.plugin.springsecurity.userLookup.userDomainClassName).split('\\.').last()
-	String roleClass = (HOLDER.config.grails.plugin.springsecurity.authority.className).split('\\.').last()
-
-	def roleClazz = HOLDER.getGrailsApplication().getDomainClass(HOLDER.config.grails.plugin.springsecurity.authority.className).clazz
-	def personRoleClazz = HOLDER.getGrailsApplication().getDomainClass(HOLDER.config.grails.plugin.springsecurity.userLookup.authorityJoinClassName).clazz
-	println(roleClass)
-	
-	def query1 = """
-			SELECT
-			R.authority
-			FROM personRoleClass as PR LEFT JOIN PR.role as R ON PR.role.id = R.id
-			WHERE PR.${userClass}.id = ${userId}
-		"""
+	def personRoleClazz = grailsApplication.getDomainClass(grailsApplication.config.grails.plugin.springsecurity.userLookup.authorityJoinClassName).clazz
 
 	def roles = personRoleClazz.executeQuery("select R.authority from PersonRole as PR LEFT JOIN PR.role as R where PR.person.id=${userId}")
-	//def roles = personRoleClass."find${roleClass}By${userClass}"(user)
-	//def roles = personRoleClass."findAllBy${userClass}"(user)
-
-	println roles
 	
 	return roles
 }
 
-LinkedHashMap createInput(Map receives,String role){
+LinkedHashMap createInput(Map receives,List role){
+	println("### createInput")
+	def grailsApplication = HOLDER.getGrailsApplication()
 	LinkedHashMap input = [:]
-
+	role.add('permitAll')
+	receives.each(){ key,val ->
+		if(role.contains(key)){
+			val.each(){ val2 ->
+				def mockData = (val2?.mockData)?val2?.mockData:grailsApplication.config.apitoolkit.apiobject.type."${val2.paramType}".mockData
+				input["${val2.name}"] = mockData
+			}
+		}
+	}
 	return input
 }
 
-List createOutput(Map returns,String Role){
+List createOutput(Map returns,List role){
+	println("### createOutput")
+	//def grailsApplication = HOLDER.getGrailsApplication()
 	List output = []
-	
+	role.add('permitAll')
+	returns.each(){ key,val ->
+		if(role.contains(key)){
+			val.each(){ val2 ->
+				output.add(val2.name)
+			}
+		}
+	}
 	return output
 }
 
-LinkedHashMap createMethods(LinkedHashMap methods,String cacheName,String role){
+LinkedHashMap createMethods(LinkedHashMap methods,String cacheName,List role){
+	println("### createMethods")
 	LinkedHashMap methodGrps = ['GET':[],'POST':[],'PUT':[],'DELETE':[]]
 	List fkeys = []
 	List tempKeys = []
@@ -144,16 +161,16 @@ LinkedHashMap createMethods(LinkedHashMap methods,String cacheName,String role){
 		
 		switch(val.method.toUpperCase()){
 			case 'POST':
-				methodGrps['POST'].add(generatePostMethod(key,cacheName))
+				methodGrps['POST'].add(generatePostMethod(key,cacheName,input,output))
 				break;
 			case 'GET':
-				methodGrps['GET'].add(generateGetMethod(key,cacheName))
+				methodGrps['GET'].add(generateGetMethod(key,cacheName,input,output))
 				break;
 			case 'PUT':
-				methodGrps['PUT'].add(generatePutMethod(key,cacheName))
+				methodGrps['PUT'].add(generatePutMethod(key,cacheName,input,output))
 				break;
 			case 'DELETE':
-				methodGrps['DELETE'].add(generateDeleteMethod(key,cacheName))
+				methodGrps['DELETE'].add(generateDeleteMethod(key,cacheName,input,output))
 				break;
 		}
 
@@ -161,65 +178,63 @@ LinkedHashMap createMethods(LinkedHashMap methods,String cacheName,String role){
 	return methodGrps
 }
 
-String generatePostMethod(String methodName, String className){
-	templatePath = templateDir = "$apiToolkitPluginDir/src/templates/tests/methods/Post.groovy.template"
+String generatePostMethod(String methodName, String className, LinkedHashMap input, List output){
+	println("### POST")
+	def templatePath = "$apiToolkitPluginDir/src/templates/tests/methods/Post.groovy.template"
 	File templateFile = new File(templatePath)
 	if (!templateFile.exists()) {
 		println("\nERROR: $templatePath doesn't exist")
 		return null
 	}else{
-		String output = ""
-		// inputMap,outputList
-		def templateAttributes = [className: className,methodName:methodName]
-		println("POST")
-		output = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
+		String out = ""
+		def templateAttributes = [className: className,methodName:methodName,inputData:input,outputData:output]
+		out = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
+		return out
+	}
+}
+
+def String generateGetMethod(String methodName, String className, LinkedHashMap input, List output){
+	println("### GET")
+	def templatePath = "$apiToolkitPluginDir/src/templates/tests/methods/Get.groovy.template"
+	File templateFile = new File(templatePath)
+	if (!templateFile.exists()) {
+		println("\nERROR: $templatePath doesn't exist")
+		return null
+	}else{
+		String out = ""
+		def templateAttributes = [className: className,methodName:methodName,inputData:input,outputData:output]
+		out = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
+		return out
+	}
+}
+
+String generatePutMethod(String methodName, String className, LinkedHashMap input, List output){
+	println("### PUT")
+	def templatePath = "$apiToolkitPluginDir/src/templates/tests/methods/Put.groovy.template"
+	File templateFile = new File(templatePath)
+	if (!templateFile.exists()) {
+		println("\nERROR: $templatePath doesn't exist")
+		return null
+	}else{
+		String out = ""
+		def templateAttributes = [className: className,methodName:methodName,inputData:input,outputData:output]
+		out = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
 		return output
 	}
 }
 
-def String generateGetMethod(String methodName, String className){
-	templatePath = templateDir = "$apiToolkitPluginDir/src/templates/tests/methods/Get.groovy.template"
+String generateDeleteMethod(String methodName, String className, LinkedHashMap input, List output){
+	println("### DELETE")
+	def templatePath = "$apiToolkitPluginDir/src/templates/tests/methods/Delete.groovy.template"
 	File templateFile = new File(templatePath)
 	if (!templateFile.exists()) {
 		println("\nERROR: $templatePath doesn't exist")
 		return null
 	}else{
-		String output = ""
-		def templateAttributes = [className: className,methodName:methodName]
-		println("GET")
-		output = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
-		return output
-	}
-}
-
-String generatePutMethod(String methodName, String className){
-	templatePath = templateDir = "$apiToolkitPluginDir/src/templates/tests/methods/Put.groovy.template"
-	File templateFile = new File(templatePath)
-	if (!templateFile.exists()) {
-		println("\nERROR: $templatePath doesn't exist")
-		return null
-	}else{
-		String output = ""
-		// inputMap,outputList
-		def templateAttributes = [className: className,methodName:methodName]
-		println("PUT")
-		output = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
-		return output
-	}
-}
-
-String generateDeleteMethod(String methodName, String className){
-	templatePath = templateDir = "$apiToolkitPluginDir/src/templates/tests/methods/Delete.groovy.template"
-	File templateFile = new File(templatePath)
-	if (!templateFile.exists()) {
-		println("\nERROR: $templatePath doesn't exist")
-		return null
-	}else{
-		String output = ""
-		def templateAttributes = [className: className,methodName:methodName]
-		println("DELETE")
-		output = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
-		return output
+		String out = ""
+		def templateAttributes = [className: className,methodName:methodName,inputData:input,outputData:output]
+		out = templateEngine.createTemplate(templateFile.text).make(templateAttributes).toString()
+		return out
 	}
 }
 

@@ -19,7 +19,7 @@ packageName = ''
 userClassName = ''
 roleClassName = ''
 
-templateDir = "$apiToolkitPluginDir/src/templates/apiobject"
+templateDir = "$apiToolkitPluginDir/src/templates/"
 appDir = "$basedir/grails-app"
 
 target(initApitoolkit: 'Creates artifacts for Api Master/Slave Server') {
@@ -90,7 +90,7 @@ target(updateMasterConfig:"Update Config for API Master Setup") {
 			it.writeLine "apitoolkit.webhook.controller = '${packageName}.HookController'"
 			it.writeLine " "
 			it.writeLine "apitoolkit.serverType='master'"
-			it.writeLine "apitoolkit.iostate.preloadDir=[\"file:${userHome}/.iostate\"]"
+			it.writeLine "apitoolkit.iostate.preloadDir=\"${userHome}/.iostate\""
 		}
 	}
 }

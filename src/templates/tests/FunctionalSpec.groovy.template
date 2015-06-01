@@ -8,7 +8,7 @@ import grails.util.Holders as HOLDER
 import net.nosegrind.apitoolkit.Person
 
 // SCAFFOLD name
-class ${cName}FunctionalSpec extends Specification {
+class ${className}FunctionalSpec extends Specification {
 
 	static Long primerId = 1
 	

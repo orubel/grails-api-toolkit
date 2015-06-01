@@ -49,36 +49,22 @@ apitoolkit.chaining.enabled=true
 apitoolkit.batching.enabled=true
 
 apitoolkit.apiobject.type = [
-	"PKEY":["type":"Long","references":"self","description":"Primary Key","mockData":""],
-	"FKEY":["type":"Long","description":"","mockData":""],
-	"INDEX":["type":"String","references":"self","description":"Foreign Key","mockData":""],
-	"String":["type":"String","description":"String","mockData":""],
-	"Date":["type":"String","description":"String","mockData":""],
-	"Long":["type":"Long","description":"Long","mockData":""],
-	"Boolean":["type":"Boolean","description":"Boolean","mockData":""],
-	"Float":["type":"Float","description":"Floating Point","mockData":""],
-	"BigDecimal":["type":"BigDecimal","description":"Big Decimal","mockData":""],
-	"URL":["type":"URL","description":"URL","mockData":""],
-	"Email":["type":"Email","description":"Email","mockData":""],
-	"Array":["type":"Array","description":"Array","mockData":""],
-	"Composite":["type":"Composite","description":"Composite","mockData":""]
+	"PKEY":["type":"Long","references":"self","description":"Primary Key","mockData":"1"],
+	"FKEY":["type":"Long","description":"","mockData":"1"],
+	"INDEX":["type":"String","references":"self","description":"Foreign Key","mockData":"1"],
+	"String":["type":"String","description":"String","mockData":"mockString"],
+	"Date":["type":"String","description":"String","mockData":"1970-01-01 00:00:01"],
+	"Long":["type":"Long","description":"Long","mockData":"1234"],
+	"Boolean":["type":"Boolean","description":"Boolean","mockData":"true"],
+	"Float":["type":"Float","description":"Floating Point","mockData":"0.01"],
+	"BigDecimal":["type":"BigDecimal","description":"Big Decimal","mockData":"1234567890"],
+	"URL":["type":"URL","description":"URL","mockData":"www.mockdata.com"],
+	"Email":["type":"Email","description":"Email","mockData":"test@mockdata.com"],
+	"Array":["type":"Array","description":"Array","mockData":["this","is","mockdata"]],
+	"Composite":["type":"Composite","description":"Composite","mockData":["type":"Composite","description":"this is a composite","List":[1,2,3,4,5]]]
 ]
 
-apitoolkit.apiobject.mockData = [
-	"PKEY":"1",
-	"FKEY":"1",
-	"INDEX":'index',
-	"String":'mockString',
-	"Date":"1970-01-01 00:00:01",
-	"Long":"1",
-	"Boolean":"true",
-	"Float":"0.01",
-	"BigDecimal":"1234567890000",
-	"URL":"www.mockdata.com",
-	"Email":"test@mockdata.com",
-	"Array":["type":"Array","description":"this is mockdata"],
-	"Composite":["type":"Composite","description":"this is a composite","List":[1,2,3,4,5]]
-]
+
 
 grails.plugin.springsecurity.auth.loginFormUrl = "/${apiName}_v${apiVersion}/login/auth"
 grails.plugin.springsecurity.auth.ajaxLoginFormUrl = "/${apiName}_v${apiVersion}/login/authAjax"

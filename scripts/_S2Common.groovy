@@ -54,6 +54,7 @@ okToWrite = { String dest ->
 }
 
 generateFile = { String templatePath, String outputPath ->
+	println "generate file called..."
 	if (!okToWrite(outputPath)) {
 		return
 	}

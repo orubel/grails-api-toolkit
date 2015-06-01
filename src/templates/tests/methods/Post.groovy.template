@@ -4,10 +4,10 @@
 		Object json
 		LinkedHashMap errOutput = [:]
 		// SCAFFOLD
-		def input = ["title": "test post","teaser": "This is just a test post to see if this works. Testing the api post system.","content":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. In vel consequat nisl, quis commodo neque. Integer ultrices vitae nulla lacinia rutrum. Duis ut porta arcu, sed gravida tortor. Donec pulvinar elit turpis, ultricies tristique mi auctor ac. Ut elementum ullamcorper risus ac sollicitudin. Morbi semper ultrices enim vel euismod. Proin eleifend orci ac elit mollis tempor. Nulla egestas odio eu volutpat eleifend. Nunc nec massa eget nisl sodales posuere. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nunc accumsan pretium sapien a tincidunt. Sed at fringilla mi.","section":this.fkeys.sectionId,"author":this.user] as JSON
+		def input = ${inputData} as JSON
 		input = input.toString().replaceAll("\"","\'")
 		// SCAFFOLD
-		def output = ['id','version']
+		def output = ${outputData}
 		
 		when:
 			def ant = new AntBuilder()

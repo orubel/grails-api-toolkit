@@ -4,9 +4,9 @@
 	  Object json
 	  LinkedHashMap errOutput = [:]
 	  // SCAFFOLD
-	  def input = ['title':'testamundo','version':version] as JSON
+	  def input = ${inputData} as JSON
 	  // SCAFFOLD
-	  def output = ['id','version']
+	  def output = ${outputData}
 	  
 	  when:
 		  def ant = new AntBuilder()
