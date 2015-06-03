@@ -34,7 +34,7 @@ class ${className}FunctionalSpec extends Specification {
 		
 			def ant = new AntBuilder()
 			ant.exec(outputProperty:"cmdOut",errorProperty:"cmdErr",resultProperty:"cmdExit",failonerror:"false",executable:"curl"){
-				arg(line:"""--verbose --request POST --data "j_username=${login}&j_password=${password}&_spring_security_remember_me=checked" http://localhost:8080/api_v0.1/j_spring_security_check --cookie-jar cookies.txt""")
+				arg(line:"""--verbose --request POST --data "j_username=\${login}&j_password=\${password}&_spring_security_remember_me=checked" http://localhost:8080/api_v0.1/j_spring_security_check --cookie-jar cookies.txt""")
 			}
 			output = parseOutput(ant.project.properties.cmdErr)
 			def personClass = HOLDER.getGrailsApplication().getDomainClass(HOLDER.config.grails.plugin.springsecurity.userLookup.userDomainClassName).clazz
@@ -56,7 +56,7 @@ class ${className}FunctionalSpec extends Specification {
 		when:
 			def ant = new AntBuilder()
 			ant.exec(outputProperty:"cmdOut",errorProperty:"cmdErr",resultProperty:"cmdExit",failonerror:"false",executable:"curl"){
-				arg(line:"""--verbose --request GET --header "Content-Type: application/json" "http://localhost:8080/api_v0.1/post/show/${this.primerId}" --cookie cookies.txt""")
+				arg(line:"""--verbose --request GET --header "Content-Type: application/json" "http://localhost:8080/api_v0.1/post/show/\${this.primerId}" --cookie cookies.txt""")
 			}
 			errOutput = parseOutput(ant.project.properties.cmdErr)
 			json = new JsonSlurper().parseText(ant.project.properties.cmdOut)
@@ -69,13 +69,13 @@ class ${className}FunctionalSpec extends Specification {
 			assert json.collect(){it.key} == output
 	}
 	
-	${templateMethods['POST'].each(){ it+"/r/n" }}
+	${templateMethods['POST']}
 
-	${templateMethods['GET'].each(){ it+"/r/n" }}
+	${templateMethods['GET']}
 
-	${templateMethods['PUT'].each(){ it+"/r/n" }}
+	${templateMethods['PUT']}
   
-	${templateMethods['DELETE'].each(){ it+"/r/n" }}
+	${templateMethods['DELETE']}
   
   LinkedHashMap parseOutput(String output){
 	  LinkedHashMap req = [:]

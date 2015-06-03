@@ -36,7 +36,7 @@ Example: grails scaffold-api-test
 
 
 def templateDir = "$apiToolkitPluginDir/src/templates/tests"
-def testDir = "$basedir/grails-app/test/functional"
+def testDir = "$basedir/test/functional"
 
 def grailsApplication
 def ctx
@@ -51,7 +51,7 @@ target('scaffoldApiTest': 'Scaffolds API Objects based on Controllers') {
 		ctx = HOLDER.applicationContext
 		//ctx = grailsApplication.mainContext
 
-		ant.mkdir(dir: "${appDir}")
+		ant.mkdir(dir: "${testDir}")
 		
 		def cacheNames = ctx.getBean('apiCacheService').getCacheNames()
 		def adminRoles = grailsApplication.config.apitoolkit.admin.roles
@@ -76,11 +76,10 @@ target('scaffoldApiTest': 'Scaffolds API Objects based on Controllers') {
 					templateMethods = createMethods(methods,cacheName,role)
 					if(templateMethods){
 						fkeys = methods.fkeys
-						
-						//println("templateMethods : "+templateMethods)
+
 						String resource = cacheName.capitalize()
 						templateAttributes = [className: resource,templateMethods: templateMethods,fkeys:fkeys]
-						//generateFile "$templateDir/FunctionalSpec.groovy.template", "$testDir/${resource}FunctionalSpec.groovy"
+						generateFile "$templateDir/FunctionalSpec.groovy.template", "$testDir/${resource}FunctionalSpec.groovy"
 						
 						println "*** ... Functional test generated for '"+resource+"'"
 						
@@ -102,7 +101,6 @@ target('scaffoldApiTest': 'Scaffolds API Objects based on Controllers') {
 }
 
 target('getLoginRole': 'Get Role for Default Login') {
-	println("### getLoginRole")
 	// set these variables in your config or external properties file (preferable)
 	String login = grailsApplication.config.root.login
 	String password = grailsApplication.config.root.password
@@ -119,7 +117,6 @@ target('getLoginRole': 'Get Role for Default Login') {
 }
 
 LinkedHashMap createInput(Map receives,List role){
-	println("### createInput")
 	def grailsApplication = HOLDER.getGrailsApplication()
 	LinkedHashMap input = [:]
 	role.add('permitAll')
@@ -135,7 +132,6 @@ LinkedHashMap createInput(Map receives,List role){
 }
 
 List createOutput(Map returns,List role){
-	println("### createOutput")
 	//def grailsApplication = HOLDER.getGrailsApplication()
 	List output = []
 	role.add('permitAll')
@@ -150,8 +146,8 @@ List createOutput(Map returns,List role){
 }
 
 LinkedHashMap createMethods(LinkedHashMap methods,String cacheName,List role){
-	println("### createMethods")
-	LinkedHashMap methodGrps = ['GET':[],'POST':[],'PUT':[],'DELETE':[]]
+	LinkedHashMap tempGrps = ['GET':[],'POST':[],'PUT':[],'DELETE':[]]
+	LinkedHashMap methodGrps = ['GET':'','POST':'','PUT':'','DELETE':'']
 	List fkeys = []
 	List tempKeys = []
 	methods.each(){ key,val ->
@@ -161,25 +157,31 @@ LinkedHashMap createMethods(LinkedHashMap methods,String cacheName,List role){
 		
 		switch(val.method.toUpperCase()){
 			case 'POST':
-				methodGrps['POST'].add(generatePostMethod(key,cacheName,input,output))
+				tempGrps['POST'].add(generatePostMethod(key,cacheName,input,output))
 				break;
 			case 'GET':
-				methodGrps['GET'].add(generateGetMethod(key,cacheName,input,output))
+				tempGrps['GET'].add(generateGetMethod(key,cacheName,input,output))
 				break;
 			case 'PUT':
-				methodGrps['PUT'].add(generatePutMethod(key,cacheName,input,output))
+				tempGrps['PUT'].add(generatePutMethod(key,cacheName,input,output))
 				break;
 			case 'DELETE':
-				methodGrps['DELETE'].add(generateDeleteMethod(key,cacheName,input,output))
+				tempGrps['DELETE'].add(generateDeleteMethod(key,cacheName,input,output))
 				break;
 		}
 
+	}
+	
+	// formatting for template
+	tempGrps.each(){ key,val ->
+		val.each(){
+			methodGrps[key] += it+"\r\n"
+		}
 	}
 	return methodGrps
 }
 
 String generatePostMethod(String methodName, String className, LinkedHashMap input, List output){
-	println("### POST")
 	def templatePath = "$apiToolkitPluginDir/src/templates/tests/methods/Post.groovy.template"
 	File templateFile = new File(templatePath)
 	if (!templateFile.exists()) {
@@ -194,7 +196,6 @@ String generatePostMethod(String methodName, String className, LinkedHashMap inp
 }
 
 def String generateGetMethod(String methodName, String className, LinkedHashMap input, List output){
-	println("### GET")
 	def templatePath = "$apiToolkitPluginDir/src/templates/tests/methods/Get.groovy.template"
 	File templateFile = new File(templatePath)
 	if (!templateFile.exists()) {
@@ -209,7 +210,6 @@ def String generateGetMethod(String methodName, String className, LinkedHashMap 
 }
 
 String generatePutMethod(String methodName, String className, LinkedHashMap input, List output){
-	println("### PUT")
 	def templatePath = "$apiToolkitPluginDir/src/templates/tests/methods/Put.groovy.template"
 	File templateFile = new File(templatePath)
 	if (!templateFile.exists()) {
@@ -224,7 +224,6 @@ String generatePutMethod(String methodName, String className, LinkedHashMap inpu
 }
 
 String generateDeleteMethod(String methodName, String className, LinkedHashMap input, List output){
-	println("### DELETE")
 	def templatePath = "$apiToolkitPluginDir/src/templates/tests/methods/Delete.groovy.template"
 	File templateFile = new File(templatePath)
 	if (!templateFile.exists()) {
