@@ -1,6 +1,6 @@
 # Grails API Toolkit
 
-Please use the updated project <a href='https://github.com/orubel/Beapi-API-Framework'>here</a> 
+**Please use the updated project <a href='https://github.com/orubel/Beapi-API-Framework'>here</a>**
 
 To see a example project, go <a href='https://github.com/orubel/api-example-2.0'>here</a> to view the code
 
