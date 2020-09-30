@@ -1,9 +1,7 @@
 # Grails API Toolkit
 
-**Project has been ported to 'BeAPI Plugin'.
-Please use the updated project <a href='https://github.com/orubel/Beapi-API-Framework'>here</a>**
+    Project has been ported to 'BeAPI Plugin'.Please use the updated project [here](https://github.com/orubel/Beapi-API-Framework)
 
-To see a example project, go <a href='https://github.com/orubel/api-example-2.0'>here</a> to view the code
 
 - <a href='https://github.com/orubel/grails-api-toolkit-docs'>Grails Api Toolkit Docs</a>
 
