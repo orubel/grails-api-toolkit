@@ -9,7 +9,7 @@
 Some of the features in the apitoolkit include:
 
 - <a href='http://youtu.be/ceg0Y3bDh8k'>full API Abstraction</a>
-- <a href='http://youtu.be/O4qNQUhxcRg'>API Chaining</a>
+- <a href='http://orubel.github.io/Beapi-API-Framework/advanced.html#section-3'>API Chaining</a>
 - rshared IO state in architecture
 - api automation
 - header generation
